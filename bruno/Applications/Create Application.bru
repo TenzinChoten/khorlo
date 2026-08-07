@@ -1,0 +1,18 @@
+meta {
+  name: Create Application
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/applications
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "campaignId": "REPLACE_WITH_CAMPAIGN_ID",
+    "coverLetter": "I would love to promote your product. I have a highly engaged audience."
+  }
+}

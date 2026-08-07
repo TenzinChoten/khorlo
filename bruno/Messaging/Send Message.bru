@@ -1,0 +1,22 @@
+meta {
+  name: Send Message
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/conversations/:conversationId/messages
+  body: json
+  auth: none
+}
+
+params:path {
+  conversationId: REPLACE_WITH_CONVERSATION_ID
+}
+
+body:json {
+  {
+    "message": "Hey! I am super excited to get started on this campaign.",
+    "attachmentUrl": "https://example.com/brief.pdf"
+  }
+}

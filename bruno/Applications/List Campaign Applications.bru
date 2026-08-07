@@ -1,0 +1,15 @@
+meta {
+  name: List Campaign Applications
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/applications/campaign/:campaignId
+  body: none
+  auth: none
+}
+
+params:path {
+  campaignId: REPLACE_WITH_CAMPAIGN_ID
+}

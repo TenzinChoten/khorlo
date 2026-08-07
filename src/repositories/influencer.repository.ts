@@ -116,7 +116,7 @@ function toFullDTO(raw: RawProfile): InfluencerProfileDTO {
   };
 }
 
-function toPublicDTO(raw: RawProfile): InfluencerPublicProfileDTO {
+export function toPublicDTO(raw: RawProfile): InfluencerPublicProfileDTO {
   return {
     id: raw.id,
     displayName: raw.displayName,

@@ -78,7 +78,7 @@ function mapFormats(
   }));
 }
 
-function toListDTO(campaign: RawListItem): CampaignListItemDTO {
+export function toListDTO(campaign: RawListItem): CampaignListItemDTO {
   return {
     id: campaign.id,
     title: campaign.title,
