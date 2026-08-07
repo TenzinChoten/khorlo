@@ -1,0 +1,52 @@
+meta {
+  name: Create Profile
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/influencer
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "displayName": "Tenzin Choten",
+    "bio": "Travel and Lifestyle Creator",
+    "country": "Nepal",
+    "state": "Bagmati",
+    "city": "Kathmandu",
+    "socialAccounts": [
+      {
+        "platform": "INSTAGRAM",
+        "username": "tenzin",
+        "url": "https://instagram.com/tenzin",
+        "followers": 54000
+      },
+      {
+        "platform": "TIKTOK",
+        "username": "tenzin",
+        "url": "https://tiktok.com/@tenzin",
+        "followers": 82000
+      }
+    ],
+    "contentNiches": [
+      "Travel",
+      "Lifestyle"
+    ],
+    "contentFormats": [
+      "Instagram Reel",
+      "Story",
+      "TikTok Video"
+    ],
+    "portfolio": [
+      {
+        "title": "Visit Nepal Campaign",
+        "description": "Tourism campaign",
+        "mediaUrl": "https://example.com/media.mp4",
+        "thumbnailUrl": "https://example.com/thumb.jpg"
+      }
+    ]
+  }
+}
