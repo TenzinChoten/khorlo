@@ -1,24 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon } from 'lucide-react';
+import { fetchApi, getMediaUrl } from '../lib/api';
+import ImageCropper from '../components/ImageCropper';
+
+
+
 
 const CreateCampaign = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const bannerInputRef = useRef(null);
+  const logoInputRef = useRef(null);
+  const [cropperData, setCropperData] = useState({ imageSrc: null, type: null, aspect: 1, cropShape: 'rect', filename: 'image.jpg' });
   
   const [campaign, setCampaign] = useState({
     title: '',
     description: '',
-    status: 'ACTIVE',
+    status: 'OPEN',
     deadline: '',
     locationType: 'ONLINE',
     compensationType: 'PAID',
     budget: '',
+    currency: 'USD',
+    creatorSlots: 1,
+    contentDeadline: '',
+    country: '',
+    state: '',
+    city: '',
+    address: '',
     niches: [],
-    formats: []
+    formats: [],
+    formatQuantities: {},
+    bannerUrl: '',
+    logoUrl: ''
   });
 
   const availableNiches = ['Tech', 'Beauty', 'Fashion', 'Fitness', 'Gaming', 'Lifestyle', 'Travel', 'Food'];
+
   const availableFormats = ['Short-form Video', 'Long-form Video', 'Photography', 'Live Streams', 'Blog Posts'];
 
   const handleNext = (e) => {
@@ -30,11 +52,67 @@ const CreateCampaign = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, send data to backend
-    navigate('/dashboard/business');
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await fetchApi('/campaigns', {
+        method: 'POST',
+        body: JSON.stringify(campaign),
+      });
+      navigate('/dashboard/business');
+    } catch (err) {
+      console.error('Failed to create campaign:', err);
+      setError(err.message || 'Failed to create campaign. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Instead of uploading immediately, load it for cropping
+    const imageSrc = URL.createObjectURL(file);
+    if (type === 'banner') {
+      setCropperData({ imageSrc, type, aspect: 16 / 9, cropShape: 'rect', filename: 'banner.jpg' });
+    } else {
+      setCropperData({ imageSrc, type, aspect: 1, cropShape: 'rect', filename: 'logo.jpg' });
+    }
+    
+    // Reset file input
+    if (e.target) e.target.value = null;
+  };
+
+  const handleCropComplete = async (croppedFile, croppedUrl) => {
+    const type = cropperData.type;
+    setCropperData({ imageSrc: null, type: null, aspect: 1, cropShape: 'rect', filename: 'image.jpg' });
+    setIsUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', croppedFile);
+      
+      const res = await fetchApi('/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (type === 'banner') {
+        setCampaign(prev => ({ ...prev, bannerUrl: res.url }));
+      } else {
+        setCampaign(prev => ({ ...prev, logoUrl: res.url }));
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setError('Failed to upload cropped image. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
 
   const toggleNiche = (niche) => {
     setCampaign(prev => ({
@@ -46,16 +124,38 @@ const CreateCampaign = () => {
   };
 
   const toggleFormat = (format) => {
+    setCampaign(prev => {
+      const isSelected = prev.formats.includes(format);
+      const newFormats = isSelected ? prev.formats.filter(f => f !== format) : [...prev.formats, format];
+      const newQuantities = { ...prev.formatQuantities };
+      if (!isSelected && !newQuantities[format]) {
+        newQuantities[format] = 1;
+      }
+      return { ...prev, formats: newFormats, formatQuantities: newQuantities };
+    });
+  };
+
+  const updateFormatQuantity = (format, quantity) => {
     setCampaign(prev => ({
       ...prev,
-      formats: prev.formats.includes(format)
-        ? prev.formats.filter(f => f !== format)
-        : [...prev.formats, format]
+      formatQuantities: { ...prev.formatQuantities, [format]: quantity === '' ? '' : parseInt(quantity) }
     }));
   };
 
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem', minHeight: 'calc(100vh - 80px)' }}>
+      {cropperData.imageSrc && (
+        <ImageCropper
+          imageSrc={cropperData.imageSrc}
+          aspect={cropperData.aspect}
+          cropShape={cropperData.cropShape}
+          filename={cropperData.filename}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setCropperData({ imageSrc: null, type: null, aspect: 1, cropShape: 'rect', filename: 'image.jpg' })}
+        />
+      )}
+      
       <div className="glass-panel animate-fade-in" style={{ padding: '3rem', width: '100%', maxWidth: '800px', height: 'fit-content' }}>
         
         {/* Progress Bar */}
@@ -90,7 +190,14 @@ const CreateCampaign = () => {
           </p>
         </div>
 
+        {error && (
+          <div style={{ marginBottom: '2rem', padding: '1rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgb(239, 68, 68)', color: '#fca5a5' }}>
+            {error}
+          </div>
+        )}
+
         <form onSubmit={step === 3 ? handleSubmit : handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
           
           {/* STEP 1: Basic Info */}
           {step === 1 && (
@@ -99,30 +206,58 @@ const CreateCampaign = () => {
               <div style={{ display: 'flex', gap: '2rem' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Banner</label>
-                  <div style={{ width: '100%', height: '150px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-                    <ImageIcon size={32} style={{ marginBottom: '0.5rem' }} />
-                    <span style={{ fontSize: '0.875rem' }}>Upload Banner</span>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} ref={bannerInputRef} onChange={(e) => handleFileUpload(e, 'banner')} />
+                  <div 
+                    onClick={() => bannerInputRef.current?.click()}
+                    style={{ width: '100%', height: '150px', borderRadius: '12px', background: campaign.bannerUrl ? `url(${getMediaUrl(campaign.bannerUrl)}) center/cover` : 'rgba(255,255,255,0.05)', border: campaign.bannerUrl ? 'none' : '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                  >
+                    {!campaign.bannerUrl && (
+                      <>
+                        <ImageIcon size={32} style={{ marginBottom: '0.5rem' }} />
+                        <span style={{ fontSize: '0.875rem' }}>{isUploading ? 'Uploading...' : 'Upload Banner'}</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Brand Logo</label>
-                  <div style={{ width: '150px', height: '150px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-                    <Upload size={24} style={{ marginBottom: '0.5rem' }} />
-                    <span style={{ fontSize: '0.875rem' }}>Update Logo</span>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} ref={logoInputRef} onChange={(e) => handleFileUpload(e, 'logo')} />
+                  <div 
+                    onClick={() => logoInputRef.current?.click()}
+                    style={{ width: '150px', height: '150px', borderRadius: '12px', background: campaign.logoUrl ? `url(${getMediaUrl(campaign.logoUrl)}) center/cover` : 'rgba(255,255,255,0.05)', border: campaign.logoUrl ? 'none' : '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                  >
+                    {!campaign.logoUrl && (
+                      <>
+                        <Upload size={24} style={{ marginBottom: '0.5rem' }} />
+                        <span style={{ fontSize: '0.875rem' }}>{isUploading ? 'Uploading...' : 'Update Logo'}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Title</label>
-                <input 
-                  type="text" 
-                  value={campaign.title}
-                  onChange={(e) => setCampaign({...campaign, title: e.target.value})}
-                  placeholder="e.g. Summer Tech Essentials Launch"
-                  required
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Title</label>
+                  <input 
+                    type="text" 
+                    value={campaign.title}
+                    onChange={(e) => setCampaign({...campaign, title: e.target.value})}
+                    placeholder="e.g. Summer Tech Essentials Launch"
+                    required
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Product Name (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={campaign.productName}
+                    onChange={(e) => setCampaign({...campaign, productName: e.target.value})}
+                    placeholder="e.g. Smart Home Hub V2"
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                  />
+                </div>
               </div>
 
               <div>
@@ -145,7 +280,7 @@ const CreateCampaign = () => {
                     onChange={(e) => setCampaign({...campaign, status: e.target.value})}
                     style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
                   >
-                    <option value="ACTIVE">Active</option>
+                    <option value="OPEN">Open</option>
                     <option value="DRAFT">Draft</option>
                   </select>
                 </div>
@@ -159,18 +294,50 @@ const CreateCampaign = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Location Type</label>
-                  <select 
-                    value={campaign.locationType}
-                    onChange={(e) => setCampaign({...campaign, locationType: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
-                  >
-                    <option value="ONLINE">Online (Remote)</option>
-                    <option value="OFFLINE">Offline (In-Person)</option>
-                    <option value="HYBRID">Hybrid</option>
-                  </select>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Content Deadline</label>
+                  <input 
+                    type="date" 
+                    value={campaign.contentDeadline}
+                    onChange={(e) => setCampaign({...campaign, contentDeadline: e.target.value})}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                  />
                 </div>
               </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Location Type</label>
+                <select 
+                  value={campaign.locationType}
+                  onChange={(e) => setCampaign({...campaign, locationType: e.target.value})}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                >
+                  <option value="ONLINE">Online (Remote)</option>
+                  <option value="OFFLINE">Offline (In-Person)</option>
+                  <option value="HYBRID">Hybrid</option>
+                </select>
+              </div>
+
+              {(campaign.locationType === 'OFFLINE' || campaign.locationType === 'HYBRID') && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
+                    <input type="text" value={campaign.country} onChange={(e) => setCampaign({...campaign, country: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} placeholder="Country" />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State / Region</label>
+                    <input type="text" value={campaign.state} onChange={(e) => setCampaign({...campaign, state: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} placeholder="State" />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
+                    <input type="text" value={campaign.city} onChange={(e) => setCampaign({...campaign, city: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} placeholder="City" />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Address</label>
+                    <input type="text" value={campaign.address} onChange={(e) => setCampaign({...campaign, address: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} placeholder="Street address" />
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 
@@ -201,18 +368,43 @@ const CreateCampaign = () => {
                 </div>
               </div>
 
-              {(campaign.compensationType === 'PAID' || campaign.compensationType === 'PAID_PLUS_PRODUCT') && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Budget / Compensation Range ($)</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Number of Creators Needed</label>
                   <input 
-                    type="text" 
-                    value={campaign.budget}
-                    onChange={(e) => setCampaign({...campaign, budget: e.target.value})}
-                    placeholder="e.g. $500 - $1,500"
+                    type="number" 
+                    min="1"
+                    value={campaign.creatorSlots === '' ? '' : campaign.creatorSlots}
+                    onChange={(e) => setCampaign({...campaign, creatorSlots: e.target.value === '' ? '' : parseInt(e.target.value)})}
                     style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
                   />
                 </div>
-              )}
+                {(campaign.compensationType === 'PAID' || campaign.compensationType === 'PAID_PLUS_PRODUCT') && (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Budget & Currency</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <select 
+                        value={campaign.currency}
+                        onChange={(e) => setCampaign({...campaign, currency: e.target.value})}
+                        style={{ padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                      >
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="INR">INR</option>
+                        <option value="CAD">CAD</option>
+                      </select>
+                      <input 
+                        type="text" 
+                        value={campaign.budget}
+                        onChange={(e) => setCampaign({...campaign, budget: e.target.value})}
+                        placeholder="e.g. 500 - 1,500"
+                        style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -247,21 +439,26 @@ const CreateCampaign = () => {
                 <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Formats</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableFormats.map(format => (
-                    <div 
-                      key={format}
-                      onClick={() => toggleFormat(format)}
-                      style={{ 
-                        padding: '0.5rem 1rem', 
-                        borderRadius: '999px', 
-                        cursor: 'pointer',
-                        background: campaign.formats.includes(format) ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${campaign.formats.includes(format) ? 'var(--accent)' : 'var(--glass-border)'}`,
-                        color: 'white',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      {format}
+                    <div key={format} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '999px', background: campaign.formats.includes(format) ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${campaign.formats.includes(format) ? 'var(--accent)' : 'var(--glass-border)'}`, transition: 'all 0.2s ease' }}>
+                      <div 
+                        onClick={() => toggleFormat(format)}
+                        style={{ cursor: 'pointer', color: campaign.formats.includes(format) ? 'var(--accent)' : 'white', fontSize: '0.875rem' }}
+                      >
+                        {format}
+                      </div>
+                      {campaign.formats.includes(format) && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', paddingLeft: '0.5rem', borderLeft: `1px solid ${campaign.formats.includes(format) ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.1)'}` }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 500 }}>Qty:</span>
+                          <input 
+                            type="number" 
+                            min="1"
+                            value={campaign.formatQuantities[format] === '' ? '' : (campaign.formatQuantities[format] || 1)}
+                            onChange={(e) => updateFormatQuantity(format, e.target.value)}
+                            style={{ width: '45px', padding: '0.2rem', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--accent)', color: 'white', textAlign: 'center', outline: 'none', fontSize: '0.875rem' }}
+                            title="Quantity required"
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -276,13 +473,16 @@ const CreateCampaign = () => {
               </button>
             )}
             
-            <button type="submit" className="btn btn-primary btn-accent" style={{ flex: 1, padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            <button type="submit" disabled={isSubmitting} className="btn btn-primary btn-accent" style={{ flex: 1, padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
               {step < 3 ? (
                 <>Next <ChevronRight size={18} /></>
+              ) : isSubmitting ? (
+                "Publishing..."
               ) : (
                 "Publish Campaign"
               )}
             </button>
+
           </div>
         </form>
       </div>

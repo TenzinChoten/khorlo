@@ -3,14 +3,18 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Briefcase, Music } from 'lucide-react';
 import { Country, State, City } from 'country-state-city';
 import SearchableDropdown from '../components/SearchableDropdown';
+import { fetchApi } from '../lib/api';
+import ImageCropper from '../components/ImageCropper';
 
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState(1);
 
-  // Step 1 State
   const [companyName, setCompanyName] = useState(location.state?.companyName || '');
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
   const [website, setWebsite] = useState('');
   const [description, setDescription] = useState('');
   const [country, setCountry] = useState('');
@@ -71,9 +75,46 @@ const BusinessOnboarding = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate('/dashboard/business');
+    try {
+      let companyLogoUrl = null;
+      if (logoFile) {
+        const formData = new FormData();
+        formData.append('file', logoFile);
+        const uploadRes = await fetchApi('/upload', { method: 'POST', body: formData });
+        companyLogoUrl = uploadRes.url;
+      }
+
+      const payload = {
+        companyName,
+        website,
+        companyDescription: description,
+        companyLogo: companyLogoUrl,
+        country,
+        state,
+        city,
+        socialAccounts: Object.entries(socials)
+          .filter(([_, url]) => url.trim() !== '')
+          .map(([platform, url]) => ({
+            platform: platform.toUpperCase(),
+            username: new URL(url).pathname.replace('/', '') || url,
+            profileUrl: url,
+            followers: 0,
+            engagementRate: 0
+          })),
+        heardAboutUs: referralSources.join(', ')
+      };
+      
+      await fetchApi('/business/me', {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
+      navigate('/dashboard/business');
+    } catch (err) {
+      console.error('Failed to save onboarding data:', err);
+      alert('Failed to save onboarding data. Please try again.');
+    }
   };
 
   return (
@@ -112,16 +153,50 @@ const BusinessOnboarding = () => {
           </p>
         </div>
 
+        {cropImageSrc && (
+          <ImageCropper 
+            imageSrc={cropImageSrc}
+            onCropComplete={(file, url) => {
+              setLogoFile(file);
+              setLogoPreview(url);
+              setCropImageSrc(null);
+            }}
+            onCancel={() => setCropImageSrc(null)}
+          />
+        )}
+
         <form onSubmit={step === 3 ? handleSubmit : handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* STEP 1: Basic Info */}
           {step === 1 && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-                <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-                  <Upload size={24} style={{ marginBottom: '0.5rem' }} />
-                  <span style={{ fontSize: '0.75rem' }}>Upload Logo</span>
-                </div>
+                <label style={{ 
+                  width: '120px', height: '120px', borderRadius: '50%', 
+                  background: logoPreview ? `url(${logoPreview}) center/cover no-repeat` : 'rgba(255,255,255,0.05)', 
+                  border: logoPreview ? 'none' : '2px dashed var(--glass-border)', 
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+                  cursor: 'pointer', color: 'var(--text-secondary)', position: 'relative', overflow: 'hidden'
+                }}>
+                  {!logoPreview && (
+                    <>
+                      <Upload size={24} style={{ marginBottom: '0.5rem' }} />
+                      <span style={{ fontSize: '0.75rem' }}>Upload Logo</span>
+                    </>
+                  )}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setCropImageSrc(URL.createObjectURL(file));
+                      }
+                      e.target.value = ''; // Reset so the same file can be selected again if needed
+                    }} 
+                    style={{ display: 'none' }} 
+                  />
+                </label>
               </div>
 
               <div>

@@ -1,22 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, MapPin, DollarSign, Clock, Camera, PlayCircle, AtSign, Music } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { fetchApi, getMediaUrl } from '../lib/api';
+
+
+const getPlatformIcon = (platform) => {
+  const p = (platform || '').toLowerCase();
+  if (p === 'instagram') return <Camera size={16} />;
+  if (p === 'youtube') return <PlayCircle size={16} />;
+  if (p === 'tiktok') return <Music size={16} />;
+  return <AtSign size={16} />;
+};
 
 const SearchCampaigns = () => {
-  const campaigns = [
-    { id: 1, brand: 'TechNova', title: 'Smart Home Hub Launch', type: 'Paid', budget: '$500 - $1000', platform: 'YouTube, TikTok', deadline: '3 days left' },
-    { id: 2, brand: 'FreshEats', title: 'Vegan Meal Kit Review', type: 'Free Product', budget: 'Product Value: $150', platform: 'Instagram', deadline: '1 week left' },
-    { id: 3, brand: 'GlowCosmetics', title: 'Summer Skincare Routine', type: 'Paid', budget: '$300 - $600', platform: 'TikTok, Instagram', deadline: '5 days left' },
-    { id: 4, brand: 'FitLife', title: '30-Day Fitness Challenge', type: 'Paid & Product', budget: '$200 + Gear', platform: 'Instagram, YouTube, TikTok', deadline: '2 weeks left' },
-  ];
+  const [campaigns, setCampaigns] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const getPlatformIcon = (platformStr) => {
-    const p = platformStr.trim().toLowerCase();
-    if (p === 'instagram') return <Camera size={16} />;
-    if (p === 'youtube') return <PlayCircle size={16} />;
-    if (p === 'tiktok') return <Music size={16} />;
-    if (p === 'twitter' || p === 'x') return <AtSign size={16} />;
-    return <AtSign size={16} />;
+  useEffect(() => {
+    setLoading(true);
+    fetchApi(`/campaigns${search ? `?search=${encodeURIComponent(search)}` : ''}`)
+      .then(res => setCampaigns(res.campaigns || []))
+      .catch(() => setCampaigns([]))
+      .finally(() => setLoading(false));
+  }, [search]);
+
+  const formatBudget = (camp) => {
+    if (!camp.budget) return camp.compensationType === 'FREE_PRODUCT' ? 'Free Product' : 'Unpaid';
+    return `${camp.currency || 'USD'} ${camp.budget.toLocaleString()}`;
+  };
+
+  const formatDeadline = (date) => {
+    if (!date) return 'Open ended';
+    const diff = Math.ceil((new Date(date) - Date.now()) / (1000 * 60 * 60 * 24));
+    if (diff < 0) return 'Closed';
+    if (diff === 0) return 'Closes today';
+    if (diff === 1) return '1 day left';
+    if (diff < 7) return `${diff} days left`;
+    return `${Math.ceil(diff / 7)} weeks left`;
   };
 
   return (
@@ -27,58 +48,55 @@ const SearchCampaigns = () => {
 
       <div style={{ position: 'relative', marginBottom: '2rem' }}>
         <Search size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-        <input 
-          type="text" 
-          placeholder="Search campaigns by keyword or brand..." 
+        <input
+          type="text"
+          placeholder="Search campaigns by keyword or brand..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '12px', outline: 'none' }}
         />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {campaigns.map(camp => (
-          <div key={camp.id} className="glass-panel" style={{ padding: '2rem', display: 'flex', gap: '2rem', alignItems: 'center' }}>
-            <img src={`https://ui-avatars.com/api/?name=${camp.brand}&background=random&color=fff`} alt={camp.brand} style={{ width: '100px', height: '100px', borderRadius: '12px', objectFit: 'cover' }} />
-            
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <div>
-                  <p style={{ color: 'var(--accent)', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }}>{camp.brand}</p>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>Loading campaigns...</div>
+      ) : campaigns.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>No campaigns found.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {campaigns.map(camp => {
+            const logoImg = camp.images?.find(img => img.imageType === 'BRAND_LOGO')?.imageUrl || camp.business?.companyLogo;
+            const logoSrc = logoImg ? getMediaUrl(logoImg) : `https://ui-avatars.com/api/?name=${encodeURIComponent(camp.business?.companyName || 'B')}&background=random&color=fff`;
+            const platforms = camp.contentFormats?.map(cf => cf.contentFormat?.name) || [];
+            return (
+              <div key={camp.id} className="glass-panel" style={{ padding: '2rem', display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                <img src={logoSrc} alt={camp.business?.companyName} style={{ width: '100px', height: '100px', borderRadius: '12px', objectFit: 'cover' }} />
+
+                <div style={{ flex: 1 }}>
+                  <p style={{ color: 'var(--accent)', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }}>{camp.business?.companyName}</p>
                   <h3 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{camp.title}</h3>
+                  <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><DollarSign size={16} /> {formatBudget(camp)}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MapPin size={16} /> {camp.city && camp.country ? `${camp.city}, ${camp.country}` : 'Global / Online'}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Clock size={16} /> {formatDeadline(camp.applicationDeadline)}</div>
+                  </div>
+                  {platforms.length > 0 && (
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                      {platforms.map((platform, idx) => (
+                        <span key={idx} title={platform} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', background: 'rgba(59,130,246,0.2)', color: 'var(--accent)', borderRadius: '50%', cursor: 'pointer' }}>
+                          {getPlatformIcon(platform)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <Link to={`/dashboard/campaign/${camp.id}`} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>View Details</Link>
                 </div>
               </div>
-              
-              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><DollarSign size={16} /> {camp.budget}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MapPin size={16} /> Global / Online</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Clock size={16} /> {camp.deadline}</div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
-                {camp.platform.split(',').map((platform, index) => (
-                  <span 
-                    key={index} 
-                    title={platform.trim()} 
-                    style={{ 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                      width: '32px', height: '32px', 
-                      background: 'rgba(59, 130, 246, 0.2)', color: 'var(--accent)', 
-                      borderRadius: '50%', transition: 'all 0.2s ease', cursor: 'pointer' 
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.color = 'white'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)'; e.currentTarget.style.color = 'var(--accent)'; }}
-                  >
-                    {getPlatformIcon(platform)}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Link to={`/dashboard/campaign/${camp.id}`} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>View Details</Link>
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

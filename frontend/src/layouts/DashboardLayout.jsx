@@ -11,11 +11,13 @@ import {
   CreditCard,
   LayoutList
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './DashboardLayout.css';
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
-  const role = localStorage.getItem('role') || 'brand'; // Default to brand if not found
+  const { user, logout } = useAuth();
+  const role = user?.role === 'BUSINESS' ? 'brand' : 'creator';
   const [showNotifications, setShowNotifications] = useState(false);
   const notifRef = useRef(null);
 
@@ -35,8 +37,11 @@ const DashboardLayout = () => {
     { id: 3, title: 'New Message', message: 'You have a new message from TechNova.', time: '3h ago', link: '/dashboard/messages' }
   ];
 
-  const handleLogout = () => {
-    navigate('/login');
+  const handleLogout = async () => {
+    if (window.confirm('Are you sure you want to log out?')) {
+      await logout();
+      navigate('/');
+    }
   };
 
   return (
@@ -51,12 +56,12 @@ const DashboardLayout = () => {
             {role === 'brand' ? (
               <NavLink to="/dashboard/business" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <LayoutDashboard size={20} />
-                <span>Business Dash</span>
+                <span>Dashboard</span>
               </NavLink>
             ) : (
               <NavLink to="/dashboard/influencer" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <LayoutDashboard size={20} />
-                <span>Influencer Dash</span>
+                <span>Dashboard</span>
               </NavLink>
             )}
           </div>
@@ -88,7 +93,7 @@ const DashboardLayout = () => {
             </NavLink>
             <NavLink to="/dashboard/profile" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
               <User size={20} />
-              <span>{role === 'brand' ? 'Company Profile' : 'Profile'}</span>
+              <span>Profile</span>
             </NavLink>
             {role === 'brand' && (
               <>

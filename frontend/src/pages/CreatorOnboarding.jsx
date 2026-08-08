@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload, Plus, Trash2, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Music } from 'lucide-react';
 import { Country, State, City } from 'country-state-city';
 import SearchableDropdown from '../components/SearchableDropdown';
+import { fetchApi } from '../lib/api';
+import ImageCropper from '../components/ImageCropper';
 
 const CreatorOnboarding = () => {
   const navigate = useNavigate();
@@ -10,13 +12,19 @@ const CreatorOnboarding = () => {
   const [step, setStep] = useState(1);
   
   const [basicInfo, setBasicInfo] = useState({
-    displayName: location.state?.displayName || '',
+    displayName: location.state?.name || '',
     age: '',
     gender: '',
     country: '',
     state: '',
-    city: ''
+    city: '',
+    ethnicity: '',
+    previousBrands: ''
   });
+
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
 
   const [locationCodes, setLocationCodes] = useState({
     countryCode: '',
@@ -80,10 +88,42 @@ const CreatorOnboarding = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, send all state to backend here
-    navigate('/dashboard/influencer');
+    try {
+      let profilePhotoUrl = null;
+      if (photoFile) {
+        const formData = new FormData();
+        formData.append('file', photoFile);
+        const uploadRes = await fetchApi('/upload', { method: 'POST', body: formData });
+        profilePhotoUrl = uploadRes.url;
+      }
+
+      const payload = {
+        displayName: basicInfo.displayName,
+        profilePhoto: profilePhotoUrl,
+        age: basicInfo.age ? parseInt(basicInfo.age) : null,
+        gender: basicInfo.gender || null,
+        country: basicInfo.country,
+        state: basicInfo.state,
+        city: basicInfo.city,
+        ethnicity: basicInfo.ethnicity || null,
+        previousBrands: basicInfo.previousBrands || null,
+        socialAccounts: socials.filter(s => s.username.trim() !== ''),
+        contentNiches: content.niches,
+        contentFormats: content.formats,
+        heardAboutUs: referralSources.join(', ')
+      };
+      
+      await fetchApi('/influencer/me', {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
+      navigate('/dashboard/influencer');
+    } catch (err) {
+      console.error('Failed to save onboarding data:', err);
+      alert('Failed to save onboarding data. Please try again.');
+    }
   };
 
   const addSocial = () => {
@@ -152,16 +192,50 @@ const CreatorOnboarding = () => {
           {step === 4 && "Help us understand where our users are coming from."}
         </p>
 
+        {cropImageSrc && (
+          <ImageCropper 
+            imageSrc={cropImageSrc}
+            onCropComplete={(file, url) => {
+              setPhotoFile(file);
+              setPhotoPreview(url);
+              setCropImageSrc(null);
+            }}
+            onCancel={() => setCropImageSrc(null)}
+          />
+        )}
+
         <form onSubmit={step === 4 ? handleSubmit : handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* STEP 1: Basic Info */}
           {step === 1 && (
             <div className="animate-fade-in">
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-                <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-                  <Upload size={24} style={{ marginBottom: '0.5rem' }} />
-                  <span style={{ fontSize: '0.75rem' }}>Profile Photo</span>
-                </div>
+                <label style={{ 
+                  width: '120px', height: '120px', borderRadius: '50%', 
+                  background: photoPreview ? `url(${photoPreview}) center/cover no-repeat` : 'rgba(255,255,255,0.05)', 
+                  border: photoPreview ? 'none' : '2px dashed var(--glass-border)', 
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+                  cursor: 'pointer', color: 'var(--text-secondary)', position: 'relative', overflow: 'hidden'
+                }}>
+                  {!photoPreview && (
+                    <>
+                      <Upload size={24} style={{ marginBottom: '0.5rem' }} />
+                      <span style={{ fontSize: '0.75rem' }}>Profile Photo</span>
+                    </>
+                  )}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setCropImageSrc(URL.createObjectURL(file));
+                      }
+                      e.target.value = ''; // Reset
+                    }} 
+                    style={{ display: 'none' }} 
+                  />
+                </label>
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
@@ -247,6 +321,44 @@ const CreatorOnboarding = () => {
                   />
                 </div>
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem', marginTop: '1.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+                    Ethnicity (Optional)
+                  </label>
+                  <select 
+                    value={basicInfo.ethnicity} 
+                    onChange={(e) => setBasicInfo({...basicInfo, ethnicity: e.target.value})} 
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                  >
+                    <option value="" style={{ color: 'black' }}>Select Ethnicity...</option>
+                    <option value="Asian" style={{ color: 'black' }}>Asian</option>
+                    <option value="Black/African Descent" style={{ color: 'black' }}>Black/African Descent</option>
+                    <option value="Hispanic/Latino" style={{ color: 'black' }}>Hispanic/Latino</option>
+                    <option value="Middle Eastern" style={{ color: 'black' }}>Middle Eastern</option>
+                    <option value="Native American/Indigenous" style={{ color: 'black' }}>Native American/Indigenous</option>
+                    <option value="Pacific Islander" style={{ color: 'black' }}>Pacific Islander</option>
+                    <option value="White/Caucasian" style={{ color: 'black' }}>White/Caucasian</option>
+                    <option value="Mixed/Multiple Ethnicities" style={{ color: 'black' }}>Mixed/Multiple Ethnicities</option>
+                    <option value="Prefer not to say" style={{ color: 'black' }}>Prefer not to say</option>
+                    <option value="Other" style={{ color: 'black' }}>Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+                    Previous Brands Worked With (Optional)
+                  </label>
+                  <input 
+                    type="text" 
+                    value={basicInfo.previousBrands} 
+                    onChange={(e) => setBasicInfo({...basicInfo, previousBrands: e.target.value})} 
+                    placeholder="e.g. Nike, Sephora, Samsung" 
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                  />
+                </div>
+              </div>
+
             </div>
           )}
 

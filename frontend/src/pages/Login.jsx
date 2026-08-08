@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // For the prototype, we determine the role based on the email
-    // In a real app, the backend would return the user's role
-    const determinedRole = email.toLowerCase().includes('creator') || email.toLowerCase().includes('influencer') ? 'creator' : 'brand';
-    localStorage.setItem('role', determinedRole);
-    
-    if (determinedRole === 'brand') {
-      navigate('/dashboard/business');
-    } else {
-      navigate('/dashboard/influencer');
+    setError('');
+    setLoading(true);
+    try {
+      const user = await login(email, password);
+      if (user.role === 'BUSINESS') {
+        navigate('/dashboard/business');
+      } else {
+        navigate('/dashboard/influencer');
+      }
+    } catch (err) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -28,37 +36,38 @@ const Login = () => {
           Sign in to continue to Khorlo
         </p>
 
+        {error && (
+          <div style={{ padding: '0.75rem 1rem', marginBottom: '1.5rem', background: 'rgba(255,59,48,0.1)', color: '#ff3b30', borderRadius: '8px', fontSize: '0.875rem' }}>
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Email</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{
-                width: '100%', padding: '0.75rem 1rem', borderRadius: '8px',
-                background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                color: 'white', outline: 'none'
-              }}
+              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
             />
           </div>
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               placeholder="••••••••"
-              style={{
-                width: '100%', padding: '0.75rem 1rem', borderRadius: '8px',
-                background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                color: 'white', outline: 'none'
-              }}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-accent" style={{ width: '100%', marginTop: '1rem' }}>
-            Sign In
+          <button type="submit" disabled={loading} className="btn btn-primary btn-accent" style={{ width: '100%', marginTop: '1rem' }}>
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
