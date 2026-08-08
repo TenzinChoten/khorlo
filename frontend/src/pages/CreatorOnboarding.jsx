@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload, Plus, Trash2, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { Country, State, City } from 'country-state-city';
 
 const CreatorOnboarding = () => {
   const navigate = useNavigate();
@@ -15,6 +16,35 @@ const CreatorOnboarding = () => {
     state: '',
     city: ''
   });
+
+  const [locationCodes, setLocationCodes] = useState({
+    countryCode: '',
+    stateCode: ''
+  });
+
+  const [availableStates, setAvailableStates] = useState([]);
+  const [availableCities, setAvailableCities] = useState([]);
+
+  useEffect(() => {
+    if (locationCodes.countryCode) {
+      setAvailableStates(State.getStatesOfCountry(locationCodes.countryCode));
+    } else {
+      setAvailableStates([]);
+    }
+    // Reset state and city when country changes
+    setBasicInfo(prev => ({ ...prev, state: '', city: '' }));
+    setLocationCodes(prev => ({ ...prev, stateCode: '' }));
+  }, [locationCodes.countryCode]);
+
+  useEffect(() => {
+    if (locationCodes.countryCode && locationCodes.stateCode) {
+      setAvailableCities(City.getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode));
+    } else {
+      setAvailableCities([]);
+    }
+    // Reset city when state changes
+    setBasicInfo(prev => ({ ...prev, city: '' }));
+  }, [locationCodes.stateCode]);
 
   const [socials, setSocials] = useState([
     { id: 1, platform: 'INSTAGRAM', username: '', followers: '', engagementRate: '' }
@@ -161,15 +191,54 @@ const CreatorOnboarding = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
-                  <input type="text" value={basicInfo.country} onChange={(e) => setBasicInfo({...basicInfo, country: e.target.value})} placeholder="US" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} />
+                  <select 
+                    value={locationCodes.countryCode} 
+                    onChange={(e) => {
+                      const code = e.target.value;
+                      const name = e.target.options[e.target.selectedIndex].text;
+                      setLocationCodes(prev => ({ ...prev, countryCode: code }));
+                      setBasicInfo(prev => ({ ...prev, country: name }));
+                    }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                  >
+                    <option value="">Select Country...</option>
+                    {Country.getAllCountries().map(country => (
+                      <option key={country.isoCode} value={country.isoCode}>{country.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region</label>
-                  <input type="text" value={basicInfo.state} onChange={(e) => setBasicInfo({...basicInfo, state: e.target.value})} placeholder="NY" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} />
+                  <select 
+                    value={locationCodes.stateCode} 
+                    onChange={(e) => {
+                      const code = e.target.value;
+                      const name = e.target.options[e.target.selectedIndex].text;
+                      setLocationCodes(prev => ({ ...prev, stateCode: code }));
+                      setBasicInfo(prev => ({ ...prev, state: name }));
+                    }}
+                    disabled={!locationCodes.countryCode || availableStates.length === 0}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none', opacity: (!locationCodes.countryCode || availableStates.length === 0) ? 0.5 : 1 }}
+                  >
+                    <option value="">Select State...</option>
+                    {availableStates.map(state => (
+                      <option key={state.isoCode} value={state.isoCode}>{state.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
-                  <input type="text" value={basicInfo.city} onChange={(e) => setBasicInfo({...basicInfo, city: e.target.value})} placeholder="New York" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} />
+                  <select 
+                    value={basicInfo.city} 
+                    onChange={(e) => setBasicInfo({...basicInfo, city: e.target.value})}
+                    disabled={!locationCodes.stateCode || availableCities.length === 0}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none', opacity: (!locationCodes.stateCode || availableCities.length === 0) ? 0.5 : 1 }}
+                  >
+                    <option value="">Select City...</option>
+                    {availableCities.map(city => (
+                      <option key={city.name} value={city.name}>{city.name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>

@@ -1,11 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload } from 'lucide-react';
+import { Country, State, City } from 'country-state-city';
 
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [companyName, setCompanyName] = useState(location.state?.companyName || '');
+  const [country, setCountry] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+  
+  const [locationCodes, setLocationCodes] = useState({ countryCode: '', stateCode: '' });
+  const [availableStates, setAvailableStates] = useState([]);
+  const [availableCities, setAvailableCities] = useState([]);
+
+  useEffect(() => {
+    if (locationCodes.countryCode) {
+      setAvailableStates(State.getStatesOfCountry(locationCodes.countryCode));
+    } else {
+      setAvailableStates([]);
+    }
+    setState('');
+    setCity('');
+    setLocationCodes(prev => ({ ...prev, stateCode: '' }));
+  }, [locationCodes.countryCode]);
+
+  useEffect(() => {
+    if (locationCodes.countryCode && locationCodes.stateCode) {
+      setAvailableCities(City.getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode));
+    } else {
+      setAvailableCities([]);
+    }
+    setCity('');
+  }, [locationCodes.stateCode]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -74,15 +102,54 @@ const BusinessOnboarding = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
-              <input type="text" placeholder="US" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} />
+              <select 
+                value={locationCodes.countryCode} 
+                onChange={(e) => {
+                  const code = e.target.value;
+                  const name = e.target.options[e.target.selectedIndex].text;
+                  setLocationCodes(prev => ({ ...prev, countryCode: code }));
+                  setCountry(name);
+                }}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+              >
+                <option value="">Select Country...</option>
+                {Country.getAllCountries().map(c => (
+                  <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region</label>
-              <input type="text" placeholder="CA" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} />
+              <select 
+                value={locationCodes.stateCode} 
+                onChange={(e) => {
+                  const code = e.target.value;
+                  const name = e.target.options[e.target.selectedIndex].text;
+                  setLocationCodes(prev => ({ ...prev, stateCode: code }));
+                  setState(name);
+                }}
+                disabled={!locationCodes.countryCode || availableStates.length === 0}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none', opacity: (!locationCodes.countryCode || availableStates.length === 0) ? 0.5 : 1 }}
+              >
+                <option value="">Select State...</option>
+                {availableStates.map(s => (
+                  <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
-              <input type="text" placeholder="Los Angeles" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} />
+              <select 
+                value={city} 
+                onChange={(e) => setCity(e.target.value)}
+                disabled={!locationCodes.stateCode || availableCities.length === 0}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none', opacity: (!locationCodes.stateCode || availableCities.length === 0) ? 0.5 : 1 }}
+              >
+                <option value="">Select City...</option>
+                {availableCities.map(c => (
+                  <option key={c.name} value={c.name}>{c.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 
