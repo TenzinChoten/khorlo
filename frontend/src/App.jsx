@@ -20,6 +20,7 @@ import SearchInfluencers from './pages/SearchInfluencers'
 import SearchCampaigns from './pages/SearchCampaigns'
 import CampaignDetail from './pages/CampaignDetail'
 import Profile from './pages/Profile'
+import EditProfile from './pages/EditProfile'
 import Chat from './pages/Chat'
 import Notifications from './pages/Notifications'
 import BusinessOnboarding from './pages/BusinessOnboarding'
@@ -27,6 +28,7 @@ import CreatorOnboarding from './pages/CreatorOnboarding'
 import CheckoutSuccess from './pages/CheckoutSuccess'
 import Billing from './pages/Billing'
 import CreateCampaign from './pages/CreateCampaign'
+import PublishedCampaigns from './pages/PublishedCampaigns'
 
 // A wrapper for the landing page content
 const LandingPage = () => (
@@ -57,11 +59,13 @@ function App() {
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route path="business" element={<BusinessDashboard />} />
         <Route path="business/campaigns/new" element={<CreateCampaign />} />
+        <Route path="business/campaigns" element={<PublishedCampaigns />} />
         <Route path="influencer" element={<InfluencerDashboard />} />
         <Route path="search-influencers" element={<SearchInfluencers />} />
         <Route path="search-campaigns" element={<SearchCampaigns />} />
         <Route path="campaign/:id" element={<CampaignDetail />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
         <Route path="messages" element={<Chat />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="billing" element={<Billing />} />

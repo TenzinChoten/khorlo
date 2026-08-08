@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload, Plus, Trash2, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { Upload, Plus, Trash2, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Music } from 'lucide-react';
 import { Country, State, City } from 'country-state-city';
+import SearchableDropdown from '../components/SearchableDropdown';
 
 const CreatorOnboarding = () => {
   const navigate = useNavigate();
@@ -58,9 +59,21 @@ const CreatorOnboarding = () => {
   const availableNiches = ['Tech', 'Beauty', 'Fashion', 'Fitness', 'Gaming', 'Lifestyle', 'Travel', 'Food'];
   const availableFormats = ['Short-form Video', 'Long-form Video', 'Photography', 'Live Streams', 'Blog Posts'];
 
+  // Step 4 State
+  const [referralSources, setReferralSources] = useState([]);
+  const availableReferralSources = ['TikTok', 'Instagram', 'YouTube', 'X (Twitter)', 'LinkedIn', 'Google Search', 'Friend / Colleague', 'Podcast', 'Other'];
+
+  const toggleReferralSource = (source) => {
+    setReferralSources(prev => 
+      prev.includes(source) 
+        ? prev.filter(s => s !== source)
+        : [...prev, source]
+    );
+  };
+
   const handleNext = (e) => {
     e.preventDefault();
-    if (step < 3) setStep(step + 1);
+    if (step < 4) setStep(step + 1);
   };
 
   const handleBack = () => {
@@ -110,9 +123,9 @@ const CreatorOnboarding = () => {
         {/* Progress Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3rem', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0, transform: 'translateY(-50%)' }}>
-            <div style={{ width: `${((step - 1) / 2) * 100}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.3s ease' }}></div>
+            <div style={{ width: `${((step - 1) / 3) * 100}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.3s ease' }}></div>
           </div>
-          {[1, 2, 3].map(s => (
+          {[1, 2, 3, 4].map(s => (
             <div key={s} style={{ 
               width: '32px', height: '32px', borderRadius: '50%', 
               background: step >= s ? 'var(--accent)' : 'var(--background)',
@@ -130,14 +143,16 @@ const CreatorOnboarding = () => {
           {step === 1 && "Basic Information"}
           {step === 2 && "Social Presence"}
           {step === 3 && "Content Strategy"}
+          {step === 4 && "How did you hear about us?"}
         </h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
           {step === 1 && "Let brands know who you are."}
           {step === 2 && "Add your social accounts and statistics."}
           {step === 3 && "Tell us what you create and how you create it."}
+          {step === 4 && "Help us understand where our users are coming from."}
         </p>
 
-        <form onSubmit={step === 3 ? handleSubmit : handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={step === 4 ? handleSubmit : handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* STEP 1: Basic Info */}
           {step === 1 && (
@@ -191,54 +206,45 @@ const CreatorOnboarding = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
-                  <select 
-                    value={locationCodes.countryCode} 
-                    onChange={(e) => {
-                      const code = e.target.value;
-                      const name = e.target.options[e.target.selectedIndex].text;
-                      setLocationCodes(prev => ({ ...prev, countryCode: code }));
+                  <SearchableDropdown
+                    options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
+                    value={basicInfo.country}
+                    onChange={(opt) => {
+                      const name = opt ? (typeof opt === 'string' ? opt : opt.label) : '';
                       setBasicInfo(prev => ({ ...prev, country: name }));
+                      const countryObj = Country.getAllCountries().find(c => c.name === name);
+                      setLocationCodes(prev => ({ ...prev, countryCode: countryObj ? countryObj.isoCode : '' }));
                     }}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
-                  >
-                    <option value="">Select Country...</option>
-                    {Country.getAllCountries().map(country => (
-                      <option key={country.isoCode} value={country.isoCode}>{country.name}</option>
-                    ))}
-                  </select>
+                    placeholder="Select Country..."
+                  />
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region</label>
-                  <select 
-                    value={locationCodes.stateCode} 
-                    onChange={(e) => {
-                      const code = e.target.value;
-                      const name = e.target.options[e.target.selectedIndex].text;
-                      setLocationCodes(prev => ({ ...prev, stateCode: code }));
+                  <SearchableDropdown
+                    options={availableStates.map(s => ({ value: s.isoCode, label: s.name }))}
+                    value={basicInfo.state}
+                    onChange={(opt) => {
+                      const name = opt ? (typeof opt === 'string' ? opt : opt.label) : '';
                       setBasicInfo(prev => ({ ...prev, state: name }));
+                      const stateObj = availableStates.find(s => s.name === name);
+                      setLocationCodes(prev => ({ ...prev, stateCode: stateObj ? stateObj.isoCode : '' }));
                     }}
+                    placeholder="Select State..."
                     disabled={!locationCodes.countryCode || availableStates.length === 0}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none', opacity: (!locationCodes.countryCode || availableStates.length === 0) ? 0.5 : 1 }}
-                  >
-                    <option value="">Select State...</option>
-                    {availableStates.map(state => (
-                      <option key={state.isoCode} value={state.isoCode}>{state.name}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
-                  <select 
-                    value={basicInfo.city} 
-                    onChange={(e) => setBasicInfo({...basicInfo, city: e.target.value})}
+                  <SearchableDropdown
+                    options={availableCities.map(c => ({ value: c.name, label: c.name }))}
+                    value={basicInfo.city}
+                    onChange={(opt) => {
+                      const name = opt ? (typeof opt === 'string' ? opt : opt.label) : '';
+                      setBasicInfo(prev => ({ ...prev, city: name }));
+                    }}
+                    placeholder="Select City..."
                     disabled={!locationCodes.stateCode || availableCities.length === 0}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none', opacity: (!locationCodes.stateCode || availableCities.length === 0) ? 0.5 : 1 }}
-                  >
-                    <option value="">Select City...</option>
-                    {availableCities.map(city => (
-                      <option key={city.name} value={city.name}>{city.name}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
               </div>
             </div>
@@ -271,14 +277,21 @@ const CreatorOnboarding = () => {
                     </div>
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Username / Handle</label>
-                      <input 
-                        type="text" 
-                        value={social.username}
-                        onChange={(e) => updateSocial(social.id, 'username', e.target.value)}
-                        placeholder="@username" 
-                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
-                        required 
-                      />
+                      <div style={{ position: 'relative' }}>
+                        {social.platform === 'INSTAGRAM' && <Camera size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
+                        {social.platform === 'TIKTOK' && <Music size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
+                        {social.platform === 'YOUTUBE' && <PlayCircle size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
+                        {social.platform === 'X' && <AtSign size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
+                        
+                        <input 
+                          type="text" 
+                          value={social.username}
+                          onChange={(e) => updateSocial(social.id, 'username', e.target.value)}
+                          placeholder="@username" 
+                          style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                          required 
+                        />
+                      </div>
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -367,6 +380,35 @@ const CreatorOnboarding = () => {
             </div>
           )}
 
+          {/* STEP 4: Referral */}
+          {step === 4 && (
+            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Where did you hear about Khorlo? (Select all that apply)</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  {availableReferralSources.map(source => (
+                    <div 
+                      key={source}
+                      onClick={() => toggleReferralSource(source)}
+                      style={{ 
+                        padding: '0.5rem 1rem', 
+                        borderRadius: '999px', 
+                        cursor: 'pointer',
+                        background: referralSources.includes(source) ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
+                        border: `1px solid ${referralSources.includes(source) ? 'var(--accent)' : 'var(--glass-border)'}`,
+                        color: 'white',
+                        fontSize: '0.875rem',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {source}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
             {step > 1 && (
               <button type="button" onClick={handleBack} className="btn btn-outline" style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -375,7 +417,7 @@ const CreatorOnboarding = () => {
             )}
             
             <button type="submit" className="btn btn-primary btn-accent" style={{ flex: 1, padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-              {step < 3 ? (
+              {step < 4 ? (
                 <>Next <ChevronRight size={18} /></>
               ) : (
                 "Complete Setup"
