@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, DollarSign, Target, MapPin, Share2 } from 'lucide-react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [campaign, setCampaign] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,19 +24,18 @@ const CampaignDetail = () => {
 
   const logoImg = campaign.images?.find(img => img.imageType === 'BRAND_LOGO')?.imageUrl || campaign.business?.companyLogo;
   const logoSrc = logoImg ? getMediaUrl(logoImg) : `https://ui-avatars.com/api/?name=${encodeURIComponent(campaign.business?.companyName || 'Brand')}&background=random&color=fff`;
-  
+
   const bannerImg = campaign.images?.find(img => img.imageType === 'OTHER' || img.imageType === 'PRODUCT')?.imageUrl;
   const bannerSrc = bannerImg ? getMediaUrl(bannerImg) : null;
-  
+
   const formatBudget = (camp) => {
     if (!camp.budget) return camp.compensationType === 'FREE_PRODUCT' ? 'Free Product' : 'Unpaid';
     return `${camp.currency || 'USD'} ${camp.budget.toLocaleString()}`;
   };
 
-
   return (
     <div className="animate-fade-in">
-      <button onClick={() => navigate(-1)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '2rem', textDecoration: 'none', fontSize: '0.875rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+      <button onClick={() => navigate(-1)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.875rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
         <ArrowLeft size={16} /> Back
       </button>
 
@@ -45,12 +46,20 @@ const CampaignDetail = () => {
               <img src={bannerSrc} alt="Campaign Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
           )}
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
             <img src={logoSrc} alt={campaign.business?.companyName} style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }} />
             <div>
               <p style={{ color: 'var(--accent)', fontWeight: 500, marginBottom: '0.25rem' }}>{campaign.business?.companyName}</p>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 700 }}>{campaign.title}</h1>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{campaign.title}</h1>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.875rem' }}>
+                <span style={{ padding: '4px 12px', borderRadius: '20px', background: campaign.status === 'OPEN' ? 'rgba(52, 199, 89, 0.1)' : 'rgba(255, 255, 255, 0.1)', color: campaign.status === 'OPEN' ? '#34c759' : 'var(--text-secondary)' }}>
+                  {campaign.status || 'DRAFT'}
+                </span>
+                {campaign.productName && (
+                  <span style={{ color: 'var(--text-secondary)' }}>Product: <strong style={{ color: 'white' }}>{campaign.productName}</strong></span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -59,8 +68,6 @@ const CampaignDetail = () => {
             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '2rem', whiteSpace: 'pre-wrap' }}>
               {campaign.description}
             </p>
-
-            
             <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Requirements</h3>
             <ul style={{ color: 'var(--text-secondary)', paddingLeft: '1.5rem', lineHeight: 1.8 }}>
               {campaign.contentFormats?.map((f, i) => (
@@ -74,7 +81,7 @@ const CampaignDetail = () => {
 
           {campaign.images?.filter(img => img.imageType === 'MOOD_BOARD' || img.imageType === 'REFERENCE').length > 0 && (
             <div className="glass-panel" style={{ padding: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Mood Board & References</h2>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Mood Board &amp; References</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
                 {campaign.images.filter(img => img.imageType === 'MOOD_BOARD' || img.imageType === 'REFERENCE').map(img => (
                   <img key={img.id} src={getMediaUrl(img.imageUrl)} alt="Mood board" style={{ width: '100%', aspectRatio: '1', borderRadius: '8px', objectFit: 'cover' }} />
@@ -82,12 +89,13 @@ const CampaignDetail = () => {
               </div>
             </div>
           )}
-
         </div>
 
         <div>
           <div className="glass-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
-            <button className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
+            {user?.role !== 'BUSINESS' && (
+              <button className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
+            )}
             <button className="btn btn-outline" style={{ width: '100%', display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
               <Share2 size={18} /> Share Campaign
             </button>
@@ -100,6 +108,7 @@ const CampaignDetail = () => {
                   <div style={{ fontWeight: 600 }}>{formatBudget(campaign)}</div>
                 </div>
               </div>
+
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div style={{ color: 'var(--accent)' }}><Target size={20} /></div>
                 <div>
@@ -107,13 +116,22 @@ const CampaignDetail = () => {
                   <div style={{ fontWeight: 600 }}>{campaign.contentNiches?.map(n => n.contentNiche?.name).join(', ') || 'Any'}</div>
                 </div>
               </div>
+
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div style={{ color: 'var(--accent)' }}><MapPin size={20} /></div>
                 <div>
                   <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Location</div>
-                  <div style={{ fontWeight: 600 }}>{campaign.locationType === 'ONLINE' ? 'Online (Remote)' : `${campaign.city || ''}, ${campaign.country || ''}`.trim().replace(/^,|,$/g, '') || 'Global'}</div>
+                  <div style={{ fontWeight: 600 }}>
+                    {campaign.locationType === 'ONLINE' ? 'Online (Remote)' : (
+                      <>
+                        {[campaign.city, campaign.state, campaign.country].filter(Boolean).join(', ') || 'Global'}
+                        {campaign.address && <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{campaign.address}</div>}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
+
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div style={{ color: 'var(--accent)' }}><Calendar size={20} /></div>
                 <div>
@@ -121,6 +139,26 @@ const CampaignDetail = () => {
                   <div style={{ fontWeight: 600 }}>{campaign.applicationDeadline ? new Date(campaign.applicationDeadline).toLocaleDateString() : 'Open ended'}</div>
                 </div>
               </div>
+
+              {campaign.contentDeadline && (
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ color: 'var(--accent)' }}><Calendar size={20} /></div>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Content Deadline</div>
+                    <div style={{ fontWeight: 600 }}>{new Date(campaign.contentDeadline).toLocaleDateString()}</div>
+                  </div>
+                </div>
+              )}
+
+              {campaign.creatorSlots && (
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ color: 'var(--accent)' }}><Target size={20} /></div>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Creator Slots</div>
+                    <div style={{ fontWeight: 600 }}>{campaign.creatorSlots} available</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
