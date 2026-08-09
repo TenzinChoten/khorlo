@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon } from 'lucide-react';
+import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X } from 'lucide-react';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import ImageCropper from '../components/ImageCropper';
 import { Country, State, City } from 'country-state-city';
@@ -16,6 +16,8 @@ const CreateCampaign = () => {
   const [isUploading, setIsUploading] = useState(false);
   const bannerInputRef = useRef(null);
   const logoInputRef = useRef(null);
+  const intervalRef = useRef(null);
+  const timeoutRef = useRef(null);
   const [cropperData, setCropperData] = useState({ imageSrc: null, type: null, aspect: 1, cropShape: 'rect', filename: 'image.jpg' });
   const [locationCodes, setLocationCodes] = useState({ countryCode: '', stateCode: '' });
   
@@ -170,9 +172,52 @@ const CreateCampaign = () => {
     }));
   };
 
+  const startChangingQuantity = (e, format, delta) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCampaign(prev => ({
+      ...prev,
+      formatQuantities: { ...prev.formatQuantities, [format]: Math.max(1, (prev.formatQuantities[format] || 1) + delta) }
+    }));
+    
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    
+    timeoutRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(() => {
+        setCampaign(prev => ({
+          ...prev,
+          formatQuantities: { ...prev.formatQuantities, [format]: Math.max(1, (prev.formatQuantities[format] || 1) + delta) }
+        }));
+      }, 150);
+    }, 400);
+  };
+
+  const stopChangingQuantity = (e) => {
+    if (e) e.stopPropagation();
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem', minHeight: 'calc(100vh - 80px)' }}>
+    <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', padding: '2rem', minHeight: 'calc(100vh - 80px)' }}>
+      <button 
+        type="button"
+        onClick={() => navigate('/dashboard/business')}
+        style={{ position: 'absolute', top: '1rem', right: '2rem', background: 'var(--glass-border)', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', zIndex: 10 }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'white'; e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--glass-border)'; }}
+        title="Close"
+      >
+        <X size={24} />
+      </button>
       {cropperData.imageSrc && (
         <ImageCropper
           imageSrc={cropperData.imageSrc}
@@ -317,7 +362,16 @@ const CreateCampaign = () => {
                   <input 
                     type="date" 
                     value={campaign.deadline}
-                    onChange={(e) => setCampaign({...campaign, deadline: e.target.value})}
+                    onChange={(e) => {
+                      const newDeadline = e.target.value;
+                      setCampaign(prev => {
+                        let newContentDeadline = prev.contentDeadline;
+                        if (newContentDeadline && newDeadline > newContentDeadline) {
+                          newContentDeadline = '';
+                        }
+                        return { ...prev, deadline: newDeadline, contentDeadline: newContentDeadline };
+                      });
+                    }}
                     style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
                   />
                 </div>
@@ -325,6 +379,7 @@ const CreateCampaign = () => {
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Content Deadline</label>
                   <input 
                     type="date" 
+                    min={campaign.deadline}
                     value={campaign.contentDeadline}
                     onChange={(e) => setCampaign({...campaign, contentDeadline: e.target.value})}
                     style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
@@ -482,24 +537,37 @@ const CreateCampaign = () => {
                 <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Formats</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableFormats.map(format => (
-                    <div key={format} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '999px', background: campaign.formats.includes(format) ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${campaign.formats.includes(format) ? 'var(--accent)' : 'var(--glass-border)'}`, transition: 'all 0.2s ease' }}>
+                    <div key={format} onClick={() => !campaign.formats.includes(format) && toggleFormat(format)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '999px', background: campaign.formats.includes(format) ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${campaign.formats.includes(format) ? 'var(--accent)' : 'var(--glass-border)'}`, transition: 'all 0.2s ease', cursor: campaign.formats.includes(format) ? 'default' : 'pointer' }}>
                       <div 
-                        onClick={() => toggleFormat(format)}
-                        style={{ cursor: 'pointer', color: campaign.formats.includes(format) ? 'var(--accent)' : 'white', fontSize: '0.875rem' }}
+                        onClick={(e) => { if (campaign.formats.includes(format)) { e.stopPropagation(); toggleFormat(format); } }}
+                        style={{ cursor: 'pointer', color: campaign.formats.includes(format) ? 'var(--accent)' : 'white', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                       >
-                        {format}
+                        {campaign.formats.includes(format) && <Check size={14} />} {format}
                       </div>
+                      
                       {campaign.formats.includes(format) && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', paddingLeft: '0.5rem', borderLeft: `1px solid ${campaign.formats.includes(format) ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.1)'}` }}>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 500 }}>Qty:</span>
-                          <input 
-                            type="number" 
-                            min="1"
-                            value={campaign.formatQuantities[format] === '' ? '' : (campaign.formatQuantities[format] || 1)}
-                            onChange={(e) => updateFormatQuantity(format, e.target.value)}
-                            style={{ width: '45px', padding: '0.2rem', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--accent)', color: 'white', textAlign: 'center', outline: 'none', fontSize: '0.875rem' }}
-                            title="Quantity required"
-                          />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem', marginLeft: '0.25rem', borderLeft: '1px solid rgba(59,130,246,0.3)' }}>
+                          <button 
+                            type="button"
+                            onMouseDown={(e) => startChangingQuantity(e, format, -1)}
+                            onMouseUp={stopChangingQuantity}
+                            onMouseLeave={stopChangingQuantity}
+                            onTouchStart={(e) => startChangingQuantity(e, format, -1)}
+                            onTouchEnd={stopChangingQuantity}
+                            style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+                          >-</button>
+                          <span style={{ color: 'white', fontSize: '0.875rem', fontWeight: 600, minWidth: '1.2rem', textAlign: 'center' }}>
+                            {campaign.formatQuantities[format] || 1}
+                          </span>
+                          <button 
+                            type="button"
+                            onMouseDown={(e) => startChangingQuantity(e, format, 1)}
+                            onMouseUp={stopChangingQuantity}
+                            onMouseLeave={stopChangingQuantity}
+                            onTouchStart={(e) => startChangingQuantity(e, format, 1)}
+                            onTouchEnd={stopChangingQuantity}
+                            style={{ background: 'rgba(59,130,246,0.2)', border: 'none', color: 'var(--accent)', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+                          >+</button>
                         </div>
                       )}
                     </div>

@@ -1,0 +1,15 @@
+meta {
+  name: Mark Read
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/notifications/:id/read
+  body: none
+  auth: none
+}
+
+params:path {
+  id: REPLACE_WITH_NOTIFICATION_ID
+}

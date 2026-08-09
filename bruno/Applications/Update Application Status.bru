@@ -1,0 +1,21 @@
+meta {
+  name: Update Application Status
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/api/applications/:id/status
+  body: json
+  auth: none
+}
+
+params:path {
+  id: REPLACE_WITH_APPLICATION_ID
+}
+
+body:json {
+  {
+    "status": "ACCEPTED"
+  }
+}

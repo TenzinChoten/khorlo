@@ -1,0 +1,20 @@
+meta {
+  name: Create Review
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/reviews
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "campaignId": "REPLACE_WITH_CAMPAIGN_ID",
+    "revieweeId": "REPLACE_WITH_REVIEWEE_ID",
+    "rating": 5,
+    "review": "Excellent collaboration! highly recommended."
+  }
+}

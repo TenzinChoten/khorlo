@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload, Plus, Trash2, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Music } from 'lucide-react';
+import { Upload, Plus, Trash2, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Music, ExternalLink } from 'lucide-react';
 import { Country, State, City } from 'country-state-city';
 import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
@@ -66,6 +66,7 @@ const CreatorOnboarding = () => {
 
   // Step 4 State
   const [referralSources, setReferralSources] = useState(savedState.referralSources || []);
+  const [showErrors, setShowErrors] = useState(false);
 
   useEffect(() => {
     const stateToSave = {
@@ -86,7 +87,25 @@ const CreatorOnboarding = () => {
 
   const handleNext = (e) => {
     e.preventDefault();
-    if (step < 4) setStep(step + 1);
+    if (step === 1) {
+      const isStateRequired = availableStates.length > 0;
+      const isCityRequired = availableCities.length > 0;
+      if (!basicInfo.displayName || !basicInfo.age || !basicInfo.gender || !basicInfo.country || 
+          (isStateRequired && !basicInfo.state) || 
+          (isCityRequired && !basicInfo.city)) {
+        setShowErrors(true);
+        return;
+      }
+    } else if (step === 2) {
+      const hasInvalidSocial = socials.some(s => !s.platform || !s.username || !s.followers);
+      if (hasInvalidSocial) {
+        setShowErrors(true);
+        return;
+      }
+    }
+    setShowErrors(false);
+    setStep(step + 1);
+    window.scrollTo(0, 0);
   };
 
   const handleBack = () => {
@@ -245,7 +264,7 @@ const CreatorOnboarding = () => {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Display Name</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Display Name <span style={{ color: showErrors && !basicInfo.displayName ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <input 
                   type="text" 
                   value={basicInfo.displayName}
@@ -258,7 +277,7 @@ const CreatorOnboarding = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Age</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Age <span style={{ color: showErrors && !basicInfo.age ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="number" 
                     value={basicInfo.age}
@@ -268,7 +287,7 @@ const CreatorOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Gender</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Gender <span style={{ color: showErrors && !basicInfo.gender ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <select 
                     value={basicInfo.gender}
                     onChange={(e) => setBasicInfo({...basicInfo, gender: e.target.value})}
@@ -285,7 +304,7 @@ const CreatorOnboarding = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country <span style={{ color: showErrors && !basicInfo.country ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <SearchableDropdown
                     options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
                     value={basicInfo.country}
@@ -299,7 +318,7 @@ const CreatorOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region {availableStates.length > 0 && <span style={{ color: showErrors && !basicInfo.state ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
                   <SearchableDropdown
                     options={availableStates.map(s => ({ value: s.isoCode, label: s.name }))}
                     value={basicInfo.state}
@@ -314,7 +333,7 @@ const CreatorOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City {availableCities.length > 0 && <span style={{ color: showErrors && !basicInfo.city ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
                   <SearchableDropdown
                     options={availableCities.map(c => ({ value: c.name, label: c.name }))}
                     value={basicInfo.city}
@@ -381,7 +400,7 @@ const CreatorOnboarding = () => {
                   
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Platform</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Platform <span style={{ color: showErrors && !social.platform ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <select 
                         value={social.platform}
                         onChange={(e) => updateSocial(social.id, 'platform', e.target.value)}
@@ -394,7 +413,7 @@ const CreatorOnboarding = () => {
                       </select>
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Username / Handle</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Username / Handle <span style={{ color: showErrors && !social.username ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <div style={{ position: 'relative' }}>
                         {social.platform === 'INSTAGRAM' && <Camera size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
                         {social.platform === 'TIKTOK' && <Music size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
@@ -406,15 +425,32 @@ const CreatorOnboarding = () => {
                           value={social.username}
                           onChange={(e) => updateSocial(social.id, 'username', e.target.value)}
                           placeholder="@username" 
-                          style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                          style={{ width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
                           required 
                         />
+                        {social.username && (
+                          <a 
+                            href={
+                              social.platform === 'INSTAGRAM' ? `https://instagram.com/${social.username.replace('@', '')}` :
+                              social.platform === 'TIKTOK' ? `https://tiktok.com/@${social.username.replace('@', '')}` :
+                              social.platform === 'YOUTUBE' ? `https://youtube.com/@${social.username.replace('@', '')}` :
+                              social.platform === 'X' ? `https://x.com/${social.username.replace('@', '')}` : '#'
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                          >
+                            <ExternalLink size={16} />
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Followers</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Followers <span style={{ color: showErrors && !social.followers ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <input 
                         type="number" 
                         value={social.followers}

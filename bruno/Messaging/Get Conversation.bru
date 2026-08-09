@@ -1,0 +1,15 @@
+meta {
+  name: Get Conversation
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/conversations/:conversationId
+  body: none
+  auth: none
+}
+
+params:path {
+  conversationId: REPLACE_WITH_CONVERSATION_ID
+}

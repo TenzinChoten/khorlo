@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, DollarSign, Target, MapPin, Share2 } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
 
 const CampaignDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [campaign, setCampaign] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,9 +34,9 @@ const CampaignDetail = () => {
 
   return (
     <div className="animate-fade-in">
-      <Link to="/dashboard/search-campaigns" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '2rem', textDecoration: 'none', fontSize: '0.875rem' }}>
-        <ArrowLeft size={16} /> Back to Campaigns
-      </Link>
+      <button onClick={() => navigate(-1)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '2rem', textDecoration: 'none', fontSize: '0.875rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+        <ArrowLeft size={16} /> Back
+      </button>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
         <div>
@@ -63,7 +64,7 @@ const CampaignDetail = () => {
             <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Requirements</h3>
             <ul style={{ color: 'var(--text-secondary)', paddingLeft: '1.5rem', lineHeight: 1.8 }}>
               {campaign.contentFormats?.map((f, i) => (
-                <li key={i}>{f.contentFormat?.name}</li>
+                <li key={i}>{f.quantity || 1}x {f.contentFormat?.name}</li>
               ))}
               {campaign.contentFormats?.length === 0 && (
                 <li>No specific format requirements</li>
