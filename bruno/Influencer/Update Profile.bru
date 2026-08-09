@@ -1,0 +1,25 @@
+meta {
+  name: Update Profile
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/api/influencer/me
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "displayName": "Tenzin Choten (Updated)",
+    "bio": "Updated bio text here.",
+    "socialAccounts": [
+      {
+        "platform": "INSTAGRAM",
+        "username": "tenzin_updated",
+        "followers": 60000
+      }
+    ]
+  }
+}
