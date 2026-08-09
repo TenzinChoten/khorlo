@@ -9,7 +9,9 @@ import {
   LogOut,
   Target,
   CreditCard,
-  LayoutList
+  LayoutList,
+  Menu,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './DashboardLayout.css';
@@ -19,6 +21,7 @@ const DashboardLayout = () => {
   const { user, logout } = useAuth();
   const role = user?.role === 'BUSINESS' ? 'brand' : 'creator';
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const notifRef = useRef(null);
 
   useEffect(() => {
@@ -44,10 +47,25 @@ const DashboardLayout = () => {
     }
   };
 
+  const handleNotificationClick = () => {
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      navigate('/dashboard/notifications');
+      setShowNotifications(false);
+    } else {
+      setShowNotifications(!showNotifications);
+    }
+  };
+
   return (
     <div className="dashboard-layout">
+      {/* Mobile Overlay */}
+      <div 
+        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
       {/* Sidebar */}
-      <aside className="sidebar glass-panel">
+      <aside className={`sidebar glass-panel ${isSidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start' }}>
           <img src="/logo.png" alt="Khorlo Logo" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
           <span className="gradient-text">Khorlo</span>
@@ -55,57 +73,40 @@ const DashboardLayout = () => {
         
         <nav className="sidebar-nav">
           <div className="nav-group">
-            <span className="nav-group-title">Main</span>
-            {role === 'brand' ? (
-              <NavLink to="/dashboard/business" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                <LayoutDashboard size={20} />
-                <span>Dashboard</span>
-              </NavLink>
-            ) : (
-              <NavLink to="/dashboard/influencer" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                <LayoutDashboard size={20} />
-                <span>Dashboard</span>
-              </NavLink>
-            )}
+            <div className="nav-group-title">Main</div>
+            <NavLink to={role === 'brand' ? "/dashboard/business" : "/dashboard/influencer"} className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"} onClick={() => setIsSidebarOpen(false)}>
+              <LayoutDashboard size={20} />
+              <span>Dashboard</span>
+            </NavLink>
           </div>
 
           <div className="nav-group">
-            <span className="nav-group-title">Discover</span>
-            {role === 'brand' ? (
-              <NavLink to="/dashboard/search-influencers" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                <Search size={20} />
-                <span>Influencers</span>
-              </NavLink>
-            ) : (
-              <NavLink to="/dashboard/search-campaigns" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                <Target size={20} />
-                <span>Campaigns</span>
-              </NavLink>
-            )}
+            <div className="nav-group-title">Discover</div>
+            <NavLink to={role === 'brand' ? "/dashboard/search-influencers" : "/dashboard/search-campaigns"} className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"} onClick={() => setIsSidebarOpen(false)}>
+              <Search size={20} />
+              <span>{role === 'brand' ? 'Influencers' : 'Campaigns'}</span>
+            </NavLink>
           </div>
 
           <div className="nav-group">
-            <span className="nav-group-title">Personal</span>
-            <NavLink to="/dashboard/messages" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
+            <div className="nav-group-title">Personal</div>
+            <NavLink to="/dashboard/messages" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"} onClick={() => setIsSidebarOpen(false)}>
               <MessageSquare size={20} />
               <span>Messages</span>
             </NavLink>
-            <NavLink to="/dashboard/notifications" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
+            <NavLink to="/dashboard/notifications" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"} onClick={() => setIsSidebarOpen(false)}>
               <Bell size={20} />
               <span>Notifications</span>
             </NavLink>
-            <NavLink to="/dashboard/profile" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
+            <NavLink to="/dashboard/profile" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"} onClick={() => setIsSidebarOpen(false)}>
               <User size={20} />
               <span>Profile</span>
             </NavLink>
             {role === 'brand' && (
-              <>
-
-                <NavLink to="/dashboard/billing" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                  <CreditCard size={20} />
-                  <span>Billing</span>
-                </NavLink>
-              </>
+              <NavLink to="/dashboard/billing" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"} onClick={() => setIsSidebarOpen(false)}>
+                <CreditCard size={20} />
+                <span>Billing</span>
+              </NavLink>
             )}
           </div>
         </nav>
@@ -120,16 +121,25 @@ const DashboardLayout = () => {
 
       {/* Main Content Area */}
       <main className="dashboard-main">
-        {/* TOP NAV BAR */}
-        <div className="top-nav">
-          <div className="top-nav-actions" ref={notifRef}>
-            <button className="notification-btn" onClick={() => setShowNotifications(!showNotifications)}>
+        {/* Top Navigation */}
+        <header className="top-nav glass-panel" style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderRadius: 0, justifyContent: 'space-between' }}>
+          
+          <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
+            <Menu size={24} />
+          </button>
+          
+          <div className="top-nav-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }} ref={notifRef}>
+            <Link to="/dashboard/faq" className="faq-btn">
+              <MessageSquare size={16} strokeWidth={2.5} />
+              FAQs
+            </Link>
+            <button className="notification-btn" onClick={handleNotificationClick}>
               <Bell size={20} />
               <span className="notification-badge">3</span>
             </button>
             
             {showNotifications && (
-              <div className="notification-dropdown glass-panel">
+              <div className="notification-dropdown">
                 <div className="dropdown-header">
                   <h3>Notifications</h3>
                   <Link to="/dashboard/notifications" className="view-all" onClick={() => setShowNotifications(false)}>View All</Link>
@@ -146,7 +156,7 @@ const DashboardLayout = () => {
               </div>
             )}
           </div>
-        </div>
+        </header>
 
         <div className="dashboard-content">
           <div className="dashboard-content-inner">

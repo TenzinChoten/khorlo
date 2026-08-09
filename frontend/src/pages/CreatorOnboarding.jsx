@@ -4,12 +4,15 @@ import { Upload, Plus, Trash2, ChevronRight, ChevronLeft, Check, Camera, PlayCir
 import { Country, State, City } from 'country-state-city';
 import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import ImageCropper from '../components/ImageCropper';
 
 const CreatorOnboarding = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const savedState = JSON.parse(localStorage.getItem('creatorOnboardingState') || '{}');
+  const { user } = useAuth();
+  const storageKey = `creatorOnboardingState_${user?.id || 'guest'}`;
+  const [savedState] = useState(() => JSON.parse(localStorage.getItem(storageKey) || '{}'));
 
   const [step, setStep] = useState(savedState.step || 1);
   
@@ -72,8 +75,8 @@ const CreatorOnboarding = () => {
     const stateToSave = {
       step, basicInfo, photoPreview, locationCodes, socials, content, referralSources
     };
-    localStorage.setItem('creatorOnboardingState', JSON.stringify(stateToSave));
-  }, [step, basicInfo, photoPreview, locationCodes, socials, content, referralSources]);
+    localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+  }, [step, basicInfo, photoPreview, locationCodes, socials, content, referralSources, storageKey]);
   
   const availableReferralSources = ['TikTok', 'Instagram', 'YouTube', 'X (Twitter)', 'LinkedIn', 'Google Search', 'Friend / Colleague', 'Podcast', 'Other'];
 
@@ -97,8 +100,13 @@ const CreatorOnboarding = () => {
         return;
       }
     } else if (step === 2) {
-      const hasInvalidSocial = socials.some(s => !s.platform || !s.username || !s.followers);
-      if (hasInvalidSocial) {
+      const hasInvalidSocial = socials.some(s => !s.platform || !s.username || !s.followers || s.engagementRate === '' || s.engagementRate === undefined);
+      if (hasInvalidSocial || socials.length === 0) {
+        setShowErrors(true);
+        return;
+      }
+    } else if (step === 3) {
+      if (content.niches.length === 0 || content.formats.length === 0) {
         setShowErrors(true);
         return;
       }
@@ -114,6 +122,10 @@ const CreatorOnboarding = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (referralSources.length === 0) {
+      setShowErrors(true);
+      return;
+    }
     try {
       let profilePhotoUrl = null;
       if (photoFile) {
@@ -143,7 +155,7 @@ const CreatorOnboarding = () => {
         method: 'PATCH',
         body: JSON.stringify(payload)
       });
-      localStorage.removeItem('creatorOnboardingState');
+      localStorage.removeItem(storageKey);
       navigate('/dashboard/influencer');
     } catch (err) {
       console.error('Failed to save onboarding data:', err);
@@ -281,6 +293,7 @@ const CreatorOnboarding = () => {
                   <input 
                     type="number" 
                     value={basicInfo.age}
+                    required
                     onChange={(e) => setBasicInfo({...basicInfo, age: e.target.value})}
                     placeholder="25" 
                     style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
@@ -290,6 +303,7 @@ const CreatorOnboarding = () => {
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Gender <span style={{ color: showErrors && !basicInfo.gender ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <select 
                     value={basicInfo.gender}
+                    required
                     onChange={(e) => setBasicInfo({...basicInfo, gender: e.target.value})}
                     style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
                   >
@@ -403,6 +417,7 @@ const CreatorOnboarding = () => {
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Platform <span style={{ color: showErrors && !social.platform ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <select 
                         value={social.platform}
+                        required
                         onChange={(e) => updateSocial(social.id, 'platform', e.target.value)}
                         style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
                       >
@@ -461,11 +476,12 @@ const CreatorOnboarding = () => {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement Rate (%)</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement Rate (%) <span style={{ color: showErrors && !social.engagementRate ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <input 
                         type="number" 
                         step="0.01"
                         value={social.engagementRate}
+                        required
                         onChange={(e) => updateSocial(social.id, 'engagementRate', e.target.value)}
                         placeholder="5.2" 
                         style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
@@ -485,7 +501,7 @@ const CreatorOnboarding = () => {
           {step === 3 && (
             <div className="animate-fade-in">
               <div style={{ marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Niches</h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Niches <span style={{ color: showErrors && content.niches.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableNiches.map(niche => (
                     <div 
@@ -509,7 +525,7 @@ const CreatorOnboarding = () => {
               </div>
 
               <div>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Formats</h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Formats <span style={{ color: showErrors && content.formats.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableFormats.map(format => (
                     <div 

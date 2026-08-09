@@ -26,6 +26,7 @@ import EditProfile from './pages/EditProfile'
 import ChangePassword from './pages/ChangePassword'
 import Chat from './pages/Chat'
 import Notifications from './pages/Notifications'
+import FAQ from './pages/FAQ'
 import BusinessOnboarding from './pages/BusinessOnboarding'
 import CreatorOnboarding from './pages/CreatorOnboarding'
 import CheckoutSuccess from './pages/CheckoutSuccess'
@@ -74,6 +75,7 @@ function App() {
         <Route path="profile/change-password" element={<ChangePassword />} />
         <Route path="messages" element={<Chat />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="faq" element={<FAQ />} />
         <Route path="billing" element={<Billing />} />
       </Route>
     </Routes>

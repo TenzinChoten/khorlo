@@ -25,7 +25,7 @@ const BusinessDashboard = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Dashboard</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Welcome back to Khorlo</p>
@@ -66,9 +66,9 @@ const BusinessDashboard = () => {
 
       {/* Your Campaigns */}
       <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Your Campaigns</h2>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             <button className="btn" style={{ background: 'var(--accent)', color: 'white', padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Active ({stats.activeCampaigns ?? 0})</button>
             <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Drafts (0)</button>
             <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Completed (0)</button>
@@ -79,7 +79,7 @@ const BusinessDashboard = () => {
             No campaigns yet. Create one to get started!
           </p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.5rem' }}>
             {campaigns.map(camp => (
               <div 
                 key={camp.id} 
@@ -88,7 +88,7 @@ const BusinessDashboard = () => {
                 onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} 
                 onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', gap: '1rem' }}>
                     <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                       <img src={`https://ui-avatars.com/api/?name=${camp.title}&background=random&color=fff`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="campaign" />
@@ -106,8 +106,8 @@ const BusinessDashboard = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><DollarSign size={14} /> {camp.budget ? `${camp.currency || '$'} ${camp.budget}` : 'Varies'}</div>
                 </div>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
                     <Users size={16} color="var(--accent)" />
                     <span><strong style={{ color: 'white' }}>{camp._count?.applications || 0}</strong> Applicants</span>
                   </div>
