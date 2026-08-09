@@ -14,6 +14,8 @@ import About from './components/About'
 import ScrollToTop from './components/ScrollToTop'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import BusinessDashboard from './pages/BusinessDashboard'
 import InfluencerDashboard from './pages/InfluencerDashboard'
 import SearchInfluencers from './pages/SearchInfluencers'
@@ -51,6 +53,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/onboarding/business" element={<BusinessOnboarding />} />
         <Route path="/onboarding/creator" element={<CreatorOnboarding />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
