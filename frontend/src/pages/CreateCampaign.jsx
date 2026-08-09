@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon } from 'lucide-react';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import ImageCropper from '../components/ImageCropper';
-
+import { Country, State, City } from 'country-state-city';
+import SearchableDropdown from '../components/SearchableDropdown';
 
 
 
@@ -16,6 +17,7 @@ const CreateCampaign = () => {
   const bannerInputRef = useRef(null);
   const logoInputRef = useRef(null);
   const [cropperData, setCropperData] = useState({ imageSrc: null, type: null, aspect: 1, cropShape: 'rect', filename: 'image.jpg' });
+  const [locationCodes, setLocationCodes] = useState({ countryCode: '', stateCode: '' });
   
   const [campaign, setCampaign] = useState({
     title: '',
@@ -42,6 +44,32 @@ const CreateCampaign = () => {
   const availableNiches = ['Tech', 'Beauty', 'Fashion', 'Fitness', 'Gaming', 'Lifestyle', 'Travel', 'Food'];
 
   const availableFormats = ['Short-form Video', 'Long-form Video', 'Photography', 'Live Streams', 'Blog Posts'];
+
+  const handleCountryChange = (val) => {
+    if (!val) {
+      setLocationCodes({ countryCode: '', stateCode: '' });
+      setCampaign(prev => ({ ...prev, country: '', state: '', city: '' }));
+      return;
+    }
+    const { name, code } = JSON.parse(val.value || val);
+    setLocationCodes({ countryCode: code, stateCode: '' });
+    setCampaign(prev => ({ ...prev, country: name, state: '', city: '' }));
+  };
+
+  const handleStateChange = (val) => {
+    if (!val) {
+      setLocationCodes(prev => ({ ...prev, stateCode: '' }));
+      setCampaign(prev => ({ ...prev, state: '', city: '' }));
+      return;
+    }
+    const { name, code } = JSON.parse(val.value || val);
+    setLocationCodes(prev => ({ ...prev, stateCode: code }));
+    setCampaign(prev => ({ ...prev, state: name, city: '' }));
+  };
+
+  const handleCityChange = (val) => {
+    setCampaign(prev => ({ ...prev, city: val ? (val.value || val.label || val) : '' }));
+  };
 
   const handleNext = (e) => {
     e.preventDefault();
@@ -321,15 +349,30 @@ const CreateCampaign = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
-                    <input type="text" value={campaign.country} onChange={(e) => setCampaign({...campaign, country: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} placeholder="Country" />
+                    <SearchableDropdown
+                      options={Country.getAllCountries().map(c => ({ value: JSON.stringify({ name: c.name, code: c.isoCode }), label: c.name }))}
+                      value={campaign.country}
+                      onChange={handleCountryChange}
+                      placeholder="Select Country"
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State / Region</label>
-                    <input type="text" value={campaign.state} onChange={(e) => setCampaign({...campaign, state: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} placeholder="State" />
+                    <SearchableDropdown
+                      options={locationCodes.countryCode ? State.getStatesOfCountry(locationCodes.countryCode).map(s => ({ value: JSON.stringify({ name: s.name, code: s.isoCode }), label: s.name })) : []}
+                      value={campaign.state}
+                      onChange={handleStateChange}
+                      placeholder="Select State"
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
-                    <input type="text" value={campaign.city} onChange={(e) => setCampaign({...campaign, city: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} placeholder="City" />
+                    <SearchableDropdown
+                      options={locationCodes.stateCode ? City.getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode).map(c => ({ value: c.name, label: c.name })) : []}
+                      value={campaign.city}
+                      onChange={handleCityChange}
+                      placeholder="Select City"
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Address</label>
