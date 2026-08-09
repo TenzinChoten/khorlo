@@ -100,10 +100,7 @@ const DashboardLayout = () => {
             </NavLink>
             {role === 'brand' && (
               <>
-                <NavLink to="/dashboard/business/campaigns" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                  <LayoutList size={20} />
-                  <span>Campaigns</span>
-                </NavLink>
+
                 <NavLink to="/dashboard/billing" className={({isActive}) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <CreditCard size={20} />
                   <span>Billing</span>

@@ -29,9 +29,9 @@ const Navbar = () => {
 
   return (
     <nav className="navbar animate-fade-in">
-      <Link to="/" onClick={handleLogoClick} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <Link to="/" onClick={handleLogoClick} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
         <img src="/logo.png" alt="Khorlo Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
-        <span className="nav-brand gradient-text" style={{ margin: 0 }}>Khorlo</span>
+        <span className="nav-brand gradient-text" style={{ margin: 0, flex: 'none' }}>Khorlo</span>
       </Link>
       <div className="nav-links">
         <a href="#features" onClick={(e) => handleNav(e, '#features')} className="nav-link" style={{ cursor: 'pointer' }}>Features</a>

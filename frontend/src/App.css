@@ -227,9 +227,11 @@
 
 /* Footer */
 .footer {
-  padding: 4rem 2rem;
+  padding: 1.5rem 2rem;
   border-top: 1px solid var(--glass-border);
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   color: var(--text-secondary);
 }
 

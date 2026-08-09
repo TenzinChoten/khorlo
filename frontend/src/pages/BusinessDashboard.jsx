@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Target, Activity } from 'lucide-react';
+import { Users, Target, Activity, DollarSign } from 'lucide-react';
 import { fetchApi } from '../lib/api';
 
 const BusinessDashboard = () => {
@@ -66,44 +66,62 @@ const BusinessDashboard = () => {
 
       {/* Your Campaigns */}
       <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Your Campaigns</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Your Campaigns</h2>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button className="btn" style={{ background: 'var(--accent)', color: 'white', padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Active ({stats.activeCampaigns ?? 0})</button>
+            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Drafts (0)</button>
+            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Completed (0)</button>
+          </div>
+        </div>
         {campaigns.length === 0 ? (
           <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>
             No campaigns yet. Create one to get started!
           </p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)', textAlign: 'left' }}>
-                <th style={{ padding: '1rem 0', fontWeight: 500 }}>Title</th>
-                <th style={{ padding: '1rem 0', fontWeight: 500 }}>Status</th>
-                <th style={{ padding: '1rem 0', fontWeight: 500 }}>Applications</th>
-                <th style={{ padding: '1rem 0', fontWeight: 500 }}>Date Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.map(camp => (
-                  <tr key={camp.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '1rem 0', fontWeight: 500 }}>{camp.title}</td>
-                    <td style={{ padding: '1rem 0' }}>
-                      <span style={{
-                        padding: '0.25rem 0.75rem',
-                        background: camp.status === 'OPEN' ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.1)',
-                        color: camp.status === 'OPEN' ? '#10b981' : 'var(--text-secondary)',
-                        borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600
-                      }}>
-                        {camp.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem 0' }}>{camp._count?.applications || 0}</td>
-                    <td style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                      {new Date(camp.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                )
-              )}
-            </tbody>
-          </table>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+            {campaigns.map(camp => (
+              <div 
+                key={camp.id} 
+                onClick={() => navigate(`/dashboard/campaign/${camp.id}`)}
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.5rem', transition: 'all 0.2s ease', cursor: 'pointer' }} 
+                onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} 
+                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      <img src={`https://ui-avatars.com/api/?name=${camp.title}&background=random&color=fff`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="campaign" />
+                    </div>
+                    <div>
+                      <h3 style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{camp.title}</h3>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Posted {new Date(camp.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <span style={{ padding: '0.25rem 0.75rem', background: camp.status === 'OPEN' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)', color: camp.status === 'OPEN' ? '#10b981' : 'var(--text-secondary)', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>{camp.status}</span>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Target size={14} /> {camp.formats?.length > 0 ? camp.formats.join(', ') : 'Various'}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><DollarSign size={14} /> {camp.budget ? `${camp.currency || '$'} ${camp.budget}` : 'Varies'}</div>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
+                    <Users size={16} color="var(--accent)" />
+                    <span><strong style={{ color: 'white' }}>{camp._count?.applications || 0}</strong> Applicants</span>
+                  </div>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/campaign/${camp.id}`); }} 
+                    className="btn btn-outline" 
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.875rem' }}
+                  >
+                    Manage
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

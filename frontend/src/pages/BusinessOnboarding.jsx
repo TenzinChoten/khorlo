@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Briefcase, Music } from 'lucide-react';
+import { Upload, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Briefcase, Music, ExternalLink } from 'lucide-react';
 import { Country, State, City } from 'country-state-city';
 import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
@@ -38,6 +38,7 @@ const BusinessOnboarding = () => {
 
   // Step 3 State
   const [referralSources, setReferralSources] = useState(savedState.referralSources || []);
+  const [showErrors, setShowErrors] = useState(false);
 
   useEffect(() => {
     const stateToSave = {
@@ -73,7 +74,19 @@ const BusinessOnboarding = () => {
 
   const handleNext = (e) => {
     e.preventDefault();
-    if (step < 3) setStep(step + 1);
+    if (step === 1) {
+      const isStateRequired = availableStates.length > 0;
+      const isCityRequired = availableCities.length > 0;
+      if (!companyName || !description || !country || 
+          (isStateRequired && !state) || 
+          (isCityRequired && !city)) {
+        setShowErrors(true);
+        return;
+      }
+    }
+    setShowErrors(false);
+    setStep(step + 1);
+    window.scrollTo(0, 0);
   };
 
   const handleBack = () => {
@@ -206,7 +219,7 @@ const BusinessOnboarding = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Name</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Name <span style={{ color: showErrors && !companyName ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <input 
                   type="text" 
                   value={companyName}
@@ -237,7 +250,7 @@ const BusinessOnboarding = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Description</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Description <span style={{ color: showErrors && !description ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <textarea 
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -253,7 +266,7 @@ const BusinessOnboarding = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country <span style={{ color: showErrors && !country ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <SearchableDropdown
                     options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
                     value={country}
@@ -269,7 +282,7 @@ const BusinessOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region {availableStates.length > 0 && <span style={{ color: showErrors && !state ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
                   <SearchableDropdown
                     options={availableStates.map(s => ({ value: s.isoCode, label: s.name }))}
                     value={state}
@@ -285,7 +298,7 @@ const BusinessOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City {availableCities.length > 0 && <span style={{ color: showErrors && !city ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
                   <SearchableDropdown
                     options={availableCities.map(c => ({ value: c.name, label: c.name }))}
                     value={city}
@@ -314,11 +327,23 @@ const BusinessOnboarding = () => {
                     onChange={(e) => setSocials({...socials, instagram: e.target.value})}
                     placeholder="https://instagram.com/yourbrand"
                     style={{
-                      width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px',
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
                       color: 'white', outline: 'none'
                     }}
                   />
+                  {socials.instagram && (
+                    <a 
+                      href={socials.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -332,11 +357,23 @@ const BusinessOnboarding = () => {
                     onChange={(e) => setSocials({...socials, tiktok: e.target.value})}
                     placeholder="https://tiktok.com/@yourbrand"
                     style={{
-                      width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px',
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
                       color: 'white', outline: 'none'
                     }}
                   />
+                  {socials.tiktok && (
+                    <a 
+                      href={socials.tiktok}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -350,11 +387,23 @@ const BusinessOnboarding = () => {
                     onChange={(e) => setSocials({...socials, youtube: e.target.value})}
                     placeholder="https://youtube.com/@yourbrand"
                     style={{
-                      width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px',
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
                       color: 'white', outline: 'none'
                     }}
                   />
+                  {socials.youtube && (
+                    <a 
+                      href={socials.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -368,11 +417,23 @@ const BusinessOnboarding = () => {
                     onChange={(e) => setSocials({...socials, twitter: e.target.value})}
                     placeholder="https://twitter.com/yourbrand"
                     style={{
-                      width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px',
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
                       color: 'white', outline: 'none'
                     }}
                   />
+                  {socials.twitter && (
+                    <a 
+                      href={socials.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -386,11 +447,23 @@ const BusinessOnboarding = () => {
                     onChange={(e) => setSocials({...socials, linkedin: e.target.value})}
                     placeholder="https://linkedin.com/company/yourbrand"
                     style={{
-                      width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px',
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
                       color: 'white', outline: 'none'
                     }}
                   />
+                  {socials.linkedin && (
+                    <a 
+                      href={socials.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
