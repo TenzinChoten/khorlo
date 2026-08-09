@@ -48,7 +48,10 @@ const DashboardLayout = () => {
     <div className="dashboard-layout">
       {/* Sidebar */}
       <aside className="sidebar glass-panel">
-        <div className="sidebar-brand gradient-text">Khorlo</div>
+        <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start' }}>
+          <img src="/logo.png" alt="Khorlo Logo" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
+          <span className="gradient-text">Khorlo</span>
+        </div>
         
         <nav className="sidebar-nav">
           <div className="nav-group">

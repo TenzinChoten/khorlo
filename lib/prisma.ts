@@ -2,7 +2,7 @@ import { PrismaClient } from "@/app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const connectionString = process.env.DATABASE_URL || "postgresql://choten@localhost:5432/khorlo?schema=public";
+const connectionString = process.env.DATABASE_URL || "postgresql://tenzinchoeying@localhost:5432/khorlo?schema=public";
 
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);

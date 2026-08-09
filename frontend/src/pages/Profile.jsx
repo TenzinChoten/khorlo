@@ -45,8 +45,13 @@ const Profile = () => {
     <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Profile</h1>
-        <Link to="/dashboard/profile/edit" className="btn btn-primary btn-accent" style={{ display: 'flex', gap: '0.5rem', textDecoration: 'none' }}>
-          <Edit3 size={18} /> Edit Profile
+        <Link 
+          to="/dashboard/profile/edit" 
+          className="btn btn-outline" 
+          style={{ padding: '0.6rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
+          title="Edit Profile"
+        >
+          <Edit3 size={18} />
         </Link>
       </div>
 

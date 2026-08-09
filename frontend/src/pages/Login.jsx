@@ -17,9 +17,17 @@ const Login = () => {
     try {
       const user = await login(email, password);
       if (user.role === 'BUSINESS') {
-        navigate('/dashboard/business');
+        if (user.onboardingComplete) {
+          navigate('/dashboard/business');
+        } else {
+          navigate('/onboarding/business');
+        }
       } else {
-        navigate('/dashboard/influencer');
+        if (user.onboardingComplete) {
+          navigate('/dashboard/influencer');
+        } else {
+          navigate('/onboarding/creator');
+        }
       }
     } catch (err) {
       setError(err.message || 'Invalid email or password');

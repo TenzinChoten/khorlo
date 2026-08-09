@@ -29,7 +29,10 @@ const Navbar = () => {
 
   return (
     <nav className="navbar animate-fade-in">
-      <Link to="/" onClick={handleLogoClick} className="nav-brand gradient-text" style={{ textDecoration: 'none' }}>Khorlo</Link>
+      <Link to="/" onClick={handleLogoClick} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <img src="/logo.png" alt="Khorlo Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+        <span className="nav-brand gradient-text" style={{ margin: 0 }}>Khorlo</span>
+      </Link>
       <div className="nav-links">
         <a href="#features" onClick={(e) => handleNav(e, '#features')} className="nav-link" style={{ cursor: 'pointer' }}>Features</a>
         <a href="#pricing" onClick={(e) => handleNav(e, '#pricing')} className="nav-link" style={{ cursor: 'pointer' }}>Pricing</a>

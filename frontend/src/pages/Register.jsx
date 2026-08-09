@@ -32,7 +32,11 @@ const Register = () => {
         navigate('/onboarding/creator');
       }
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      if (err.message === 'Email already in use') {
+        setError('User already exists. Please log in.');
+      } else {
+        setError(err.message || 'Registration failed');
+      }
     } finally {
       setLoading(false);
     }

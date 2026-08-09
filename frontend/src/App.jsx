@@ -21,6 +21,7 @@ import SearchCampaigns from './pages/SearchCampaigns'
 import CampaignDetail from './pages/CampaignDetail'
 import Profile from './pages/Profile'
 import EditProfile from './pages/EditProfile'
+import ChangePassword from './pages/ChangePassword'
 import Chat from './pages/Chat'
 import Notifications from './pages/Notifications'
 import BusinessOnboarding from './pages/BusinessOnboarding'
@@ -66,6 +67,7 @@ function App() {
         <Route path="campaign/:id" element={<CampaignDetail />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />
+        <Route path="profile/change-password" element={<ChangePassword />} />
         <Route path="messages" element={<Chat />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="billing" element={<Billing />} />

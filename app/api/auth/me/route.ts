@@ -14,12 +14,21 @@ export async function GET(request: NextRequest) {
     
     const user = await prisma.user.findUnique({
       where: { id: payload.id },
-      select: { id: true, name: true, email: true, role: true }
+      select: { 
+        id: true, name: true, email: true, role: true,
+        businessProfile: { select: { country: true } },
+        influencerProfile: { select: { country: true } }
+      }
     });
     
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    return NextResponse.json({ user });
+    const onboardingComplete = !!(user.businessProfile?.country || user.influencerProfile?.country);
+    const userToReturn = {
+      id: user.id, name: user.name, email: user.email, role: user.role, onboardingComplete
+    };
+
+    return NextResponse.json({ user: userToReturn });
   } catch {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }

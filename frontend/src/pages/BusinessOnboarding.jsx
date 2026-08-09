@@ -9,24 +9,26 @@ import ImageCropper from '../components/ImageCropper';
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [step, setStep] = useState(1);
+  const savedState = JSON.parse(localStorage.getItem('businessOnboardingState') || '{}');
 
-  const [companyName, setCompanyName] = useState(location.state?.companyName || '');
+  const [step, setStep] = useState(savedState.step || 1);
+
+  const [companyName, setCompanyName] = useState(savedState.companyName || location.state?.companyName || '');
   const [logoFile, setLogoFile] = useState(null);
-  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(savedState.logoPreview || null);
   const [cropImageSrc, setCropImageSrc] = useState(null);
-  const [website, setWebsite] = useState('');
-  const [description, setDescription] = useState('');
-  const [country, setCountry] = useState('');
-  const [state, setState] = useState('');
-  const [city, setCity] = useState('');
+  const [website, setWebsite] = useState(savedState.website || '');
+  const [description, setDescription] = useState(savedState.description || '');
+  const [country, setCountry] = useState(savedState.country || '');
+  const [state, setState] = useState(savedState.state || '');
+  const [city, setCity] = useState(savedState.city || '');
   
-  const [locationCodes, setLocationCodes] = useState({ countryCode: '', stateCode: '' });
+  const [locationCodes, setLocationCodes] = useState(savedState.locationCodes || { countryCode: '', stateCode: '' });
   const [availableStates, setAvailableStates] = useState([]);
   const [availableCities, setAvailableCities] = useState([]);
 
   // Step 2 State
-  const [socials, setSocials] = useState({
+  const [socials, setSocials] = useState(savedState.socials || {
     instagram: '',
     tiktok: '',
     youtube: '',
@@ -35,7 +37,14 @@ const BusinessOnboarding = () => {
   });
 
   // Step 3 State
-  const [referralSources, setReferralSources] = useState([]);
+  const [referralSources, setReferralSources] = useState(savedState.referralSources || []);
+
+  useEffect(() => {
+    const stateToSave = {
+      step, companyName, logoPreview, website, description, country, state, city, locationCodes, socials, referralSources
+    };
+    localStorage.setItem('businessOnboardingState', JSON.stringify(stateToSave));
+  }, [step, companyName, logoPreview, website, description, country, state, city, locationCodes, socials, referralSources]);
   const availableReferralSources = ['TikTok', 'Instagram', 'YouTube', 'X (Twitter)', 'LinkedIn', 'Google Search', 'Friend / Colleague', 'Podcast', 'Other'];
 
   const toggleReferralSource = (source) => {
@@ -52,9 +61,6 @@ const BusinessOnboarding = () => {
     } else {
       setAvailableStates([]);
     }
-    setState('');
-    setCity('');
-    setLocationCodes(prev => ({ ...prev, stateCode: '' }));
   }, [locationCodes.countryCode]);
 
   useEffect(() => {
@@ -63,8 +69,7 @@ const BusinessOnboarding = () => {
     } else {
       setAvailableCities([]);
     }
-    setCity('');
-  }, [locationCodes.stateCode]);
+  }, [locationCodes.countryCode, locationCodes.stateCode]);
 
   const handleNext = (e) => {
     e.preventDefault();
@@ -110,6 +115,7 @@ const BusinessOnboarding = () => {
         method: 'PATCH',
         body: JSON.stringify(payload)
       });
+      localStorage.removeItem('businessOnboardingState');
       navigate('/dashboard/business');
     } catch (err) {
       console.error('Failed to save onboarding data:', err);
@@ -255,7 +261,9 @@ const BusinessOnboarding = () => {
                       const name = opt ? (typeof opt === 'string' ? opt : opt.label) : '';
                       setCountry(name);
                       const countryObj = Country.getAllCountries().find(c => c.name === name);
-                      setLocationCodes(prev => ({ ...prev, countryCode: countryObj ? countryObj.isoCode : '' }));
+                      setLocationCodes(prev => ({ ...prev, countryCode: countryObj ? countryObj.isoCode : '', stateCode: '' }));
+                      setState('');
+                      setCity('');
                     }}
                     placeholder="Select Country..."
                   />
@@ -270,6 +278,7 @@ const BusinessOnboarding = () => {
                       setState(name);
                       const stateObj = availableStates.find(s => s.name === name);
                       setLocationCodes(prev => ({ ...prev, stateCode: stateObj ? stateObj.isoCode : '' }));
+                      setCity('');
                     }}
                     placeholder="Select State..."
                     disabled={!locationCodes.countryCode || availableStates.length === 0}

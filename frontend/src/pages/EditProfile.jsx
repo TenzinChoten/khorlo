@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, ArrowLeft, Plus, Trash2, Camera, PlayCircle, AtSign, Music } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Trash2, Camera, PlayCircle, AtSign, Music, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import { Country, State, City } from 'country-state-city';
@@ -28,7 +28,6 @@ const EditProfile = () => {
     stateCode: ''
   });
 
-  const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [socials, setSocials] = useState([]);
   const [content, setContent] = useState({ niches: [], formats: [] });
 
@@ -163,7 +162,6 @@ const EditProfile = () => {
         userName: profile.name,
         email: profile.email,
         socialAccounts: socials.filter(s => s.username && s.username.trim() !== ''),
-        ...(profile.password && { password: profile.password, oldPassword: profile.oldPassword })
       } : {
         displayName: profile.name,
         bio: profile.bio,
@@ -175,7 +173,6 @@ const EditProfile = () => {
         socialAccounts: socials.filter(s => s.username && s.username.trim() !== ''),
         contentNiches: content.niches,
         contentFormats: content.formats,
-        ...(profile.password && { password: profile.password, oldPassword: profile.oldPassword })
       };
 
       await fetchApi(endpoint, {
@@ -256,62 +253,6 @@ const EditProfile = () => {
             </div>
           </div>
 
-          {showPasswordChange ? (
-            <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', marginTop: '0.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h4 style={{ fontSize: '1.125rem' }}>Change Password</h4>
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setShowPasswordChange(false);
-                    setProfile(prev => ({ ...prev, oldPassword: '', password: '' }));
-                  }} 
-                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}
-                >
-                  Cancel
-                </button>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
-                    Current Password
-                  </label>
-                  <input 
-                    type="password" 
-                    name="oldPassword"
-                    value={profile.oldPassword}
-                    onChange={handleChange}
-                    placeholder="Required to change password"
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
-                    New Password
-                  </label>
-                  <input 
-                    type="password" 
-                    name="password"
-                    value={profile.password}
-                    onChange={handleChange}
-                    placeholder="********"
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <button 
-                type="button" 
-                onClick={() => setShowPasswordChange(true)}
-                className="btn btn-outline"
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
-              >
-                Change Password
-              </button>
-            </div>
-          )}
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
             <div>
@@ -501,7 +442,23 @@ const EditProfile = () => {
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+            <button 
+              type="button" 
+              onClick={() => navigate('/dashboard/profile/change-password')}
+              className="btn btn-outline"
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                borderColor: 'rgba(234, 179, 8, 0.4)',
+                color: '#facc15',
+                background: 'rgba(234, 179, 8, 0.08)',
+                fontSize: '0.875rem'
+              }}
+            >
+              <KeyRound size={16} /> Change Password
+            </button>
             <button type="submit" disabled={saving} className="btn btn-primary btn-accent" style={{ display: 'flex', gap: '0.5rem' }}>
               <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
             </button>

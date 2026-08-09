@@ -9,9 +9,11 @@ import ImageCropper from '../components/ImageCropper';
 const CreatorOnboarding = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [step, setStep] = useState(1);
+  const savedState = JSON.parse(localStorage.getItem('creatorOnboardingState') || '{}');
+
+  const [step, setStep] = useState(savedState.step || 1);
   
-  const [basicInfo, setBasicInfo] = useState({
+  const [basicInfo, setBasicInfo] = useState(savedState.basicInfo || {
     displayName: location.state?.name || '',
     age: '',
     gender: '',
@@ -23,10 +25,10 @@ const CreatorOnboarding = () => {
   });
 
   const [photoFile, setPhotoFile] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(savedState.photoPreview || null);
   const [cropImageSrc, setCropImageSrc] = useState(null);
 
-  const [locationCodes, setLocationCodes] = useState({
+  const [locationCodes, setLocationCodes] = useState(savedState.locationCodes || {
     countryCode: '',
     stateCode: ''
   });
@@ -40,9 +42,6 @@ const CreatorOnboarding = () => {
     } else {
       setAvailableStates([]);
     }
-    // Reset state and city when country changes
-    setBasicInfo(prev => ({ ...prev, state: '', city: '' }));
-    setLocationCodes(prev => ({ ...prev, stateCode: '' }));
   }, [locationCodes.countryCode]);
 
   useEffect(() => {
@@ -51,15 +50,13 @@ const CreatorOnboarding = () => {
     } else {
       setAvailableCities([]);
     }
-    // Reset city when state changes
-    setBasicInfo(prev => ({ ...prev, city: '' }));
-  }, [locationCodes.stateCode]);
+  }, [locationCodes.countryCode, locationCodes.stateCode]);
 
-  const [socials, setSocials] = useState([
+  const [socials, setSocials] = useState(savedState.socials || [
     { id: 1, platform: 'INSTAGRAM', username: '', followers: '', engagementRate: '' }
   ]);
 
-  const [content, setContent] = useState({
+  const [content, setContent] = useState(savedState.content || {
     niches: [],
     formats: []
   });
@@ -68,7 +65,15 @@ const CreatorOnboarding = () => {
   const availableFormats = ['Short-form Video', 'Long-form Video', 'Photography', 'Live Streams', 'Blog Posts'];
 
   // Step 4 State
-  const [referralSources, setReferralSources] = useState([]);
+  const [referralSources, setReferralSources] = useState(savedState.referralSources || []);
+
+  useEffect(() => {
+    const stateToSave = {
+      step, basicInfo, photoPreview, locationCodes, socials, content, referralSources
+    };
+    localStorage.setItem('creatorOnboardingState', JSON.stringify(stateToSave));
+  }, [step, basicInfo, photoPreview, locationCodes, socials, content, referralSources]);
+  
   const availableReferralSources = ['TikTok', 'Instagram', 'YouTube', 'X (Twitter)', 'LinkedIn', 'Google Search', 'Friend / Colleague', 'Podcast', 'Other'];
 
   const toggleReferralSource = (source) => {
@@ -119,6 +124,7 @@ const CreatorOnboarding = () => {
         method: 'PATCH',
         body: JSON.stringify(payload)
       });
+      localStorage.removeItem('creatorOnboardingState');
       navigate('/dashboard/influencer');
     } catch (err) {
       console.error('Failed to save onboarding data:', err);
@@ -285,9 +291,9 @@ const CreatorOnboarding = () => {
                     value={basicInfo.country}
                     onChange={(opt) => {
                       const name = opt ? (typeof opt === 'string' ? opt : opt.label) : '';
-                      setBasicInfo(prev => ({ ...prev, country: name }));
+                      setBasicInfo(prev => ({ ...prev, country: name, state: '', city: '' }));
                       const countryObj = Country.getAllCountries().find(c => c.name === name);
-                      setLocationCodes(prev => ({ ...prev, countryCode: countryObj ? countryObj.isoCode : '' }));
+                      setLocationCodes(prev => ({ ...prev, countryCode: countryObj ? countryObj.isoCode : '', stateCode: '' }));
                     }}
                     placeholder="Select Country..."
                   />
@@ -299,7 +305,7 @@ const CreatorOnboarding = () => {
                     value={basicInfo.state}
                     onChange={(opt) => {
                       const name = opt ? (typeof opt === 'string' ? opt : opt.label) : '';
-                      setBasicInfo(prev => ({ ...prev, state: name }));
+                      setBasicInfo(prev => ({ ...prev, state: name, city: '' }));
                       const stateObj = availableStates.find(s => s.name === name);
                       setLocationCodes(prev => ({ ...prev, stateCode: stateObj ? stateObj.isoCode : '' }));
                     }}
