@@ -29,7 +29,13 @@ const PublishedCampaigns = () => {
             { id: 1, title: 'Summer Tech Essentials', posted: '2 days ago', status: 'ACTIVE', applicants: 45, budget: '$500 - $1.5k', platform: 'YouTube, TikTok' },
             { id: 2, title: 'Smart Home Hub Launch', posted: '1 week ago', status: 'ACTIVE', applicants: 128, budget: '$1,000 - $2.5k', platform: 'Instagram' }
           ].map(campaign => (
-            <div key={campaign.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.5rem', transition: 'all 0.2s ease', cursor: 'pointer' }} onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}>
+            <div 
+              key={campaign.id} 
+              onClick={() => navigate(`/dashboard/campaign/${campaign.id}`)}
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.5rem', transition: 'all 0.2s ease', cursor: 'pointer' }} 
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} 
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
+            >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>

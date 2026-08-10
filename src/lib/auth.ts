@@ -17,7 +17,7 @@ export async function getCurrentUser(): Promise<UserDTO> {
 
   try {
     const payload = await verifyAccessToken(token);
-    const user = await userRepository.findById(payload.userId);
+    const user = await userRepository.findById(payload.id);
 
     if (!user) {
       throw new UnauthorizedError("User not found");

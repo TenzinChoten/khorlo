@@ -147,7 +147,13 @@ const BusinessDashboard = () => {
                 const influencerName = app.influencer?.user?.name || app.influencer?.displayName || 'Creator';
                 const avatarSrc = app.influencer?.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(influencerName)}&background=random&color=fff`;
                 return (
-                  <tr key={app.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr 
+                    key={app.id} 
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background-color 0.2s' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.02)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    onClick={() => navigate(`/dashboard/application/${app.id}`)}
+                  >
                     <td style={{ padding: '1rem 0' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <img src={avatarSrc} alt={influencerName} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
@@ -156,7 +162,15 @@ const BusinessDashboard = () => {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '1rem 0' }}>{app.campaign?.title}</td>
+                    <td 
+                      style={{ padding: '1rem 0', color: 'var(--accent)', textDecoration: 'underline' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/dashboard/campaign/${app.campaign?.id}`);
+                      }}
+                    >
+                      {app.campaign?.title}
+                    </td>
                     <td style={{ padding: '1rem 0' }}>
                       <span style={{
                         padding: '0.25rem 0.75rem',

@@ -21,6 +21,7 @@ import InfluencerDashboard from './pages/InfluencerDashboard'
 import SearchInfluencers from './pages/SearchInfluencers'
 import SearchCampaigns from './pages/SearchCampaigns'
 import CampaignDetail from './pages/CampaignDetail'
+import ApplicationReview from './pages/ApplicationReview'
 import Profile from './pages/Profile'
 import EditProfile from './pages/EditProfile'
 import ChangePassword from './pages/ChangePassword'
@@ -70,6 +71,7 @@ function App() {
         <Route path="search-influencers" element={<SearchInfluencers />} />
         <Route path="search-campaigns" element={<SearchCampaigns />} />
         <Route path="campaign/:id" element={<CampaignDetail />} />
+        <Route path="application/:id" element={<ApplicationReview />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />
         <Route path="profile/change-password" element={<ChangePassword />} />

@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: 5,
       include: {
-        campaign: { select: { title: true } },
+        // [Reason] Include campaign id so Recent Applications can navigate to campaign detail
+        campaign: { select: { id: true, title: true } },
         influencer: {
           include: {
             user: { select: { name: true } }

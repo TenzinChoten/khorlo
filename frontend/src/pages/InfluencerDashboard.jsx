@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Eye, Briefcase, Award, TrendingUp } from 'lucide-react';
 import { fetchApi } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const InfluencerDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [withdrawing, setWithdrawing] = useState(null);
 
   useEffect(() => {
     fetchApi('/dashboard/influencer')
@@ -18,6 +21,23 @@ const InfluencerDashboard = () => {
 
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading dashboard...</div>;
   if (error) return <div style={{ padding: '4rem', textAlign: 'center', color: '#ff3b30' }}>{error}</div>;
+
+  const handleWithdraw = async (e, appId) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to withdraw this application?')) return;
+    setWithdrawing(appId);
+    try {
+      await fetchApi(`/applications/${appId}`, { method: 'DELETE' });
+      setData(prev => ({
+        ...prev,
+        recentApplications: prev.recentApplications.filter(a => a.id !== appId)
+      }));
+    } catch (err) {
+      alert(err.message || 'Failed to withdraw application');
+    } finally {
+      setWithdrawing(null);
+    }
+  };
 
   const stats = data?.stats || {};
   const applications = data?.recentApplications || [];
@@ -75,7 +95,13 @@ const InfluencerDashboard = () => {
               const brand = app.campaign?.business;
               const logoSrc = brand?.companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(brand?.companyName || 'B')}&background=random&color=fff`;
               return (
-                <div key={app.id} style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div 
+                  key={app.id} 
+                  onClick={() => app.campaignId && navigate(`/dashboard/campaign/${app.campaignId}`)}
+                  style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} 
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                     <img src={logoSrc} alt={brand?.companyName} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} />
                     <div>
@@ -83,7 +109,7 @@ const InfluencerDashboard = () => {
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{brand?.companyName}</p>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
                     <div style={{
                       padding: '0.25rem 0.75rem',
                       borderRadius: '9999px',
@@ -94,6 +120,15 @@ const InfluencerDashboard = () => {
                     }}>
                       {app.status}
                     </div>
+                    {app.status === 'PENDING' && (
+                      <button 
+                        onClick={(e) => handleWithdraw(e, app.id)}
+                        disabled={withdrawing === app.id}
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-secondary)', borderRadius: '4px', cursor: withdrawing === app.id ? 'not-allowed' : 'pointer' }}
+                      >
+                        {withdrawing === app.id ? 'Withdrawing...' : 'Withdraw'}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
