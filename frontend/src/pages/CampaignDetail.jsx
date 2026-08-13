@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, DollarSign, Target, MapPin, Share2, X } from 'lucide-react';
+import { ArrowLeft, Calendar, DollarSign, Target, MapPin, Share2, X, MessageSquare } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -100,7 +100,11 @@ const CampaignDetail = () => {
     return `${camp.currency || 'USD'} ${camp.budget.toLocaleString()}`;
   };
 
-  const isClosed = campaign?.applicationDeadline && new Date() > new Date(campaign.applicationDeadline);
+  const isDeadlinePassed = campaign?.applicationDeadline && new Date() > new Date(campaign.applicationDeadline);
+  const creatorSlots = campaign.creatorSlots || 1;
+  const acceptedCount = campaign.acceptedCount ?? campaignApplications.filter(a => a.status === 'ACCEPTED').length;
+  const slotsFilled = acceptedCount >= creatorSlots;
+  const isClosed = isDeadlinePassed || slotsFilled;
   const displayStatus = isClosed && campaign?.status === 'OPEN' ? 'CLOSED' : campaign?.status || 'DRAFT';
 
   return (
@@ -209,7 +213,12 @@ const CampaignDetail = () => {
 
           {user?.role === 'BUSINESS' && (
             <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Applications</h2>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>
+                Applications
+                <span style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--text-secondary)', marginLeft: '0.75rem' }}>
+                  {acceptedCount} / {creatorSlots} slots filled
+                </span>
+              </h2>
               {loadingApps ? (
                 <div style={{ color: 'var(--text-secondary)' }}>Loading applications...</div>
               ) : campaignApplications.length === 0 ? (
@@ -219,7 +228,8 @@ const CampaignDetail = () => {
                   {campaignApplications.map(app => (
                     <div key={app.id} style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <img src={app.influencer?.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.influencer?.displayName || 'Creator')}&background=random&color=fff`} alt={app.influencer?.displayName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                        {/* [Reason] Creator photos are stored as /uploads paths and must be loaded from the API host */}
+                        <img src={getMediaUrl(app.influencer?.profilePhoto) || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.influencer?.displayName || 'Creator')}&background=random&color=fff`} alt={app.influencer?.displayName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div>
                           <h3 style={{ fontWeight: 600 }}>{app.influencer?.displayName}</h3>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '0.25rem' }}>
@@ -262,12 +272,25 @@ const CampaignDetail = () => {
               <button onClick={() => navigate('/login')} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Login to Apply</button>
             ) : user.role === 'INFLUENCER' ? (
               existingApplication ? (
-                <button disabled className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}>
-                  Application {existingApplication.status}
-                </button>
+                <>
+                  <button disabled className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}>
+                    Application {existingApplication.status}
+                  </button>
+                  {existingApplication.status === 'ACCEPTED' && (
+                    <button
+                      onClick={() => navigate(existingApplication.conversationId
+                        ? `/dashboard/messages?conversationId=${existingApplication.conversationId}`
+                        : '/dashboard/messages')}
+                      className="btn btn-primary"
+                      style={{ width: '100%', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    >
+                      <MessageSquare size={18} /> Message Brand
+                    </button>
+                  )}
+                </>
               ) : isClosed ? (
                 <button disabled className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}>
-                  Applications Closed
+                  {slotsFilled ? 'All Creator Slots Filled' : 'Applications Closed'}
                 </button>
               ) : (
                 <button onClick={() => setShowApplyModal(true)} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
@@ -332,7 +355,7 @@ const CampaignDetail = () => {
                   <div style={{ color: 'var(--accent)' }}><Target size={20} /></div>
                   <div>
                     <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Creator Slots</div>
-                    <div style={{ fontWeight: 600 }}>{campaign.creatorSlots} available</div>
+                    <div style={{ fontWeight: 600 }}>{acceptedCount} / {creatorSlots} filled</div>
                   </div>
                 </div>
               )}

@@ -1,126 +1,357 @@
-import React, { useState } from 'react';
-import { Send, Paperclip, MoreVertical, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Send, Search, ArrowLeft, ExternalLink } from 'lucide-react';
+import { fetchApi, getMediaUrl } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
+import './Chat.css';
+
+function formatMessageTime(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  const now = new Date();
+  const sameDay = date.toDateString() === now.toDateString();
+  if (sameDay) {
+    return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  }
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function participantAvatar(participant) {
+  if (!participant) return 'https://ui-avatars.com/api/?name=User&background=333&color=fff';
+  if (participant.avatarUrl) return getMediaUrl(participant.avatarUrl);
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(participant.name || 'User')}&background=random&color=fff`;
+}
 
 const Chat = () => {
-  const [activeChat, setActiveChat] = useState(1);
+  const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeId = searchParams.get('conversationId');
 
-  const chats = [
-    { id: 1, name: 'TechNova', lastMessage: 'Great! Let\'s proceed with that timeline.', time: '10:42 AM', unread: 2 },
-    { id: 2, name: 'GlowCosmetics', lastMessage: 'Can you send over the mood board?', time: 'Yesterday', unread: 0 },
-    { id: 3, name: 'FitLife', lastMessage: 'Payment has been processed.', time: 'Monday', unread: 0 },
-  ];
+  const [conversations, setConversations] = useState([]);
+  const [listLoading, setListLoading] = useState(true);
+  const [listError, setListError] = useState(null);
+  const [query, setQuery] = useState('');
+
+  const [conversation, setConversation] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadError, setThreadError] = useState(null);
+  const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(null);
+
+  const feedRef = useRef(null);
+
+  const loadConversations = useCallback(async () => {
+    try {
+      const res = await fetchApi('/conversations');
+      setConversations(res.conversations || []);
+      setListError(null);
+    } catch (err) {
+      setListError(err.message || 'Failed to load conversations.');
+    } finally {
+      setListLoading(false);
+    }
+  }, []);
+
+  const loadThread = useCallback(async (conversationId, { silent } = {}) => {
+    if (!conversationId) {
+      setConversation(null);
+      setMessages([]);
+      setThreadError(null);
+      return;
+    }
+    if (!silent) {
+      setThreadLoading(true);
+      setThreadError(null);
+    }
+    try {
+      const [detailRes, messagesRes] = await Promise.all([
+        fetchApi(`/conversations/${conversationId}`),
+        fetchApi(`/conversations/${conversationId}/messages`),
+      ]);
+      setConversation(detailRes.conversation);
+      setMessages(messagesRes.messages || []);
+      setThreadError(null);
+      // [Reason] Opening a thread marks messages read on the server; refresh inbox badges
+      loadConversations();
+    } catch (err) {
+      setThreadError(err.message || 'Failed to load conversation.');
+      if (err.status === 403 || err.status === 404) {
+        setConversation(null);
+        setMessages([]);
+      }
+    } finally {
+      setThreadLoading(false);
+    }
+  }, [loadConversations]);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
+
+  useEffect(() => {
+    loadThread(activeId);
+  }, [activeId, loadThread]);
+
+  useEffect(() => {
+    if (feedRef.current) {
+      feedRef.current.scrollTop = feedRef.current.scrollHeight;
+    }
+  }, [messages, threadLoading]);
+
+  // [Reason] No realtime layer exists yet; poll so new messages appear without a refresh
+  useEffect(() => {
+    const tick = () => {
+      if (document.hidden) return;
+      loadConversations();
+      if (activeId) loadThread(activeId, { silent: true });
+    };
+    const id = setInterval(tick, 10000);
+    return () => clearInterval(id);
+  }, [activeId, loadConversations, loadThread]);
+
+  const filteredConversations = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return conversations;
+    return conversations.filter((item) => {
+      const name = item.otherParticipant?.name?.toLowerCase() || '';
+      const campaign = item.campaign?.title?.toLowerCase() || '';
+      const preview = item.latestMessage?.message?.toLowerCase() || '';
+      return name.includes(term) || campaign.includes(term) || preview.includes(term);
+    });
+  }, [conversations, query]);
+
+  const openConversation = (conversationId) => {
+    setSearchParams({ conversationId });
+  };
+
+  const closeConversation = () => {
+    setSearchParams({});
+  };
+
+  const handleSend = async (event) => {
+    event?.preventDefault();
+    const text = draft.trim();
+    if (!text || !activeId || sending) return;
+    if (conversation?.applicationStatus && conversation.applicationStatus !== 'ACCEPTED') {
+      setSendError('Messaging is only available for accepted applications.');
+      return;
+    }
+
+    setSending(true);
+    setSendError(null);
+    try {
+      const res = await fetchApi(`/conversations/${activeId}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ message: text }),
+      });
+      setDraft('');
+      setMessages((prev) => [...prev, res.message]);
+      loadConversations();
+    } catch (err) {
+      setSendError(err.message || 'Failed to send message.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const other = conversation?.otherParticipant;
+  const canSend = conversation?.applicationStatus === 'ACCEPTED';
 
   return (
-    <div className="animate-fade-in" style={{ height: 'calc(100vh - 4rem)', display: 'flex', flexDirection: 'column' }}>
+    <div className={`animate-fade-in messages-page${activeId ? ' chat-open' : ''}`}>
       <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1.5rem' }}>Messages</h1>
 
-      <div className="glass-panel" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Sidebar */}
-        <div style={{ width: '300px', borderRight: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}>
+      <div className="glass-panel messages-shell">
+        <div className="messages-sidebar">
           <div style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-              <input 
-                type="text" 
-                placeholder="Search messages..." 
+              <input
+                type="text"
+                placeholder="Search conversations..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 style={{ width: '100%', padding: '0.5rem 0.5rem 0.5rem 2.25rem', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', borderRadius: '8px', outline: 'none', fontSize: '0.875rem' }}
               />
             </div>
           </div>
-          
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            {chats.map(chat => (
-              <div 
-                key={chat.id} 
-                onClick={() => setActiveChat(chat.id)}
-                style={{ 
-                  padding: '1rem', 
-                  borderBottom: '1px solid rgba(255,255,255,0.02)', 
-                  display: 'flex', 
-                  gap: '1rem', 
-                  cursor: 'pointer',
-                  background: activeChat === chat.id ? 'rgba(255,255,255,0.05)' : 'transparent',
-                  transition: 'background 0.2s ease'
-                }}
-              >
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#333', flexShrink: 0 }}></div>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{chat.name}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{chat.time}</span>
-                  </div>
-                  <div style={{ fontSize: '0.875rem', color: chat.unread > 0 ? 'white' : 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {chat.lastMessage}
-                  </div>
-                </div>
-                {chat.unread > 0 && (
-                  <div style={{ width: '20px', height: '20px', background: 'var(--accent)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600, alignSelf: 'center' }}>
-                    {chat.unread}
-                  </div>
-                )}
+
+          <div className="messages-list">
+            {listLoading && (
+              <div style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Loading conversations...</div>
+            )}
+            {listError && (
+              <div style={{ padding: '1.5rem', color: '#ff3b30', fontSize: '0.875rem' }}>{listError}</div>
+            )}
+            {!listLoading && !listError && filteredConversations.length === 0 && (
+              <div style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                No conversations yet. They appear when an application is accepted.
               </div>
-            ))}
+            )}
+            {filteredConversations.map((item) => {
+              const unread = item.unreadCount || 0;
+              const isActive = item.conversationId === activeId;
+              return (
+                <div
+                  key={item.conversationId}
+                  onClick={() => openConversation(item.conversationId)}
+                  style={{
+                    padding: '1rem',
+                    borderBottom: '1px solid rgba(255,255,255,0.02)',
+                    display: 'flex',
+                    gap: '1rem',
+                    cursor: 'pointer',
+                    background: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    transition: 'background 0.2s ease',
+                  }}
+                >
+                  <img
+                    src={participantAvatar(item.otherParticipant)}
+                    alt={item.otherParticipant?.name}
+                    style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                  />
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.15rem', gap: '0.5rem' }}>
+                      <span style={{ fontWeight: 600, fontSize: '0.875rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.otherParticipant?.name || 'Participant'}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', flexShrink: 0 }}>
+                        {formatMessageTime(item.latestMessage?.createdAt || item.updatedAt)}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {item.campaign?.title || 'Campaign'}
+                    </div>
+                    <div style={{ fontSize: '0.875rem', color: unread > 0 ? 'white' : 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {item.latestMessage?.message || 'No messages yet'}
+                    </div>
+                  </div>
+                  {unread > 0 && (
+                    <div style={{ minWidth: '20px', height: '20px', padding: '0 0.35rem', background: 'var(--accent)', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600, alignSelf: 'center' }}>
+                      {unread}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          {/* Header */}
-          <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <img src="https://ui-avatars.com/api/?name=TechNova&background=random&color=fff" alt="TechNova" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
-              <div>
-                <div style={{ fontWeight: 600 }}>TechNova</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Smart Home Hub Launch</div>
-              </div>
+        <div className="messages-thread">
+          {!activeId ? (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', padding: '2rem', textAlign: 'center' }}>
+              Select a conversation to start messaging.
             </div>
-            <button style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-              <MoreVertical size={20} />
-            </button>
-          </div>
+          ) : threadLoading && !conversation ? (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+              Loading conversation...
+            </div>
+          ) : threadError && !conversation ? (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff3b30', padding: '2rem', textAlign: 'center' }}>
+              {threadError}
+            </div>
+          ) : (
+            <>
+              <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+                  <button className="messages-back" onClick={closeConversation} aria-label="Back to conversations">
+                    <ArrowLeft size={20} />
+                  </button>
+                  <img
+                    src={participantAvatar(other)}
+                    alt={other?.name}
+                    style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{other?.name || 'Participant'}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {conversation?.campaign?.title || 'Campaign'}
+                    </div>
+                  </div>
+                </div>
+                {conversation?.campaign?.id && (
+                  <Link
+                    to={`/dashboard/campaign/${conversation.campaign.id}`}
+                    style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', textDecoration: 'none', flexShrink: 0 }}
+                  >
+                    <ExternalLink size={16} /> Campaign
+                  </Link>
+                )}
+              </div>
 
-          {/* Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#333', flexShrink: 0 }}></div>
-              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '12px 12px 12px 0', maxWidth: '70%' }}>
-                <p style={{ fontSize: '0.875rem', lineHeight: 1.5 }}>Hi Alex! We loved your recent video and think you'd be a great fit for our Smart Home Hub launch.</p>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.5rem' }}>10:30 AM</span>
+              <div ref={feedRef} className="messages-feed">
+                {threadLoading && messages.length === 0 && (
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Loading messages...</div>
+                )}
+                {!threadLoading && messages.length === 0 && (
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center', marginTop: '2rem' }}>
+                    No messages yet. Say hello and introduce yourself for this campaign.
+                  </div>
+                )}
+                {messages.map((msg) => {
+                  const isMine = msg.senderId === user?.id;
+                  return (
+                    <div
+                      key={msg.id}
+                      style={{ display: 'flex', gap: '0.75rem', flexDirection: isMine ? 'row-reverse' : 'row' }}
+                    >
+                      {!isMine && (
+                        <img
+                          src={participantAvatar(other)}
+                          alt=""
+                          style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                        />
+                      )}
+                      <div
+                        style={{
+                          background: isMine ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
+                          padding: '0.85rem 1rem',
+                          borderRadius: isMine ? '12px 12px 0 12px' : '12px 12px 12px 0',
+                          maxWidth: '75%',
+                        }}
+                      >
+                        <p style={{ fontSize: '0.875rem', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.message}</p>
+                        {msg.attachmentUrl && (
+                          <a href={msg.attachmentUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: isMine ? 'rgba(255,255,255,0.85)' : 'var(--accent)', display: 'block', marginTop: '0.5rem' }}>
+                            Attachment
+                          </a>
+                        )}
+                        <span style={{ fontSize: '0.75rem', color: isMine ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)', display: 'block', marginTop: '0.5rem', textAlign: isMine ? 'right' : 'left' }}>
+                          {formatMessageTime(msg.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
-            
-            <div style={{ display: 'flex', gap: '1rem', flexDirection: 'row-reverse' }}>
-              <div style={{ background: 'var(--accent)', padding: '1rem', borderRadius: '12px 12px 0 12px', maxWidth: '70%' }}>
-                <p style={{ fontSize: '0.875rem', lineHeight: 1.5 }}>Thanks for reaching out! I've been eyeing that hub. The timeline in the brief works perfectly for me.</p>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', display: 'block', marginTop: '0.5rem', textAlign: 'right' }}>10:35 AM</span>
-              </div>
-            </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <img src="https://ui-avatars.com/api/?name=TechNova&background=random&color=fff" alt="TechNova" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
-              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '12px 12px 12px 0', maxWidth: '70%' }}>
-                <p style={{ fontSize: '0.875rem', lineHeight: 1.5 }}>Great! Let's proceed with that timeline. I'll send over the contract shortly.</p>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.5rem' }}>10:42 AM</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Input */}
-          <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--glass-border)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '9999px' }}>
-              <button style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex' }}>
-                <Paperclip size={20} />
-              </button>
-              <input 
-                type="text" 
-                placeholder="Type a message..." 
-                style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '0.875rem' }}
-              />
-              <button style={{ background: 'var(--accent)', border: 'none', color: 'white', padding: '0.5rem', borderRadius: '50%', cursor: 'pointer', display: 'flex' }}>
-                <Send size={16} />
-              </button>
-            </div>
-          </div>
+              <form className="messages-composer" onSubmit={handleSend}>
+                {sendError && (
+                  <div style={{ color: '#ff3b30', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{sendError}</div>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '9999px' }}>
+                  <input
+                    type="text"
+                    placeholder={canSend ? 'Type a message...' : 'Messaging unavailable until the application is accepted'}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    disabled={!canSend || sending}
+                    style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '0.875rem' }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!canSend || sending || !draft.trim()}
+                    style={{ background: 'var(--accent)', border: 'none', color: 'white', padding: '0.5rem', borderRadius: '50%', cursor: !canSend || sending || !draft.trim() ? 'not-allowed' : 'pointer', display: 'flex', opacity: !canSend || sending || !draft.trim() ? 0.5 : 1 }}
+                    aria-label="Send message"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>

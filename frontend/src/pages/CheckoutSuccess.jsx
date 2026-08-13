@@ -14,7 +14,7 @@ const CheckoutSuccess = () => {
         
         <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 700 }}>Payment Successful!</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem', fontSize: '1.125rem', lineHeight: 1.6 }}>
-          Thank you for subscribing to the <strong>Growth Plan</strong>. Your account has been upgraded and your campaigns are now active.
+          Thank you for your subscription. Your account has been updated.
         </p>
 
         <button onClick={() => navigate('/dashboard/business')} className="btn btn-primary btn-accent" style={{ width: '100%', padding: '1rem', fontSize: '1.125rem' }}>

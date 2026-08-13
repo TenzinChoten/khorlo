@@ -63,6 +63,15 @@ export const applicationService = {
       throw new ConflictError("The application deadline has passed.");
     }
 
+    // [Reason] Stop new applications once the campaign's creatorSlots are already filled
+    const acceptedCount = await applicationRepository.countByCampaignStatus(
+      campaign.id,
+      "ACCEPTED"
+    );
+    if (acceptedCount >= campaign.creatorSlots) {
+      throw new ConflictError("All creator slots for this campaign have been filled.");
+    }
+
     // Business rule: Duplicate prevention
     const alreadyApplied = await applicationRepository.checkExists(campaign.id, profile.id);
     if (alreadyApplied) {
@@ -162,7 +171,12 @@ export const applicationService = {
       throw new ForbiddenError("You are not authorized to view this application.");
     }
 
-    return { application };
+    const acceptedCount = await applicationRepository.countByCampaignStatus(
+      application.campaignId,
+      "ACCEPTED"
+    );
+
+    return { application, acceptedCount };
   },
 
   async updateStatus(id: string, body: unknown): Promise<ApplicationResponse> {
@@ -185,9 +199,16 @@ export const applicationService = {
       throw new ConflictError(`Cannot update status from ${application.status}.`);
     }
 
-    const updatedApplication = await applicationRepository.updateStatus(id, {
-      status: data.status,
-    });
+    const updatedApplication = await applicationRepository.updateStatus(
+      id,
+      { status: data.status },
+      data.status === "ACCEPTED"
+        ? {
+            campaignId: application.campaignId,
+            creatorSlots: application.campaign.creatorSlots,
+          }
+        : undefined
+    );
 
     // Notify Influencer
     const influencerProfile = await prisma.influencerProfile.findUnique({

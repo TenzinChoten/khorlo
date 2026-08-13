@@ -7,14 +7,32 @@ import {
   Bell, 
   User, 
   LogOut,
-  Target,
   CreditCard,
-  LayoutList,
-  Menu,
-  X
+  Menu
 } from 'lucide-react';
+import { fetchApi } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import './DashboardLayout.css';
+
+function formatRelativeTime(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function notificationLink(type, role) {
+  if (type === 'MESSAGE') return '/dashboard/messages';
+  if (type === 'SUBSCRIPTION') return '/dashboard/billing';
+  if (role === 'BUSINESS') return '/dashboard/business';
+  return '/dashboard/influencer';
+}
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
@@ -22,7 +40,42 @@ const DashboardLayout = () => {
   const role = user?.role === 'BUSINESS' ? 'brand' : 'creator';
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const notifRef = useRef(null);
+
+  const loadNotificationPreview = () => {
+    // [Reason] Bell badge and dropdown must show real Notification rows, not hardcoded samples
+    fetchApi('/notifications/unread-count')
+      .then((res) => setUnreadCount(res.count || 0))
+      .catch(() => setUnreadCount(0));
+    fetchApi('/notifications?limit=5')
+      .then((res) => setNotifications(res.notifications || []))
+      .catch(() => setNotifications([]));
+  };
+
+  const markAllNotificationsRead = async () => {
+    // [Reason] Opening the bell means the user has seen the alerts, so the red unread badge should clear
+    setUnreadCount(0);
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    try {
+      await fetchApi('/notifications/read-all', { method: 'PATCH' });
+    } catch {
+      loadNotificationPreview();
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    loadNotificationPreview();
+    const id = setInterval(loadNotificationPreview, 30000);
+    const onUpdated = () => loadNotificationPreview();
+    window.addEventListener('khorlo:notifications-changed', onUpdated);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener('khorlo:notifications-changed', onUpdated);
+    };
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -34,12 +87,6 @@ const DashboardLayout = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const dummyNotifications = [
-    { id: 1, title: 'New Application', message: 'Jane Doe applied to your Smart Home Hub Launch campaign.', time: '2m ago', link: '/dashboard/business' },
-    { id: 2, title: 'Campaign Approved', message: 'Your latest campaign was approved and is now live.', time: '1h ago', link: '/dashboard/business' },
-    { id: 3, title: 'New Message', message: 'You have a new message from TechNova.', time: '3h ago', link: '/dashboard/messages' }
-  ];
-
   const handleLogout = async () => {
     if (window.confirm('Are you sure you want to log out?')) {
       await logout();
@@ -49,10 +96,28 @@ const DashboardLayout = () => {
 
   const handleNotificationClick = () => {
     if (window.matchMedia('(max-width: 1023px)').matches) {
+      markAllNotificationsRead();
       navigate('/dashboard/notifications');
       setShowNotifications(false);
     } else {
-      setShowNotifications(!showNotifications);
+      const opening = !showNotifications;
+      setShowNotifications(opening);
+      if (opening && unreadCount > 0) {
+        markAllNotificationsRead();
+      }
+    }
+  };
+
+  const handleNotificationItemClick = async (notif) => {
+    setShowNotifications(false);
+    if (!notif.isRead) {
+      setUnreadCount((count) => Math.max(0, count - 1));
+      setNotifications((prev) => prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n)));
+      try {
+        await fetchApi(`/notifications/${notif.id}/read`, { method: 'PATCH' });
+      } catch {
+        loadNotificationPreview();
+      }
     }
   };
 
@@ -135,7 +200,9 @@ const DashboardLayout = () => {
             </Link>
             <button className="notification-btn" onClick={handleNotificationClick}>
               <Bell size={20} />
-              <span className="notification-badge">3</span>
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
             </button>
             
             {showNotifications && (
@@ -145,11 +212,20 @@ const DashboardLayout = () => {
                   <Link to="/dashboard/notifications" className="view-all" onClick={() => setShowNotifications(false)}>View All</Link>
                 </div>
                 <div className="dropdown-body">
-                  {dummyNotifications.map(notif => (
-                    <Link key={notif.id} to={notif.link} className="notification-item" onClick={() => setShowNotifications(false)}>
+                  {notifications.length === 0 ? (
+                    <div className="notification-item" style={{ cursor: 'default' }}>
+                      <div className="notif-message">No notifications yet.</div>
+                    </div>
+                  ) : notifications.map(notif => (
+                    <Link
+                      key={notif.id}
+                      to={notificationLink(notif.type, user?.role)}
+                      className="notification-item"
+                      onClick={() => handleNotificationItemClick(notif)}
+                    >
                       <div className="notif-title">{notif.title}</div>
-                      <div className="notif-message">{notif.message}</div>
-                      <div className="notif-time">{notif.time}</div>
+                      <div className="notif-message">{notif.body}</div>
+                      <div className="notif-time">{formatRelativeTime(notif.createdAt)}</div>
                     </Link>
                   ))}
                 </div>

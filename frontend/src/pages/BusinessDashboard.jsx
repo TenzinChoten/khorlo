@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Target, Activity, DollarSign } from 'lucide-react';
-import { fetchApi } from '../lib/api';
+import { fetchApi, getMediaUrl } from '../lib/api';
+
+function campaignThumbnail(camp) {
+  const images = camp.images || [];
+  const preferred =
+    images.find((img) => img.imageType === 'BRAND_LOGO') ||
+    images.find((img) => img.imageType === 'PRODUCT') ||
+    images.find((img) => img.imageType === 'OTHER') ||
+    images[0];
+  const url = preferred?.imageUrl || camp.business?.companyLogo;
+  if (url) return getMediaUrl(url);
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(camp.title || 'Campaign')}&background=random&color=fff`;
+}
 
 const BusinessDashboard = () => {
   const navigate = useNavigate();
@@ -70,8 +82,8 @@ const BusinessDashboard = () => {
           <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Your Campaigns</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             <button className="btn" style={{ background: 'var(--accent)', color: 'white', padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Active ({stats.activeCampaigns ?? 0})</button>
-            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Drafts (0)</button>
-            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Completed (0)</button>
+            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Drafts ({stats.draftCampaigns ?? 0})</button>
+            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Completed ({stats.completedCampaigns ?? 0})</button>
           </div>
         </div>
         {campaigns.length === 0 ? (
@@ -91,7 +103,7 @@ const BusinessDashboard = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', gap: '1rem' }}>
                     <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                      <img src={`https://ui-avatars.com/api/?name=${camp.title}&background=random&color=fff`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="campaign" />
+                      <img src={campaignThumbnail(camp)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={camp.title} />
                     </div>
                     <div>
                       <h3 style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{camp.title}</h3>
@@ -145,7 +157,8 @@ const BusinessDashboard = () => {
             <tbody>
               {applications.map(app => {
                 const influencerName = app.influencer?.user?.name || app.influencer?.displayName || 'Creator';
-                const avatarSrc = app.influencer?.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(influencerName)}&background=random&color=fff`;
+                // [Reason] Creator photos are stored as /uploads paths and must be loaded from the API host
+                const avatarSrc = getMediaUrl(app.influencer?.profilePhoto) || `https://ui-avatars.com/api/?name=${encodeURIComponent(influencerName)}&background=random&color=fff`;
                 return (
                   <tr 
                     key={app.id} 

@@ -14,9 +14,16 @@ export async function GET(request: NextRequest) {
     });
     if (!business) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
 
-    const [activeCampaigns, totalApplications] = await Promise.all([
+    const [activeCampaigns, draftCampaigns, completedCampaigns, totalApplications] = await Promise.all([
       prisma.campaign.count({
         where: { businessId: business.id, status: "OPEN" }
+      }),
+      // [Reason] Dashboard tab counts must reflect real campaign statuses, not hardcoded zeros
+      prisma.campaign.count({
+        where: { businessId: business.id, status: "DRAFT" }
+      }),
+      prisma.campaign.count({
+        where: { businessId: business.id, status: { in: ["COMPLETED", "CLOSED"] } }
       }),
       prisma.application.count({
         where: { campaign: { businessId: business.id } }
@@ -34,18 +41,29 @@ export async function GET(request: NextRequest) {
           include: {
             user: { select: { name: true } }
           }
-        }
+        },
+        conversation: { select: { id: true } },
       }
     });
 
-    const recentCampaigns = await prisma.campaign.findMany({
+    const campaigns = await prisma.campaign.findMany({
       where: { businessId: business.id },
       orderBy: { createdAt: "desc" },
-      take: 5,
       include: {
         _count: {
           select: { applications: true }
-        }
+        },
+        contentFormats: {
+          include: { contentFormat: { select: { name: true } } }
+        },
+        // [Reason] Dashboard campaign cards need the stored CampaignImage so they don't fall back to avatars
+        images: {
+          select: { id: true, imageUrl: true, imageType: true, sortOrder: true },
+          orderBy: { sortOrder: "asc" },
+        },
+        business: {
+          select: { companyLogo: true },
+        },
       }
     });
 
@@ -53,10 +71,13 @@ export async function GET(request: NextRequest) {
       dashboard: {
         stats: {
           activeCampaigns,
+          draftCampaigns,
+          completedCampaigns,
           totalApplications,
         },
         recentApplications,
-        recentCampaigns
+        recentCampaigns: campaigns.slice(0, 5),
+        campaigns,
       }
     });
   } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Briefcase, Award, TrendingUp } from 'lucide-react';
-import { fetchApi } from '../lib/api';
+import { Eye, Briefcase, Award, TrendingUp, MessageSquare } from 'lucide-react';
+import { fetchApi, getMediaUrl } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -77,7 +77,7 @@ const InfluencerDashboard = () => {
           </div>
           <div>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Total Applications</p>
-            <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{applications.length}</p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.totalApplications ?? 0}</p>
           </div>
         </div>
       </div>
@@ -92,8 +92,15 @@ const InfluencerDashboard = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {applications.map((app) => {
-              const brand = app.campaign?.business;
-              const logoSrc = brand?.companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(brand?.companyName || 'B')}&background=random&color=fff`;
+              const camp = app.campaign;
+              const brand = camp?.business;
+              const images = camp?.images || [];
+              const preferred =
+                images.find((img) => img.imageType === 'BRAND_LOGO') ||
+                images.find((img) => img.imageType === 'PRODUCT') ||
+                images.find((img) => img.imageType === 'OTHER') ||
+                images[0];
+              const logoSrc = getMediaUrl(preferred?.imageUrl || brand?.companyLogo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(brand?.companyName || camp?.title || 'B')}&background=random&color=fff`;
               return (
                 <div 
                   key={app.id} 
@@ -127,6 +134,19 @@ const InfluencerDashboard = () => {
                         style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-secondary)', borderRadius: '4px', cursor: withdrawing === app.id ? 'not-allowed' : 'pointer' }}
                       >
                         {withdrawing === app.id ? 'Withdrawing...' : 'Withdraw'}
+                      </button>
+                    )}
+                    {app.status === 'ACCEPTED' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(app.conversation?.id
+                            ? `/dashboard/messages?conversationId=${app.conversation.id}`
+                            : '/dashboard/messages');
+                        }}
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                      >
+                        <MessageSquare size={12} /> Message
                       </button>
                     )}
                   </div>

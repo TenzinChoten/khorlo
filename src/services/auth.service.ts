@@ -43,7 +43,7 @@ export const authService = {
     });
 
     const token = await generateAccessToken({
-      userId: user.id,
+      id: user.id,
       role: user.role,
     });
 
@@ -76,7 +76,7 @@ export const authService = {
     }
 
     const token = await generateAccessToken({
-      userId: user.id,
+      id: user.id,
       role: user.role,
     });
 

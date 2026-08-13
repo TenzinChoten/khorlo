@@ -24,6 +24,7 @@ const ApplicationReview = () => {
   const { user } = useAuth();
   
   const [application, setApplication] = useState(null);
+  const [acceptedCount, setAcceptedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -31,7 +32,10 @@ const ApplicationReview = () => {
 
   useEffect(() => {
     fetchApi(`/applications/${id}`)
-      .then(res => setApplication(res.application))
+      .then(res => {
+        setApplication(res.application);
+        setAcceptedCount(res.acceptedCount || 0);
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [id]);
@@ -45,7 +49,14 @@ const ApplicationReview = () => {
         method: 'PATCH',
         body: JSON.stringify({ status })
       });
-      setApplication(prev => ({ ...prev, status: res.application.status }));
+      setApplication(prev => ({
+        ...prev,
+        status: res.application.status,
+        conversationId: res.application.conversationId ?? prev.conversationId,
+      }));
+      if (status === 'ACCEPTED') {
+        setAcceptedCount(prev => prev + 1);
+      }
     } catch (err) {
       alert(err.message || `Failed to ${status.toLowerCase()} application`);
     } finally {
@@ -83,6 +94,8 @@ const ApplicationReview = () => {
   };
 
   const statusStyle = getStatusColor(application.status);
+  const creatorSlots = camp.creatorSlots || 1;
+  const slotsFilled = acceptedCount >= creatorSlots;
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '4rem' }}>
@@ -170,15 +183,23 @@ const ApplicationReview = () => {
           
           {/* Decision Area */}
           <div className="glass-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', fontWeight: 600 }}>Application Decision</h2>
+            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: 600 }}>Application Decision</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
+              {acceptedCount} of {creatorSlots} creator slot{creatorSlots === 1 ? '' : 's'} filled
+            </p>
             
             {application.status === 'PENDING' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {slotsFilled && (
+                  <p style={{ color: '#fcd34d', fontSize: '0.8rem' }}>
+                    All creator slots are filled. You can still reject this application.
+                  </p>
+                )}
                 <button 
                   onClick={() => handleDecision('ACCEPTED')} 
-                  disabled={decisionLoading}
+                  disabled={decisionLoading || slotsFilled}
                   className="btn btn-primary btn-accent" 
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', opacity: slotsFilled ? 0.5 : 1, cursor: slotsFilled ? 'not-allowed' : 'pointer' }}
                 >
                   {decisionLoading ? 'Processing...' : 'Accept Application'}
                 </button>
@@ -197,7 +218,10 @@ const ApplicationReview = () => {
                   ✓ Accepted
                 </div>
                 <button 
-                  onClick={() => navigate('/dashboard/messages')} 
+                  // [Reason] Open the conversation created on acceptance rather than a generic inbox
+                  onClick={() => navigate(application.conversationId
+                    ? `/dashboard/messages?conversationId=${application.conversationId}`
+                    : '/dashboard/messages')} 
                   className="btn btn-primary" 
                   style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                 >
@@ -283,10 +307,16 @@ const ApplicationReview = () => {
               <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Applied to</div>
               <div style={{ fontWeight: 600 }}>{camp.title}</div>
             </div>
-            <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ marginBottom: '1rem' }}>
               <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Compensation</div>
               <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>
                 {camp.compensationType === 'FREE_PRODUCT' ? 'Free Product' : `${camp.currency || 'USD'} ${(camp.budget || 0).toLocaleString()}`}
+              </div>
+            </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Creator slots</div>
+              <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>
+                {acceptedCount} / {creatorSlots} filled
               </div>
             </div>
             

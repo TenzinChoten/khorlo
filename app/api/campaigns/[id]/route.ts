@@ -20,6 +20,11 @@ export async function GET(
           include: { contentFormat: { select: { name: true } } }
         },
         images: true,
+        _count: {
+          select: {
+            applications: { where: { status: "ACCEPTED" } },
+          },
+        },
       }
     });
 
@@ -27,7 +32,11 @@ export async function GET(
       return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ campaign });
+    // [Reason] Expose filled slots so the UI can enforce the campaign creatorSlots cap
+    const { _count, ...campaignData } = campaign;
+    return NextResponse.json({
+      campaign: { ...campaignData, acceptedCount: _count.applications },
+    });
   } catch (error) {
     console.error("Error fetching campaign:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
