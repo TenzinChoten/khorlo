@@ -8,9 +8,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
 
+    // [Reason] Brands should see every active creator, not only APPROVED profiles (status is never set) or a 24-item cap
     const influencers = await prisma.influencerProfile.findMany({
       where: {
-        applicationStatus: "APPROVED",
+        user: { isActive: true },
+        applicationStatus: { not: "REJECTED" },
         ...(search && {
           OR: [
             { displayName: { contains: search, mode: "insensitive" } },
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
         user: { select: { name: true } },
         contentNiches: { include: { contentNiche: { select: { name: true } } } },
       },
-      take: 24,
+      orderBy: { createdAt: "desc" },
     });
 
     // Attach aggregated social stats

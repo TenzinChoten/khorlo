@@ -1,5 +1,6 @@
 import { prisma } from "@/src/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
+import type { ApplicationStatus } from "@/app/generated/prisma/enums";
 import type {
   ConversationListItemDTO,
   ConversationDetailDTO,
@@ -7,11 +8,21 @@ import type {
   ConversationParticipantDTO,
 } from "@/src/types/message";
 import { toListDTO as mapToCampaignListDTO } from "./campaign.repository";
-import type { SendMessageInput } from "@/src/validations/message.validation";
+import type { SendMessageInput, MessageListQueryInput } from "@/src/validations/message.validation";
 
-// ─────────────────────────────────────────────
-// Shared includes
-// ─────────────────────────────────────────────
+export type ConversationAccess =
+  | { exists: false }
+  | {
+      exists: true;
+      role: "INFLUENCER" | "BUSINESS" | null;
+      applicationStatus: ApplicationStatus;
+      recipientUserId: string;
+    };
+
+const senderSelect = {
+  id: true,
+  name: true,
+} as const;
 
 const businessSelect = {
   id: true,
@@ -35,35 +46,49 @@ const conversationInclude = {
           id: true,
           displayName: true,
           profilePhoto: true,
-          userId: true, // Need this to match against authenticated user
+          userId: true,
         },
       },
     },
   },
 } as const;
 
-const conversationListInclude = {
-  ...conversationInclude,
-  messages: {
-    orderBy: { createdAt: "desc" },
-    take: 1,
-  },
-  _count: {
-    select: {
-      messages: { where: { isRead: false } },
+function conversationListInclude(currentUserId: string) {
+  return {
+    ...conversationInclude,
+    messages: {
+      orderBy: { createdAt: "desc" as const },
+      take: 1,
+      include: { sender: { select: senderSelect } },
     },
-  },
+    // [Reason] Unread badge should only count messages the current user still needs to read
+    _count: {
+      select: {
+        messages: {
+          where: { isRead: false, senderId: { not: currentUserId } },
+        },
+      },
+    },
+  };
+}
+
+const messageWithSenderInclude = {
+  sender: { select: senderSelect },
 } as const;
 
-// ─────────────────────────────────────────────
-// DTO Mappers
-// ─────────────────────────────────────────────
+type MessageWithSender = Prisma.MessageGetPayload<{ include: typeof messageWithSenderInclude }>;
 
-function toMessageDTO(message: Prisma.MessageGetPayload<{}>): MessageDTO {
+function toMessageDTO(message: MessageWithSender | Prisma.MessageGetPayload<{}>): MessageDTO {
+  const sender =
+    "sender" in message && message.sender
+      ? { id: message.sender.id, name: message.sender.name }
+      : null;
+
   return {
     id: message.id,
     conversationId: message.conversationId,
     senderId: message.senderId,
+    sender,
     message: message.message,
     attachmentUrl: message.attachmentUrl,
     isRead: message.isRead,
@@ -76,7 +101,6 @@ function getOtherParticipant(
   application: Prisma.ApplicationGetPayload<{ include: { campaign: { include: typeof campaignSelect }, influencer: true } }>,
   currentUserId: string
 ): ConversationParticipantDTO {
-  // If the current user is the influencer, the other participant is the business
   if (application.influencer.userId === currentUserId) {
     return {
       type: "BUSINESS",
@@ -85,7 +109,6 @@ function getOtherParticipant(
       avatarUrl: application.campaign.business.companyLogo,
     };
   }
-  // Otherwise, the current user is the business, so the other participant is the influencer
   return {
     type: "INFLUENCER",
     id: application.influencer.id,
@@ -101,36 +124,32 @@ function toConversationDetailDTO(
   return {
     conversationId: conversation.id,
     applicationId: conversation.applicationId,
+    applicationStatus: conversation.application.status,
     campaign: mapToCampaignListDTO(conversation.application.campaign as any),
     otherParticipant: getOtherParticipant(conversation.application as any, currentUserId),
+    createdAt: conversation.createdAt,
+    updatedAt: conversation.updatedAt,
   };
 }
 
 function toConversationListItemDTO(
-  conversation: Prisma.ConversationGetPayload<{ include: typeof conversationListInclude }>,
+  conversation: Prisma.ConversationGetPayload<{ include: ReturnType<typeof conversationListInclude> }>,
   currentUserId: string
 ): ConversationListItemDTO {
   return {
     conversationId: conversation.id,
     applicationId: conversation.applicationId,
+    applicationStatus: conversation.application.status,
     campaign: mapToCampaignListDTO(conversation.application.campaign as any),
     otherParticipant: getOtherParticipant(conversation.application as any, currentUserId),
     latestMessage: conversation.messages.length > 0 ? toMessageDTO(conversation.messages[0]) : null,
-    // Note: unreadCount is naive here, normally you filter by `senderId != currentUserId`
-    // We'll just return the total unread for this query structure as a simplification
     unreadCount: conversation._count.messages,
+    createdAt: conversation.createdAt,
+    updatedAt: conversation.updatedAt,
   };
 }
 
-// ─────────────────────────────────────────────
-// Repository
-// ─────────────────────────────────────────────
-
 export const messageRepository = {
-  /**
-   * Find conversations where the user is either the applicant (Influencer)
-   * or the campaign owner (Business).
-   */
   async findUserConversations(userId: string): Promise<ConversationListItemDTO[]> {
     const conversations = await prisma.conversation.findMany({
       where: {
@@ -139,7 +158,7 @@ export const messageRepository = {
           { application: { campaign: { business: { userId } } } },
         ],
       },
-      include: conversationListInclude,
+      include: conversationListInclude(userId),
       orderBy: { updatedAt: "desc" },
     });
 
@@ -159,13 +178,13 @@ export const messageRepository = {
   },
 
   /**
-   * Raw helper to verify a user is part of a conversation.
-   * Returns the user's role in the conversation ("INFLUENCER" | "BUSINESS") or null.
+   * Resolves whether a conversation exists and whether the user is a participant.
+   * Receiver is the other of: influencer applicant vs campaign business owner.
    */
-  async verifyParticipant(
+  async getConversationAccess(
     conversationId: string,
     userId: string
-  ): Promise<"INFLUENCER" | "BUSINESS" | null> {
+  ): Promise<ConversationAccess> {
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
       include: {
@@ -178,25 +197,50 @@ export const messageRepository = {
       },
     });
 
-    if (!conversation) return null;
+    if (!conversation) return { exists: false };
 
-    if (conversation.application.influencer.userId === userId) {
-      return "INFLUENCER";
-    }
+    const influencerUserId = conversation.application.influencer.userId;
+    const businessUserId = conversation.application.campaign.business.userId;
 
-    if (conversation.application.campaign.business.userId === userId) {
-      return "BUSINESS";
-    }
+    let role: "INFLUENCER" | "BUSINESS" | null = null;
+    if (userId === influencerUserId) role = "INFLUENCER";
+    else if (userId === businessUserId) role = "BUSINESS";
 
-    return null;
+    return {
+      exists: true,
+      role,
+      applicationStatus: conversation.application.status,
+      recipientUserId: userId === influencerUserId ? businessUserId : influencerUserId,
+    };
   },
 
-  async findMessages(conversationId: string): Promise<MessageDTO[]> {
-    const messages = await prisma.message.findMany({
-      where: { conversationId },
-      orderBy: { createdAt: "asc" },
-    });
-    return messages.map(toMessageDTO);
+  async verifyParticipant(
+    conversationId: string,
+    userId: string
+  ): Promise<"INFLUENCER" | "BUSINESS" | null> {
+    const access = await this.getConversationAccess(conversationId, userId);
+    if (!access.exists) return null;
+    return access.role;
+  },
+
+  async findMessages(
+    conversationId: string,
+    query: MessageListQueryInput
+  ): Promise<{ messages: MessageDTO[]; total: number }> {
+    const where = { conversationId };
+    const [items, total] = await Promise.all([
+      prisma.message.findMany({
+        where,
+        include: messageWithSenderInclude,
+        // [Reason] Chat UIs page from newest; reverse so the client can render oldest-to-newest
+        orderBy: { createdAt: "desc" },
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+      }),
+      prisma.message.count({ where }),
+    ]);
+
+    return { messages: items.reverse().map(toMessageDTO), total };
   },
 
   async createMessage(
@@ -212,9 +256,9 @@ export const messageRepository = {
           message: data.message,
           attachmentUrl: data.attachmentUrl,
         },
+        include: messageWithSenderInclude,
       });
 
-      // Update conversation timestamp for sorting
       await tx.conversation.update({
         where: { id: conversationId },
         data: { updatedAt: new Date() },
@@ -229,6 +273,7 @@ export const messageRepository = {
   async findMessageById(messageId: string): Promise<MessageDTO | null> {
     const message = await prisma.message.findUnique({
       where: { id: messageId },
+      include: messageWithSenderInclude,
     });
     return message ? toMessageDTO(message) : null;
   },
@@ -236,8 +281,20 @@ export const messageRepository = {
   async markAsRead(messageId: string): Promise<MessageDTO> {
     const message = await prisma.message.update({
       where: { id: messageId },
+      include: messageWithSenderInclude,
       data: { isRead: true },
     });
     return toMessageDTO(message);
+  },
+
+  async markReceivedMessagesAsRead(conversationId: string, userId: string): Promise<void> {
+    await prisma.message.updateMany({
+      where: {
+        conversationId,
+        senderId: { not: userId },
+        isRead: false,
+      },
+      data: { isRead: true },
+    });
   },
 };

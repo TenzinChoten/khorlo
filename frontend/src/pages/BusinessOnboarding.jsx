@@ -4,12 +4,15 @@ import { Upload, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, B
 import { Country, State, City } from 'country-state-city';
 import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import ImageCropper from '../components/ImageCropper';
 
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const savedState = JSON.parse(localStorage.getItem('businessOnboardingState') || '{}');
+  const { user } = useAuth();
+  const storageKey = `businessOnboardingState_${user?.id || 'guest'}`;
+  const [savedState] = useState(() => JSON.parse(localStorage.getItem(storageKey) || '{}'));
 
   const [step, setStep] = useState(savedState.step || 1);
 
@@ -44,8 +47,8 @@ const BusinessOnboarding = () => {
     const stateToSave = {
       step, companyName, logoPreview, website, description, country, state, city, locationCodes, socials, referralSources
     };
-    localStorage.setItem('businessOnboardingState', JSON.stringify(stateToSave));
-  }, [step, companyName, logoPreview, website, description, country, state, city, locationCodes, socials, referralSources]);
+    localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+  }, [step, companyName, logoPreview, website, description, country, state, city, locationCodes, socials, referralSources, storageKey]);
   const availableReferralSources = ['TikTok', 'Instagram', 'YouTube', 'X (Twitter)', 'LinkedIn', 'Google Search', 'Friend / Colleague', 'Podcast', 'Other'];
 
   const toggleReferralSource = (source) => {
@@ -75,11 +78,7 @@ const BusinessOnboarding = () => {
   const handleNext = (e) => {
     e.preventDefault();
     if (step === 1) {
-      const isStateRequired = availableStates.length > 0;
-      const isCityRequired = availableCities.length > 0;
-      if (!companyName || !description || !country || 
-          (isStateRequired && !state) || 
-          (isCityRequired && !city)) {
+      if (!companyName.trim() || !description.trim()) {
         setShowErrors(true);
         return;
       }
@@ -95,6 +94,10 @@ const BusinessOnboarding = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (referralSources.length === 0) {
+      setShowErrors(true);
+      return;
+    }
     try {
       let companyLogoUrl = null;
       if (logoFile) {
@@ -128,7 +131,7 @@ const BusinessOnboarding = () => {
         method: 'PATCH',
         body: JSON.stringify(payload)
       });
-      localStorage.removeItem('businessOnboardingState');
+      localStorage.removeItem(storageKey);
       navigate('/dashboard/business');
     } catch (err) {
       console.error('Failed to save onboarding data:', err);
@@ -253,6 +256,7 @@ const BusinessOnboarding = () => {
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Description <span style={{ color: showErrors && !description ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <textarea 
                   value={description}
+                  required
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="What does your company do?"
                   rows="4"
@@ -266,7 +270,7 @@ const BusinessOnboarding = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country <span style={{ color: showErrors && !country ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
                   <SearchableDropdown
                     options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
                     value={country}
@@ -282,7 +286,7 @@ const BusinessOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region {availableStates.length > 0 && <span style={{ color: showErrors && !state ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region</label>
                   <SearchableDropdown
                     options={availableStates.map(s => ({ value: s.isoCode, label: s.name }))}
                     value={state}
@@ -298,7 +302,7 @@ const BusinessOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City {availableCities.length > 0 && <span style={{ color: showErrors && !city ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
                   <SearchableDropdown
                     options={availableCities.map(c => ({ value: c.name, label: c.name }))}
                     value={city}

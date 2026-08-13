@@ -1,8 +1,10 @@
 import { requireRole } from "@/src/lib/require-role";
 import { messageRepository } from "@/src/repositories/message.repository";
 import { notificationService } from "@/src/services/notification.service";
-import { sendMessageSchema } from "@/src/validations/message.validation";
-import { prisma } from "@/src/lib/prisma";
+import {
+  sendMessageSchema,
+  messageListQuerySchema,
+} from "@/src/validations/message.validation";
 import type {
   ConversationListResponse,
   ConversationDetailResponse,
@@ -13,6 +15,7 @@ import {
   ValidationError,
   NotFoundError,
   ForbiddenError,
+  ConflictError,
 } from "@/src/types";
 
 function parseValidation<T>(
@@ -30,9 +33,19 @@ function parseValidation<T>(
   return result.data;
 }
 
+async function requireParticipant(conversationId: string, userId: string) {
+  const access = await messageRepository.getConversationAccess(conversationId, userId);
+  if (!access.exists) {
+    throw new NotFoundError("Conversation not found.");
+  }
+  if (!access.role) {
+    throw new ForbiddenError("You are not a participant in this conversation.");
+  }
+  return access;
+}
+
 export const messageService = {
   async getMyConversations(): Promise<ConversationListResponse> {
-    // Both INFLUENCER and BUSINESS can have conversations
     const user = await requireRole("INFLUENCER", "BUSINESS");
 
     const conversations = await messageRepository.findUserConversations(user.id);
@@ -42,12 +55,7 @@ export const messageService = {
 
   async getConversation(conversationId: string): Promise<ConversationDetailResponse> {
     const user = await requireRole("INFLUENCER", "BUSINESS");
-
-    // Verify participation
-    const role = await messageRepository.verifyParticipant(conversationId, user.id);
-    if (!role) {
-      throw new ForbiddenError("You are not a participant in this conversation.");
-    }
+    await requireParticipant(conversationId, user.id);
 
     const conversation = await messageRepository.findConversationById(conversationId, user.id);
     if (!conversation) {
@@ -57,18 +65,18 @@ export const messageService = {
     return { conversation };
   },
 
-  async getMessages(conversationId: string): Promise<MessageListResponse> {
+  async getMessages(conversationId: string, queryParams: unknown): Promise<MessageListResponse> {
     const user = await requireRole("INFLUENCER", "BUSINESS");
+    await requireParticipant(conversationId, user.id);
 
-    // Verify participation
-    const role = await messageRepository.verifyParticipant(conversationId, user.id);
-    if (!role) {
-      throw new ForbiddenError("You are not a participant in this conversation.");
-    }
+    const query = parseValidation(messageListQuerySchema, queryParams, "Invalid query parameters");
 
-    const messages = await messageRepository.findMessages(conversationId);
+    // [Reason] Opening the thread marks the other party's unread messages as read for this user
+    await messageRepository.markReceivedMessagesAsRead(conversationId, user.id);
 
-    return { messages };
+    const { messages, total } = await messageRepository.findMessages(conversationId, query);
+
+    return { messages, total, page: query.page, limit: query.limit };
   },
 
   async sendMessage(conversationId: string, body: unknown): Promise<MessageResponse> {
@@ -76,40 +84,22 @@ export const messageService = {
 
     const data = parseValidation(sendMessageSchema, body, "Invalid message data");
 
-    // Verify participation
-    const role = await messageRepository.verifyParticipant(conversationId, user.id);
-    if (!role) {
-      throw new ForbiddenError("You are not a participant in this conversation.");
-    }
+    const access = await requireParticipant(conversationId, user.id);
 
-    // Creating conversation here is explicitly disallowed by requirements.
-    // Conversations MUST already exist (created when application is ACCEPTED).
+    // [Reason] Messaging is only allowed after the application has been accepted
+    if (access.applicationStatus !== "ACCEPTED") {
+      throw new ConflictError("Messages can only be sent for accepted applications.");
+    }
 
     const message = await messageRepository.createMessage(conversationId, user.id, data);
 
-    // Notify Recipient
-    const conversation = await prisma.conversation.findUnique({
-      where: { id: conversationId },
-      include: {
-        application: {
-          include: {
-            influencer: true,
-            campaign: { include: { business: true } },
-          },
-        },
-      },
-    });
-
-    if (conversation) {
-      const recipientUserId =
-        conversation.application.influencer.userId === user.id
-          ? conversation.application.campaign.business.userId
-          : conversation.application.influencer.userId;
-
+    if (access.recipientUserId !== user.id) {
+      const preview =
+        data.message.length > 120 ? `${data.message.slice(0, 117)}...` : data.message;
       await notificationService.createNotification(
-        recipientUserId,
+        access.recipientUserId,
         "New Message",
-        "You have a new message.",
+        `${user.name}: ${preview}`,
         "MESSAGE"
       );
     }
@@ -125,10 +115,11 @@ export const messageService = {
       throw new NotFoundError("Message not found.");
     }
 
-    // You can only mark a message as read if you are a participant in the conversation,
-    // AND you are NOT the sender of the message.
-    const role = await messageRepository.verifyParticipant(message.conversationId, user.id);
-    if (!role) {
+    const access = await messageRepository.getConversationAccess(message.conversationId, user.id);
+    if (!access.exists) {
+      throw new NotFoundError("Conversation not found.");
+    }
+    if (!access.role) {
       throw new ForbiddenError("You are not a participant in this conversation.");
     }
 

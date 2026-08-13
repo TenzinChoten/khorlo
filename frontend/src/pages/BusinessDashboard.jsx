@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Target, Activity, DollarSign } from 'lucide-react';
-import { fetchApi } from '../lib/api';
+import { fetchApi, getMediaUrl } from '../lib/api';
+
+function campaignThumbnail(camp) {
+  const images = camp.images || [];
+  const preferred =
+    images.find((img) => img.imageType === 'BRAND_LOGO') ||
+    images.find((img) => img.imageType === 'PRODUCT') ||
+    images.find((img) => img.imageType === 'OTHER') ||
+    images[0];
+  const url = preferred?.imageUrl || camp.business?.companyLogo;
+  if (url) return getMediaUrl(url);
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(camp.title || 'Campaign')}&background=random&color=fff`;
+}
 
 const BusinessDashboard = () => {
   const navigate = useNavigate();
@@ -25,7 +37,7 @@ const BusinessDashboard = () => {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Dashboard</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Welcome back to Khorlo</p>
@@ -66,12 +78,12 @@ const BusinessDashboard = () => {
 
       {/* Your Campaigns */}
       <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Your Campaigns</h2>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             <button className="btn" style={{ background: 'var(--accent)', color: 'white', padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Active ({stats.activeCampaigns ?? 0})</button>
-            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Drafts (0)</button>
-            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Completed (0)</button>
+            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Drafts ({stats.draftCampaigns ?? 0})</button>
+            <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Completed ({stats.completedCampaigns ?? 0})</button>
           </div>
         </div>
         {campaigns.length === 0 ? (
@@ -79,7 +91,7 @@ const BusinessDashboard = () => {
             No campaigns yet. Create one to get started!
           </p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.5rem' }}>
             {campaigns.map(camp => (
               <div 
                 key={camp.id} 
@@ -88,10 +100,10 @@ const BusinessDashboard = () => {
                 onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} 
                 onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', gap: '1rem' }}>
                     <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                      <img src={`https://ui-avatars.com/api/?name=${camp.title}&background=random&color=fff`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="campaign" />
+                      <img src={campaignThumbnail(camp)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={camp.title} />
                     </div>
                     <div>
                       <h3 style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{camp.title}</h3>
@@ -106,8 +118,8 @@ const BusinessDashboard = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><DollarSign size={14} /> {camp.budget ? `${camp.currency || '$'} ${camp.budget}` : 'Varies'}</div>
                 </div>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
                     <Users size={16} color="var(--accent)" />
                     <span><strong style={{ color: 'white' }}>{camp._count?.applications || 0}</strong> Applicants</span>
                   </div>
@@ -145,9 +157,16 @@ const BusinessDashboard = () => {
             <tbody>
               {applications.map(app => {
                 const influencerName = app.influencer?.user?.name || app.influencer?.displayName || 'Creator';
-                const avatarSrc = app.influencer?.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(influencerName)}&background=random&color=fff`;
+                // [Reason] Creator photos are stored as /uploads paths and must be loaded from the API host
+                const avatarSrc = getMediaUrl(app.influencer?.profilePhoto) || `https://ui-avatars.com/api/?name=${encodeURIComponent(influencerName)}&background=random&color=fff`;
                 return (
-                  <tr key={app.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr 
+                    key={app.id} 
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background-color 0.2s' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.02)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    onClick={() => navigate(`/dashboard/application/${app.id}`)}
+                  >
                     <td style={{ padding: '1rem 0' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <img src={avatarSrc} alt={influencerName} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
@@ -156,7 +175,15 @@ const BusinessDashboard = () => {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '1rem 0' }}>{app.campaign?.title}</td>
+                    <td 
+                      style={{ padding: '1rem 0', color: 'var(--accent)', textDecoration: 'underline' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/dashboard/campaign/${app.campaign?.id}`);
+                      }}
+                    >
+                      {app.campaign?.title}
+                    </td>
                     <td style={{ padding: '1rem 0' }}>
                       <span style={{
                         padding: '0.25rem 0.75rem',

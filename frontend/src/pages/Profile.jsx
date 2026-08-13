@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Edit3, Link as LinkIcon, MapPin } from 'lucide-react';
+import { Edit3, Link as LinkIcon, MapPin, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi, getMediaUrl } from '../lib/api';
+import AddPortfolioModal from '../components/AddPortfolioModal';
 
 const Profile = () => {
   const { user } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [editingPortfolioItem, setEditingPortfolioItem] = useState(undefined);
 
   useEffect(() => {
     if (!user) return;
@@ -122,6 +124,17 @@ const Profile = () => {
           <div className="glass-panel" style={{ padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.25rem' }}>{isBusiness ? 'Recent Campaigns' : 'Portfolio'}</h3>
+              {!isBusiness && (
+                <button
+                  type="button"
+                  onClick={() => setEditingPortfolioItem(null)}
+                  className="btn btn-outline"
+                  title="Add portfolio item"
+                  style={{ padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Plus size={18} />
+                </button>
+              )}
             </div>
 
             {isBusiness ? (
@@ -138,34 +151,82 @@ const Profile = () => {
                 </div>
               )
             ) : (
-              (profile.portfolioItems || []).length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>
-                  No portfolio items yet. Edit your profile to add some!
-                </p>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
-                  {profile.portfolioItems.map(item => (
-                    <a key={item.id} href={item.url || '#'} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
-                      <div style={{ height: '160px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}>
-                        {item.thumbnail ? (
-                          <img src={item.thumbnail} alt={item.title} style={{ width: '100%', height: '110px', objectFit: 'cover' }} />
-                        ) : (
-                          <div style={{ height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)' }}>
-                            <LinkIcon size={24} color="var(--text-secondary)" />
-                          </div>
-                        )}
-                        <div style={{ padding: '0.5rem 0.75rem' }}>
-                          <p style={{ fontSize: '0.8rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingPortfolioItem(null)}
+                  style={{
+                    height: '180px',
+                    background: 'transparent',
+                    borderRadius: '12px',
+                    border: '1px dashed var(--glass-border)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Plus size={28} />
+                  <span style={{ fontSize: '0.8rem' }}>Add work</span>
+                </button>
+                {(profile.portfolioItems || []).map(item => (
+                  <div key={item.id} style={{ minHeight: '180px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                    <button
+                      type="button"
+                      onClick={() => setEditingPortfolioItem(item)}
+                      title="Edit portfolio item"
+                      style={{
+                        position: 'absolute',
+                        top: '0.5rem',
+                        right: '0.5rem',
+                        zIndex: 1,
+                        padding: '0.35rem',
+                        borderRadius: '50%',
+                        border: '1px solid var(--glass-border)',
+                        background: 'rgba(0,0,0,0.55)',
+                        color: 'white',
+                        cursor: 'pointer',
+                        display: 'flex',
+                      }}
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                    <a href={item.url || undefined} target={item.url ? '_blank' : undefined} rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      {item.thumbnail ? (
+                        <img src={getMediaUrl(item.thumbnail)} alt={item.title} style={{ width: '100%', height: '110px', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)' }}>
+                          <LinkIcon size={24} color="var(--text-secondary)" />
                         </div>
+                      )}
+                      <div style={{ padding: '0.5rem 0.75rem' }}>
+                        <p style={{ fontSize: '0.8rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</p>
+                        {item.description && (
+                          <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.description}</p>
+                        )}
                       </div>
                     </a>
-                  ))}
-                </div>
-              )
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
       </div>
+
+      {editingPortfolioItem !== undefined && (
+        <AddPortfolioModal
+          item={editingPortfolioItem}
+          onClose={() => setEditingPortfolioItem(undefined)}
+          onSaved={(updatedProfile) => {
+            setProfileData(updatedProfile);
+            setEditingPortfolioItem(undefined);
+          }}
+        />
+      )}
     </div>
   );
 };

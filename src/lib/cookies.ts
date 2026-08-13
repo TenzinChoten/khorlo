@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-const COOKIE_NAME = "khorlo_token";
+const COOKIE_NAME = "auth_token";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export async function setAuthCookie(token: string): Promise<void> {

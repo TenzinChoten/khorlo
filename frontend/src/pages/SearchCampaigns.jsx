@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, DollarSign, Clock, Camera, PlayCircle, AtSign, Music } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 
 const getPlatformIcon = (platform) => {
@@ -13,9 +14,20 @@ const getPlatformIcon = (platform) => {
 };
 
 const SearchCampaigns = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [campaigns, setCampaigns] = useState([]);
+  const [myApplications, setMyApplications] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.role === 'INFLUENCER') {
+      fetchApi('/applications/me')
+        .then(res => setMyApplications(res.applications || []))
+        .catch(() => {});
+    }
+  }, [user]);
 
   useEffect(() => {
     setLoading(true);
@@ -67,8 +79,14 @@ const SearchCampaigns = () => {
             const logoImg = camp.images?.find(img => img.imageType === 'BRAND_LOGO')?.imageUrl || camp.business?.companyLogo;
             const logoSrc = logoImg ? getMediaUrl(logoImg) : `https://ui-avatars.com/api/?name=${encodeURIComponent(camp.business?.companyName || 'B')}&background=random&color=fff`;
             const platforms = camp.contentFormats?.map(cf => cf.contentFormat?.name) || [];
+            const isClosed = camp.applicationDeadline && new Date() > new Date(camp.applicationDeadline);
             return (
-              <div key={camp.id} className="glass-panel" style={{ padding: '2rem', display: 'flex', gap: '2rem', alignItems: 'center' }}>
+              <div 
+                key={camp.id} 
+                className="glass-panel" 
+                onClick={() => navigate(`/dashboard/campaign/${camp.id}`)}
+                style={{ padding: '2rem', display: 'flex', gap: '2rem', alignItems: 'center', cursor: 'pointer' }}
+              >
                 <img src={logoSrc} alt={camp.business?.companyName} style={{ width: '100px', height: '100px', borderRadius: '12px', objectFit: 'cover' }} />
 
                 <div style={{ flex: 1 }}>
@@ -89,9 +107,30 @@ const SearchCampaigns = () => {
                     </div>
                   )}
                 </div>
-                <div>
-                  <Link to={`/dashboard/campaign/${camp.id}`} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>View Details</Link>
-                </div>
+                {user?.role === 'INFLUENCER' && (
+                  <div>
+                    {(() => {
+                      const app = myApplications.find(a => a.campaignId === camp.id);
+                      if (app) {
+                        return (
+                          <span style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
+                            Application {app.status}
+                          </span>
+                        );
+                      }
+                      if (isClosed) {
+                        return (
+                          <span style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
+                            Closed
+                          </span>
+                        );
+                      }
+                      return (
+                        <button className="btn btn-primary" style={{ whiteSpace: 'nowrap', pointerEvents: 'none' }}>Apply Now</button>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -102,3 +141,4 @@ const SearchCampaigns = () => {
 };
 
 export default SearchCampaigns;
+

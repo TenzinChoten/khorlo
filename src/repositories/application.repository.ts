@@ -7,6 +7,7 @@ import type {
   ApplicationDetailDTO,
 } from "@/src/types/application";
 import type { UpdateApplicationStatusInput } from "@/src/validations/application.validation";
+import { ConflictError } from "@/src/types";
 import { toListDTO as mapToCampaignListDTO } from "./campaign.repository";
 import { toPublicDTO as mapToInfluencerPublicDTO } from "./influencer.repository";
 
@@ -42,8 +43,13 @@ const influencerSelect = {
   portfolioItems: { select: { id: true, title: true, description: true, thumbnail: true, url: true } },
 } as const;
 
+const conversationSelect = {
+  conversation: { select: { id: true } },
+} as const;
+
 const withCampaignInclude = {
   campaign: { include: campaignSelect },
+  ...conversationSelect,
 } as const;
 
 const withInfluencerInclude = {
@@ -58,7 +64,8 @@ const withInfluencerInclude = {
         }
       }
     }
-  }
+  },
+  ...conversationSelect,
 } as const;
 
 const detailInclude = {
@@ -70,13 +77,19 @@ const detailInclude = {
 // DTO Mappers
 // ─────────────────────────────────────────────
 
-function toBaseDTO(application: Prisma.ApplicationGetPayload<{}>): ApplicationDTO {
+type ApplicationRecord = Prisma.ApplicationGetPayload<{}> & {
+  conversation?: { id: string } | null;
+};
+
+function toBaseDTO(application: ApplicationRecord): ApplicationDTO {
   return {
     id: application.id,
     campaignId: application.campaignId,
     influencerId: application.influencerId,
     coverLetter: application.coverLetter,
     status: application.status,
+    // [Reason] Frontend deep-links into the existing conversation instead of creating one
+    conversationId: application.conversation?.id ?? null,
     createdAt: application.createdAt,
     updatedAt: application.updatedAt,
   };
@@ -161,30 +174,58 @@ export const applicationRepository = {
     return count > 0;
   },
 
+  async countByCampaignStatus(
+    campaignId: string,
+    status: ApplicationDTO["status"]
+  ): Promise<number> {
+    return prisma.application.count({
+      where: { campaignId, status },
+    });
+  },
+
   async updateStatus(
     id: string,
-    data: UpdateApplicationStatusInput
+    data: UpdateApplicationStatusInput,
+    slotCheck?: { campaignId: string; creatorSlots: number }
   ): Promise<ApplicationDTO> {
     const application = await prisma.$transaction(async (tx) => {
+      // [Reason] Lock the campaign so two accepts cannot fill more slots than creatorSlots allows
+      if (data.status === "ACCEPTED" && slotCheck) {
+        await tx.$queryRaw`
+          SELECT id FROM "Campaign" WHERE id = ${slotCheck.campaignId} FOR UPDATE
+        `;
+        const acceptedCount = await tx.application.count({
+          where: { campaignId: slotCheck.campaignId, status: "ACCEPTED" },
+        });
+        if (acceptedCount >= slotCheck.creatorSlots) {
+          throw new ConflictError(
+            `All ${slotCheck.creatorSlots} creator slot${slotCheck.creatorSlots === 1 ? "" : "s"} for this campaign are filled.`
+          );
+        }
+      }
+
       const updated = await tx.application.update({
         where: { id },
         data: { status: data.status },
       });
 
+      // [Reason] One accepted application must have exactly one conversation; skip if it already exists
+      let conversation: { id: string } | null = null;
       if (data.status === "ACCEPTED") {
-        // Create conversation if it doesn't exist
         const existing = await tx.conversation.findUnique({
           where: { applicationId: id },
+          select: { id: true },
         });
 
-        if (!existing) {
-          await tx.conversation.create({
-            data: { applicationId: id },
-          });
-        }
+        conversation = existing
+          ? existing
+          : await tx.conversation.create({
+              data: { applicationId: id },
+              select: { id: true },
+            });
       }
 
-      return updated;
+      return { ...updated, conversation };
     });
 
     return toBaseDTO(application);

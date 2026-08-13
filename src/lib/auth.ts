@@ -17,7 +17,12 @@ export async function getCurrentUser(): Promise<UserDTO> {
 
   try {
     const payload = await verifyAccessToken(token);
-    const user = await userRepository.findById(payload.userId);
+    // [Reason] Support both `id` and legacy `userId` claims so existing sessions still authenticate
+    const userId = payload.id || (payload as { userId?: string }).userId;
+    if (!userId) {
+      throw new UnauthorizedError("Invalid or expired token");
+    }
+    const user = await userRepository.findById(userId);
 
     if (!user) {
       throw new UnauthorizedError("User not found");

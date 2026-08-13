@@ -8,6 +8,7 @@ export interface ApplicationDTO {
   influencerId: string;
   coverLetter: string | null;
   status: ApplicationStatus;
+  conversationId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +36,7 @@ export interface ApplicationWithCampaignResponse {
 
 export interface ApplicationDetailResponse {
   application: ApplicationDetailDTO;
+  acceptedCount: number;
 }
 
 export interface ApplicationListMeResponse {

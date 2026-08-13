@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 
 export interface TokenPayload extends JWTPayload {
-  userId: string;
+  id: string;
   role: string;
 }
 

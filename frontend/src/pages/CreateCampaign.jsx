@@ -75,6 +75,22 @@ const CreateCampaign = () => {
 
   const handleNext = (e) => {
     e.preventDefault();
+    if (step === 1) {
+      if (!campaign.logoUrl || !campaign.title.trim() || !campaign.description.trim() || !campaign.status || !campaign.deadline || !campaign.contentDeadline || !campaign.locationType) {
+        setError('Please fill out all required fields.');
+        return;
+      }
+    } else if (step === 2) {
+      if (!campaign.compensationType || !campaign.creatorSlots) {
+        setError('Please fill out all required fields.');
+        return;
+      }
+      if ((campaign.compensationType === 'PAID' || campaign.compensationType === 'PAID_PLUS_PRODUCT') && (!campaign.budget || !campaign.currency)) {
+        setError('Please provide the budget and currency.');
+        return;
+      }
+    }
+    setError(null);
     if (step < 3) setStep(step + 1);
   };
 
@@ -84,6 +100,10 @@ const CreateCampaign = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (campaign.niches.length === 0 || campaign.formats.length === 0) {
+      setError('Please select required niches and formats.');
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
     try {
@@ -293,7 +313,7 @@ const CreateCampaign = () => {
                   </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Brand Logo</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Brand Logo <span style={{ color: error && !campaign.logoUrl ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input type="file" accept="image/*" style={{ display: 'none' }} ref={logoInputRef} onChange={(e) => handleFileUpload(e, 'logo')} />
                   <div 
                     onClick={() => logoInputRef.current?.click()}
@@ -311,7 +331,7 @@ const CreateCampaign = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Title</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Title <span style={{ color: error && !campaign.title ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="text" 
                     value={campaign.title}
@@ -334,7 +354,7 @@ const CreateCampaign = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Description</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Description <span style={{ color: error && !campaign.description ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <textarea 
                   value={campaign.description}
                   onChange={(e) => setCampaign({...campaign, description: e.target.value})}
@@ -347,7 +367,7 @@ const CreateCampaign = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Status</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Status <span style={{ color: error && !campaign.status ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <select 
                     value={campaign.status}
                     onChange={(e) => setCampaign({...campaign, status: e.target.value})}
@@ -358,10 +378,11 @@ const CreateCampaign = () => {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Application Deadline</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Application Deadline <span style={{ color: error && !campaign.deadline ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="date" 
                     value={campaign.deadline}
+                    required
                     onChange={(e) => {
                       const newDeadline = e.target.value;
                       setCampaign(prev => {
@@ -376,11 +397,12 @@ const CreateCampaign = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Content Deadline</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Content Deadline <span style={{ color: error && !campaign.contentDeadline ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="date" 
                     min={campaign.deadline}
                     value={campaign.contentDeadline}
+                    required
                     onChange={(e) => setCampaign({...campaign, contentDeadline: e.target.value})}
                     style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
                   />
@@ -388,7 +410,7 @@ const CreateCampaign = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Location Type</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Location Type <span style={{ color: error && !campaign.locationType ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <select 
                   value={campaign.locationType}
                   onChange={(e) => setCampaign({...campaign, locationType: e.target.value})}
@@ -443,7 +465,7 @@ const CreateCampaign = () => {
           {step === 2 && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Compensation Type</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Compensation Type <span style={{ color: error && !campaign.compensationType ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                   {['PAID', 'FREE_PRODUCT', 'PAID_PLUS_PRODUCT'].map(type => (
                     <div 
@@ -468,18 +490,19 @@ const CreateCampaign = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Number of Creators Needed</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Number of Creators Needed <span style={{ color: error && !campaign.creatorSlots ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="number" 
                     min="1"
                     value={campaign.creatorSlots === '' ? '' : campaign.creatorSlots}
+                    required
                     onChange={(e) => setCampaign({...campaign, creatorSlots: e.target.value === '' ? '' : parseInt(e.target.value)})}
                     style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
                   />
                 </div>
                 {(campaign.compensationType === 'PAID' || campaign.compensationType === 'PAID_PLUS_PRODUCT') && (
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Budget & Currency</label>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Budget & Currency <span style={{ color: error && (!campaign.budget || !campaign.currency) ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <select 
                         value={campaign.currency}
@@ -495,6 +518,7 @@ const CreateCampaign = () => {
                       <input 
                         type="text" 
                         value={campaign.budget}
+                        required
                         onChange={(e) => setCampaign({...campaign, budget: e.target.value})}
                         placeholder="e.g. 500 - 1,500"
                         style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
@@ -510,7 +534,7 @@ const CreateCampaign = () => {
           {step === 3 && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Niches</h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Niches <span style={{ color: error && campaign.niches.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableNiches.map(niche => (
                     <div 
@@ -534,7 +558,7 @@ const CreateCampaign = () => {
               </div>
 
               <div>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Formats</h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Formats <span style={{ color: error && campaign.formats.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableFormats.map(format => (
                     <div key={format} onClick={() => !campaign.formats.includes(format) && toggleFormat(format)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '999px', background: campaign.formats.includes(format) ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${campaign.formats.includes(format) ? 'var(--accent)' : 'var(--glass-border)'}`, transition: 'all 0.2s ease', cursor: campaign.formats.includes(format) ? 'default' : 'pointer' }}>

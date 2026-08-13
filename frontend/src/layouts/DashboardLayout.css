@@ -118,6 +118,8 @@
   justify-content: flex-end;
   align-items: center;
   border-bottom: 1px solid var(--glass-border);
+  position: relative;
+  z-index: 100;
 }
 
 .top-nav-actions {
@@ -125,6 +127,30 @@
   align-items: center;
   gap: 1.5rem;
   position: relative;
+}
+
+.faq-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  height: 40px;
+  padding: 0 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  margin-right: 0.5rem;
+}
+
+.faq-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .notification-btn {
@@ -173,7 +199,7 @@
   z-index: 50;
   box-shadow: 0 10px 25px rgba(0,0,0,0.5);
   animation: fadeIn 0.2s ease;
-  background: var(--bg-color);
+  background: #1C1C1C;
   border: 1px solid var(--glass-border);
 }
 
@@ -276,4 +302,66 @@
 .dashboard-content-inner {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 220px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .notification-dropdown {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    height: 100vh;
+    width: 280px;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    background-color: #111111; /* or var(--bg-color) if it's set on root */
+  }
+  
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0;
+  margin-right: auto;
 }
