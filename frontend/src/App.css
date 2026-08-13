@@ -117,12 +117,15 @@
 }
 
 .bento-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1.5rem;
 }
 
 .bento-card {
+  flex: 1 1 300px;
+  max-width: 400px;
   padding: 2.5rem;
   display: flex;
   flex-direction: column;
@@ -154,7 +157,7 @@
 /* Pricing Section */
 .pricing {
   padding: 6rem 2rem;
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 

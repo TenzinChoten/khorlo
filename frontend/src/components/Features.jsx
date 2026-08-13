@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { PenTool, Search, MessageSquare, BarChart2 } from 'lucide-react';
 
 const Features = () => {
   const observerRef = useRef(null);
@@ -28,7 +29,9 @@ const Features = () => {
       
       <div className="bento-grid">
         <div className="bento-card glass-panel" style={{ opacity: 0 }}>
-          <div className="bento-icon">🎯</div>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            <PenTool size={24} strokeWidth={1.5} style={{ transform: 'rotate(-90deg)' }} />
+          </div>
           <h3 className="bento-title">Campaign Management</h3>
           <p className="bento-desc">
             Post campaigns seamlessly. Set compensation types from Paid to Free Product, and manage budgets efficiently.
@@ -36,7 +39,9 @@ const Features = () => {
         </div>
         
         <div className="bento-card glass-panel" style={{ opacity: 0 }}>
-          <div className="bento-icon">🔍</div>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            <Search size={24} strokeWidth={1.5} />
+          </div>
           <h3 className="bento-title">Creator Discovery</h3>
           <p className="bento-desc">
             Filter by niches, platforms (Instagram, TikTok, YouTube), and engagement rate to find your perfect match.
@@ -44,7 +49,9 @@ const Features = () => {
         </div>
         
         <div className="bento-card glass-panel" style={{ opacity: 0 }}>
-          <div className="bento-icon">💬</div>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            <MessageSquare size={24} strokeWidth={1.5} />
+          </div>
           <h3 className="bento-title">Seamless Communication</h3>
           <p className="bento-desc">
             Built-in messaging and application tracking keeps all your influencer interactions in one organized place.
@@ -52,7 +59,9 @@ const Features = () => {
         </div>
         
         <div className="bento-card glass-panel" style={{ opacity: 0 }}>
-          <div className="bento-icon">📊</div>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            <BarChart2 size={24} strokeWidth={1.5} />
+          </div>
           <h3 className="bento-title">Analytics & Insights</h3>
           <p className="bento-desc">
             Track performance, engagement rates, and ROI to make data-driven marketing decisions.
