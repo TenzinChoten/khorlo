@@ -24,7 +24,9 @@ model User {
   notifications     Notification[]
   reviewsReceived   Review[]           @relation("ReviewsReceived")
   reviewsGiven      Review[]           @relation("ReviewsGiven")
-  socialAccounts    SocialAccount[]
+  socialAccounts      SocialAccount[]
+  // [Reason] Forgot/reset-password routes store one-time tokens against the user
+  passwordResetTokens PasswordResetToken[]
 
   @@index([role])
   @@index([isActive])
@@ -326,6 +328,19 @@ model Notification {
   @@index([isRead])
   @@index([type])
   @@index([createdAt])
+}
+
+// [Reason] Password reset APIs expect this model; without it Prisma Client has no passwordResetToken delegate
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Portfolio {
