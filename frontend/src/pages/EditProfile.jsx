@@ -32,7 +32,8 @@ const EditProfile = () => {
   const [content, setContent] = useState({ niches: [], formats: [] });
 
   const availableNiches = ['Tech', 'Beauty', 'Fashion', 'Fitness', 'Gaming', 'Lifestyle', 'Travel', 'Food'];
-  const availableFormats = ['Short-form Video', 'Long-form Video', 'Photography', 'Live Streams', 'Blog Posts'];
+  // [Reason] Keep profile format options aligned with the product content-format list
+  const availableFormats = ['Short-form Video', 'Long-form Video', 'Photo', 'Carousel', 'Story', 'Live Stream', 'Written Article', 'Audio / Podcast'];
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

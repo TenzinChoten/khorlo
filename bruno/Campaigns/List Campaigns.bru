@@ -5,22 +5,27 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/campaigns?page=1&limit=20&sort=newest
+  url: {{baseUrl}}/api/campaigns?page=1&limit=12&sort=newest
   body: none
   auth: none
 }
 
 params:query {
   page: 1
-  limit: 20
+  limit: 12
   sort: newest
+  ~search:
   ~keyword:
+  ~niches:
+  ~formats:
+  ~contentNiche:
+  ~contentFormat:
+  ~compensationType:
+  ~minBudget:
+  ~locationType:
   ~country:
   ~state:
   ~city:
-  ~locationType:
-  ~compensationType:
-  ~contentNiche:
-  ~contentFormat:
+  ~deadline:
   ~status:
 }

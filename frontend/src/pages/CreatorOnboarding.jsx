@@ -6,6 +6,7 @@ import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import ImageCropper from '../components/ImageCropper';
+import { consumePostAuthRedirect } from '../lib/authRedirect';
 
 const CreatorOnboarding = () => {
   const navigate = useNavigate();
@@ -65,7 +66,8 @@ const CreatorOnboarding = () => {
   });
 
   const availableNiches = ['Tech', 'Beauty', 'Fashion', 'Fitness', 'Gaming', 'Lifestyle', 'Travel', 'Food'];
-  const availableFormats = ['Short-form Video', 'Long-form Video', 'Photography', 'Live Streams', 'Blog Posts'];
+  // [Reason] Keep creator format options aligned with the product content-format list
+  const availableFormats = ['Short-form Video', 'Long-form Video', 'Photo', 'Carousel', 'Story', 'Live Stream', 'Written Article', 'Audio / Podcast'];
 
   // Step 4 State
   const [referralSources, setReferralSources] = useState(savedState.referralSources || []);
@@ -156,7 +158,8 @@ const CreatorOnboarding = () => {
         body: JSON.stringify(payload)
       });
       localStorage.removeItem(storageKey);
-      navigate('/dashboard/influencer');
+      // [Reason] Return creators to the campaign they came from after finishing onboarding
+      navigate(consumePostAuthRedirect() || '/dashboard/influencer');
     } catch (err) {
       console.error('Failed to save onboarding data:', err);
       alert('Failed to save onboarding data. Please try again.');

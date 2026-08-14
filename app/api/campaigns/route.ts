@@ -1,38 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
+import { campaignService } from "@/src/services/campaign.service";
+import { handleApiError } from "@/src/utils/api-error-handler";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search") || "";
-
-    const campaigns = await prisma.campaign.findMany({
-      where: {
-        status: "OPEN",
-        ...(search && {
-          OR: [
-            { title: { contains: search, mode: "insensitive" } },
-            { business: { companyName: { contains: search, mode: "insensitive" } } }
-          ]
-        })
-      },
-      include: {
-        business: { select: { companyName: true, companyLogo: true } },
-        contentNiches: { include: { contentNiche: { select: { name: true } } } },
-        contentFormats: { include: { contentFormat: { select: { name: true } } } },
-        images: true,
-      },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    });
-
-    return NextResponse.json({ campaigns });
+    // [Reason] Reuse campaignService so discovery filters run in Prisma instead of a second listing path
+    const result = await campaignService.list(request.nextUrl.searchParams);
+    return NextResponse.json({ ...result, campaigns: result.items });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 

@@ -20,6 +20,10 @@ const Navbar = () => {
     }
   };
 
+  // [Reason] Keep the current public campaign in the auth return path when signing in from this page
+  const campaignMatch = location.pathname.match(/^\/campaigns\/[^/]+$/);
+  const authQuery = campaignMatch ? `?redirect=${encodeURIComponent(location.pathname)}` : '';
+
   const handleLogoClick = (e) => {
     if (location.pathname === '/') {
       e.preventDefault();
@@ -41,8 +45,9 @@ const Navbar = () => {
       </div>
       
       <div className="nav-actions">
-        <Link to="/login" className="btn btn-outline" style={{ marginRight: '1rem', textDecoration: 'none', padding: '0.75rem 1.5rem', fontSize: '1rem', border: 'none' }}>log in</Link>
-        <Link to="/register" className="btn btn-primary" style={{ textDecoration: 'none', padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
+        {/* [Reason] Preserve post-auth campaign return while keeping the pulled navbar styles */}
+        <Link to={`/login${authQuery}`} className="btn btn-outline" style={{ marginRight: '1rem', textDecoration: 'none', padding: '0.75rem 1.5rem', fontSize: '1rem', border: 'none' }}>log in</Link>
+        <Link to={`/register${authQuery}`} className="btn btn-primary" style={{ textDecoration: 'none', padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
           sign up <ArrowUpRight size={18} strokeWidth={3} style={{ marginLeft: '4px' }} />
         </Link>
       </div>

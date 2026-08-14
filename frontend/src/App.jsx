@@ -116,6 +116,8 @@ function App() {
         <Route path="/onboarding/business" element={<BusinessOnboarding />} />
         <Route path="/onboarding/creator" element={<CreatorOnboarding />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
+        {/* [Reason] Shared campaign links must open without authentication */}
+        <Route path="/campaigns/:id" element={<CampaignDetail />} />
       </Route>
 
       {/* Authenticated Dashboard Routes */}

@@ -122,6 +122,7 @@ export const campaignService = {
 
   async list(searchParams: URLSearchParams): Promise<CampaignListResponse> {
     const params = Object.fromEntries(searchParams.entries());
+    // [Reason] Invalid discovery filters must 400 via the existing Zod + ValidationError path
     const query = parseValidation(campaignQuerySchema, params, "Invalid query parameters");
 
     const { items, total } = await campaignRepository.findMany(query);

@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getSafeInternalPath, resolvePostAuthDestination } from '../lib/authRedirect';
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
+  const redirect = getSafeInternalPath(searchParams.get('redirect'));
+  const registerHref = redirect ? `/register?redirect=${encodeURIComponent(redirect)}` : '/register';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,19 +20,8 @@ const Login = () => {
     setLoading(true);
     try {
       const user = await login(email, password);
-      if (user.role === 'BUSINESS') {
-        if (user.onboardingComplete) {
-          navigate('/dashboard/business');
-        } else {
-          navigate('/onboarding/business');
-        }
-      } else {
-        if (user.onboardingComplete) {
-          navigate('/dashboard/influencer');
-        } else {
-          navigate('/onboarding/creator');
-        }
-      }
+      // [Reason] Shared campaign Apply Now must land back on the same campaign after login
+      navigate(resolvePostAuthDestination(user, redirect));
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     } finally {
@@ -83,7 +76,7 @@ const Login = () => {
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-          Don't have an account? <Link to="/register" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Sign up</Link>
+          Don't have an account? <Link to={registerHref} style={{ color: 'var(--accent)', textDecoration: 'none' }}>Sign up</Link>
         </p>
       </div>
     </div>

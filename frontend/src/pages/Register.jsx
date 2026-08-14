@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getSafeInternalPath, resolvePostAuthDestination } from '../lib/authRedirect';
 
 const inputStyle = {
   width: '100%', padding: '0.75rem 1rem', borderRadius: '8px',
@@ -11,7 +12,10 @@ const inputStyle = {
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { register } = useAuth();
+  const redirect = getSafeInternalPath(searchParams.get('redirect'));
+  const loginHref = redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login';
   const [role, setRole] = useState(location.state?.role || 'brand');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,12 +29,9 @@ const Register = () => {
     try {
       const apiRole = role === 'brand' ? 'BUSINESS' : 'INFLUENCER';
       const computedName = email.split('@')[0] || 'User';
-      await register({ name: computedName, email, password, role: apiRole });
-      if (role === 'brand') {
-        navigate('/onboarding/business');
-      } else {
-        navigate('/onboarding/creator');
-      }
+      const user = await register({ name: computedName, email, password, role: apiRole });
+      // [Reason] Keep the shared campaign return path through registration and onboarding
+      navigate(resolvePostAuthDestination(user, redirect));
     } catch (err) {
       if (err.message === 'Email already in use') {
         setError('User already exists. Please log in.');
@@ -81,7 +82,7 @@ const Register = () => {
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-          Already have an account? <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Log in</Link>
+          Already have an account? <Link to={loginHref} style={{ color: 'var(--accent)', textDecoration: 'none' }}>Log in</Link>
         </p>
       </div>
     </div>

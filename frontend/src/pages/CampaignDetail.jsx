@@ -3,6 +3,8 @@ import { ArrowLeft, Calendar, DollarSign, Target, MapPin, Share2, X, MessageSqua
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import ShareCampaignModal from '../components/ShareCampaignModal';
+import { getPublicCampaignPath, getPublicCampaignUrl } from '../lib/campaignShare';
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -21,6 +23,7 @@ const CampaignDetail = () => {
   const [existingApplication, setExistingApplication] = useState(null);
   const [campaignApplications, setCampaignApplications] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     fetchApi(`/campaigns/${id}`)
@@ -48,6 +51,16 @@ const CampaignDetail = () => {
     }
   }, [id, user, campaign]);
 
+  useEffect(() => {
+    // [Reason] The SPA has no per-route document metadata, so set the share-friendly page title here
+    if (!campaign?.title) return;
+    const previousTitle = document.title;
+    document.title = `${campaign.title} | Khorlo`;
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [campaign]);
+
   const updateApplicationStatus = async (appId, status) => {
     try {
       await fetchApi(`/applications/${appId}/status`, {
@@ -60,7 +73,25 @@ const CampaignDetail = () => {
     }
   };
 
+  const goToLoginToApply = () => {
+    // [Reason] Logged-out Apply Now must open the login page, then return to this campaign
+    navigate(`/login?redirect=${encodeURIComponent(getPublicCampaignPath(id))}`);
+  };
+
+  // [Reason] Guests must hit login before the apply form; signed-in creators use the existing modal
+  const handleApplyNow = () => {
+    if (!user) {
+      goToLoginToApply();
+      return;
+    }
+    setShowApplyModal(true);
+  };
+
   const handleApply = async () => {
+    if (!user) {
+      goToLoginToApply();
+      return;
+    }
     setApplying(true);
     setApplyError(null);
     try {
@@ -106,9 +137,16 @@ const CampaignDetail = () => {
   const slotsFilled = acceptedCount >= creatorSlots;
   const isClosed = isDeadlinePassed || slotsFilled;
   const displayStatus = isClosed && campaign?.status === 'OPEN' ? 'CLOSED' : campaign?.status || 'DRAFT';
+  // [Reason] Support both the public DTO ({ name }) and the older nested join shape
+  const nicheNames = campaign.contentNiches?.map((n) => n.contentNiche?.name || n.name).filter(Boolean) || [];
+  const formatItems = campaign.contentFormats?.map((f) => ({
+    name: f.contentFormat?.name || f.name,
+    quantity: f.quantity || 1,
+  })).filter((f) => f.name) || [];
+  const publicCampaignUrl = getPublicCampaignUrl(id);
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in campaign-detail-page">
       {showApplyModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
           <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '2rem', position: 'relative' }}>
@@ -160,7 +198,7 @@ const CampaignDetail = () => {
         <ArrowLeft size={16} /> Back
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+      <div className="campaign-detail-layout">
         <div>
           {bannerSrc && (
             <div style={{ width: '100%', height: '250px', borderRadius: '16px', marginBottom: '2rem', overflow: 'hidden' }}>
@@ -191,10 +229,10 @@ const CampaignDetail = () => {
             </p>
             <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Requirements</h3>
             <ul style={{ color: 'var(--text-secondary)', paddingLeft: '1.5rem', lineHeight: 1.8 }}>
-              {campaign.contentFormats?.map((f, i) => (
-                <li key={i}>{f.quantity || 1}x {f.contentFormat?.name}</li>
+              {formatItems.map((f, i) => (
+                <li key={i}>{f.quantity}x {f.name}</li>
               ))}
-              {campaign.contentFormats?.length === 0 && (
+              {formatItems.length === 0 && (
                 <li>No specific format requirements</li>
               )}
             </ul>
@@ -269,7 +307,7 @@ const CampaignDetail = () => {
         <div>
           <div className="glass-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
             {!user ? (
-              <button onClick={() => navigate('/login')} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Login to Apply</button>
+              <button type="button" onClick={handleApplyNow} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
             ) : user.role === 'INFLUENCER' ? (
               existingApplication ? (
                 <>
@@ -293,11 +331,16 @@ const CampaignDetail = () => {
                   {slotsFilled ? 'All Creator Slots Filled' : 'Applications Closed'}
                 </button>
               ) : (
-                <button onClick={() => setShowApplyModal(true)} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
+                <button type="button" onClick={handleApplyNow} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
               )
             ) : null}
-            <button className="btn btn-outline" style={{ width: '100%', display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
-              <Share2 size={18} /> Share Campaign
+            <button
+              type="button"
+              onClick={() => setShowShareModal(true)}
+              className="btn btn-outline"
+              style={{ width: '100%', display: 'flex', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}
+            >
+              <Share2 size={18} /> Share
             </button>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -313,7 +356,7 @@ const CampaignDetail = () => {
                 <div style={{ color: 'var(--accent)' }}><Target size={20} /></div>
                 <div>
                   <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Niches</div>
-                  <div style={{ fontWeight: 600 }}>{campaign.contentNiches?.map(n => n.contentNiche?.name).join(', ') || 'Any'}</div>
+                  <div style={{ fontWeight: 600 }}>{nicheNames.join(', ') || 'Any'}</div>
                 </div>
               </div>
 
@@ -363,6 +406,14 @@ const CampaignDetail = () => {
           </div>
         </div>
       </div>
+
+      <ShareCampaignModal
+        open={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        campaignTitle={campaign.title}
+        campaignUrl={publicCampaignUrl}
+        description={campaign.description}
+      />
     </div>
   );
 };

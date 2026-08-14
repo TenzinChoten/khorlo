@@ -45,7 +45,8 @@ const CreateCampaign = () => {
 
   const availableNiches = ['Tech', 'Beauty', 'Fashion', 'Fitness', 'Gaming', 'Lifestyle', 'Travel', 'Food'];
 
-  const availableFormats = ['Short-form Video', 'Long-form Video', 'Photography', 'Live Streams', 'Blog Posts'];
+  // [Reason] Keep campaign format options aligned with the product content-format list
+  const availableFormats = ['Short-form Video', 'Long-form Video', 'Photo', 'Carousel', 'Story', 'Live Stream', 'Written Article', 'Audio / Podcast'];
 
   const handleCountryChange = (val) => {
     if (!val) {

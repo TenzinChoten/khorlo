@@ -36,6 +36,16 @@ const listInclude = {
   business: { select: businessSelect },
   contentNiches: { select: nicheSelect },
   contentFormats: { select: formatSelect },
+  images: {
+    select: {
+      id: true,
+      imageUrl: true,
+      imageType: true,
+      caption: true,
+      sortOrder: true,
+    },
+    orderBy: { sortOrder: "asc" as const },
+  },
 } as const;
 
 const detailInclude = {
@@ -49,6 +59,12 @@ const detailInclude = {
       sortOrder: true,
     },
     orderBy: { sortOrder: "asc" as const },
+  },
+  // [Reason] Slot availability is public campaign state, not private application data
+  _count: {
+    select: {
+      applications: { where: { status: "ACCEPTED" as const } },
+    },
   },
 } as const;
 
@@ -97,6 +113,7 @@ export function toListDTO(campaign: RawListItem): CampaignListItemDTO {
     business: campaign.business,
     contentNiches: mapNiches(campaign.contentNiches),
     contentFormats: mapFormats(campaign.contentFormats),
+    images: campaign.images,
   };
 }
 
@@ -108,6 +125,7 @@ function toDetailDTO(campaign: RawDetail): CampaignDetailDTO {
     address: campaign.address,
     updatedAt: campaign.updatedAt,
     images: campaign.images,
+    acceptedCount: campaign._count.applications,
   };
 }
 
@@ -121,9 +139,100 @@ const SORT_MAP: Record<
 > = {
   newest: { createdAt: "desc" },
   oldest: { createdAt: "asc" },
-  budget_asc: { budget: "asc" },
-  budget_desc: { budget: "desc" },
+  budget_asc: { budget: { sort: "asc", nulls: "last" } },
+  // [Reason] Highest compensation should not rank unpaid/null budgets first
+  budget_desc: { budget: { sort: "desc", nulls: "last" } },
+  deadline: { applicationDeadline: { sort: "asc", nulls: "last" } },
 };
+
+const DEADLINE_WINDOW_DAYS: Record<string, number> = {
+  soon: 3,
+  "7": 7,
+  "30": 30,
+};
+
+/**
+ * Builds SQL-level discovery filters. Influencer listing is always OPEN and not expired.
+ */
+export function buildCampaignListWhere(
+  query: CampaignQueryInput
+): Prisma.CampaignWhereInput {
+  const now = new Date();
+  const and: Prisma.CampaignWhereInput[] = [
+    { status: "OPEN" },
+  ];
+
+  const keyword = query.keyword ?? query.search;
+  if (keyword) {
+    and.push({
+      OR: [
+        { title: { contains: keyword, mode: "insensitive" } },
+        { description: { contains: keyword, mode: "insensitive" } },
+        { business: { companyName: { contains: keyword, mode: "insensitive" } } },
+      ],
+    });
+  }
+
+  if (query.country) and.push({ country: { equals: query.country, mode: "insensitive" } });
+  if (query.state) and.push({ state: { equals: query.state, mode: "insensitive" } });
+  if (query.city) and.push({ city: { equals: query.city, mode: "insensitive" } });
+  if (query.locationType) and.push({ locationType: query.locationType });
+  if (query.compensationType) and.push({ compensationType: query.compensationType });
+  if (query.minBudget !== undefined) {
+    and.push({ budget: { gte: query.minBudget } });
+  }
+
+  const niches = [
+    ...(query.niches ?? []),
+    ...(query.contentNiche ? [query.contentNiche] : []),
+  ];
+  if (niches.length > 0) {
+    // [Reason] Multiple niches match ANY selected niche (OR)
+    and.push({
+      contentNiches: {
+        some: {
+          contentNiche: { name: { in: niches, mode: "insensitive" } },
+        },
+      },
+    });
+  }
+
+  const formats = [
+    ...(query.formats ?? []),
+    ...(query.contentFormat ? [query.contentFormat] : []),
+  ];
+  if (formats.length > 0) {
+    // [Reason] Multiple formats match ANY selected format (OR); combined with niches via AND
+    and.push({
+      contentFormats: {
+        some: {
+          contentFormat: { name: { in: formats, mode: "insensitive" } },
+        },
+      },
+    });
+  }
+
+  const deadlineWindow = query.deadline && query.deadline !== "all"
+    ? DEADLINE_WINDOW_DAYS[query.deadline]
+    : undefined;
+
+  if (deadlineWindow) {
+    const until = new Date(now.getTime() + deadlineWindow * 24 * 60 * 60 * 1000);
+    and.push({
+      applicationDeadline: { gte: now, lte: until },
+    });
+  } else {
+    // [Reason] Discovery must hide expired campaigns while still showing open-ended deadlines
+    and.push({
+      OR: [
+        { applicationDeadline: null },
+        { applicationDeadline: { gte: now } },
+      ],
+    });
+  }
+
+  return { AND: and };
+}
 
 // ─────────────────────────────────────────────
 // Repository
@@ -136,32 +245,7 @@ export const campaignRepository = {
   async findMany(
     query: CampaignQueryInput
   ): Promise<{ items: CampaignListItemDTO[]; total: number }> {
-    const where: Prisma.CampaignWhereInput = {};
-
-    if (query.keyword) {
-      where.OR = [
-        { title: { contains: query.keyword, mode: "insensitive" } },
-        { description: { contains: query.keyword, mode: "insensitive" } },
-      ];
-    }
-    if (query.country) where.country = query.country;
-    if (query.state) where.state = query.state;
-    if (query.city) where.city = query.city;
-    if (query.locationType) where.locationType = query.locationType;
-    if (query.compensationType) where.compensationType = query.compensationType;
-    if (query.status) where.status = query.status;
-
-    if (query.contentNiche) {
-      where.contentNiches = {
-        some: { contentNiche: { name: query.contentNiche } },
-      };
-    }
-    if (query.contentFormat) {
-      where.contentFormats = {
-        some: { contentFormat: { name: query.contentFormat } },
-      };
-    }
-
+    const where = buildCampaignListWhere(query);
     const orderBy = SORT_MAP[query.sort] ?? SORT_MAP.newest;
     const skip = (query.page - 1) * query.limit;
 

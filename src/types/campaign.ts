@@ -49,6 +49,8 @@ export interface CampaignListItemDTO {
   business: CampaignBusinessDTO;
   contentNiches: CampaignNicheDTO[];
   contentFormats: CampaignFormatDTO[];
+  // [Reason] Discovery cards already show brand/logo images from the live list endpoint
+  images: CampaignImageDTO[];
 }
 
 export interface CampaignDetailDTO extends CampaignListItemDTO {
@@ -56,7 +58,8 @@ export interface CampaignDetailDTO extends CampaignListItemDTO {
   contentDeadline: Date | null;
   address: string | null;
   updatedAt: Date;
-  images: CampaignImageDTO[];
+  // [Reason] Public detail UI needs filled-slot counts without exposing application rows
+  acceptedCount: number;
 }
 
 export interface CampaignListResponse {

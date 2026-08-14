@@ -6,6 +6,7 @@ import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import ImageCropper from '../components/ImageCropper';
+import { consumePostAuthRedirect } from '../lib/authRedirect';
 
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
@@ -132,7 +133,8 @@ const BusinessOnboarding = () => {
         body: JSON.stringify(payload)
       });
       localStorage.removeItem(storageKey);
-      navigate('/dashboard/business');
+      // [Reason] Return brands to the campaign they opened from a shared link after onboarding
+      navigate(consumePostAuthRedirect() || '/dashboard/business');
     } catch (err) {
       console.error('Failed to save onboarding data:', err);
       alert('Failed to save onboarding data. Please try again.');
