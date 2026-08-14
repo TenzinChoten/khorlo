@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X } from 'lucide-react';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import ImageCropper from '../components/ImageCropper';
-import { Country, State, City } from 'country-state-city';
+// [Reason] Load country/state without the 7.7MB city dataset until a state is selected
+import { Country, State, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
 
 
@@ -20,6 +21,8 @@ const CreateCampaign = () => {
   const timeoutRef = useRef(null);
   const [cropperData, setCropperData] = useState({ imageSrc: null, type: null, aspect: 1, cropShape: 'rect', filename: 'image.jpg' });
   const [locationCodes, setLocationCodes] = useState({ countryCode: '', stateCode: '' });
+  // [Reason] Hold async city options so city.json is not imported with the page
+  const [availableCities, setAvailableCities] = useState([]);
   
   const [campaign, setCampaign] = useState({
     title: '',
@@ -47,6 +50,19 @@ const CreateCampaign = () => {
 
   // [Reason] Keep campaign format options aligned with the product content-format list
   const availableFormats = ['Short-form Video', 'Long-form Video', 'Photo', 'Carousel', 'Story', 'Live Stream', 'Written Article', 'Audio / Podcast'];
+
+  useEffect(() => {
+    let cancelled = false;
+    if (locationCodes.countryCode && locationCodes.stateCode) {
+      // [Reason] City JSON is a separate async chunk; ignore stale results if the user changes state
+      getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode).then((cities) => {
+        if (!cancelled) setAvailableCities(cities);
+      });
+    } else {
+      setAvailableCities([]);
+    }
+    return () => { cancelled = true; };
+  }, [locationCodes.countryCode, locationCodes.stateCode]);
 
   const handleCountryChange = (val) => {
     if (!val) {
@@ -446,7 +462,7 @@ const CreateCampaign = () => {
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
                     <SearchableDropdown
-                      options={locationCodes.stateCode ? City.getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode).map(c => ({ value: c.name, label: c.name })) : []}
+                      options={availableCities.map(c => ({ value: c.name, label: c.name }))}
                       value={campaign.city}
                       onChange={handleCityChange}
                       placeholder="Select City"
@@ -541,16 +557,7 @@ const CreateCampaign = () => {
                     <div 
                       key={niche}
                       onClick={() => toggleNiche(niche)}
-                      style={{ 
-                        padding: '0.5rem 1rem', 
-                        borderRadius: '999px', 
-                        cursor: 'pointer',
-                        background: campaign.niches.includes(niche) ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${campaign.niches.includes(niche) ? 'var(--accent)' : 'var(--glass-border)'}`,
-                        color: 'white',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s ease'
-                      }}
+                      className={`choice-chip${campaign.niches.includes(niche) ? ' is-selected' : ''}`}
                     >
                       {niche}
                     </div>
@@ -562,10 +569,11 @@ const CreateCampaign = () => {
                 <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Formats <span style={{ color: error && campaign.formats.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableFormats.map(format => (
-                    <div key={format} onClick={() => !campaign.formats.includes(format) && toggleFormat(format)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '999px', background: campaign.formats.includes(format) ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${campaign.formats.includes(format) ? 'var(--accent)' : 'var(--glass-border)'}`, transition: 'all 0.2s ease', cursor: campaign.formats.includes(format) ? 'default' : 'pointer' }}>
+                    <div key={format} onClick={() => !campaign.formats.includes(format) && toggleFormat(format)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '999px', background: campaign.formats.includes(format) ? 'rgba(17,17,17,0.08)' : '#ffffff', border: `1px solid ${campaign.formats.includes(format) ? 'var(--accent)' : 'var(--text-primary)'}`, transition: 'all 0.2s ease', cursor: campaign.formats.includes(format) ? 'default' : 'pointer' }}>
                       <div 
                         onClick={(e) => { if (campaign.formats.includes(format)) { e.stopPropagation(); toggleFormat(format); } }}
-                        style={{ cursor: 'pointer', color: campaign.formats.includes(format) ? 'var(--accent)' : 'white', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        // [Reason] Unselected format labels were white on a light chip and disappeared
+                        style={{ cursor: 'pointer', color: 'var(--text-primary)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                       >
                         {campaign.formats.includes(format) && <Check size={14} />} {format}
                       </div>
@@ -579,9 +587,9 @@ const CreateCampaign = () => {
                             onMouseLeave={stopChangingQuantity}
                             onTouchStart={(e) => startChangingQuantity(e, format, -1)}
                             onTouchEnd={stopChangingQuantity}
-                            style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+                            style={{ background: 'rgba(17,17,17,0.08)', border: 'none', color: 'var(--text-primary)', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
                           >-</button>
-                          <span style={{ color: 'white', fontSize: '0.875rem', fontWeight: 600, minWidth: '1.2rem', textAlign: 'center' }}>
+                          <span style={{ color: 'var(--text-primary)', fontSize: '0.875rem', fontWeight: 600, minWidth: '1.2rem', textAlign: 'center' }}>
                             {campaign.formatQuantities[format] || 1}
                           </span>
                           <button 

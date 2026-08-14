@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload, Plus, Trash2, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Music, ExternalLink } from 'lucide-react';
-import { Country, State, City } from 'country-state-city';
+// [Reason] Load country/state without the 7.7MB city dataset until a state is selected
+import { Country, State, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -49,11 +50,16 @@ const CreatorOnboarding = () => {
   }, [locationCodes.countryCode]);
 
   useEffect(() => {
+    let cancelled = false;
     if (locationCodes.countryCode && locationCodes.stateCode) {
-      setAvailableCities(City.getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode));
+      // [Reason] City JSON is a separate async chunk; ignore stale results if the user changes state
+      getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode).then((cities) => {
+        if (!cancelled) setAvailableCities(cities);
+      });
     } else {
       setAvailableCities([]);
     }
+    return () => { cancelled = true; };
   }, [locationCodes.countryCode, locationCodes.stateCode]);
 
   const [socials, setSocials] = useState(savedState.socials || [
@@ -510,16 +516,7 @@ const CreatorOnboarding = () => {
                     <div 
                       key={niche}
                       onClick={() => toggleNiche(niche)}
-                      style={{ 
-                        padding: '0.5rem 1rem', 
-                        borderRadius: '999px', 
-                        cursor: 'pointer',
-                        background: content.niches.includes(niche) ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${content.niches.includes(niche) ? 'var(--accent)' : 'var(--glass-border)'}`,
-                        color: 'white',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s ease'
-                      }}
+                      className={`choice-chip${content.niches.includes(niche) ? ' is-selected' : ''}`}
                     >
                       {niche}
                     </div>
@@ -534,16 +531,7 @@ const CreatorOnboarding = () => {
                     <div 
                       key={format}
                       onClick={() => toggleFormat(format)}
-                      style={{ 
-                        padding: '0.5rem 1rem', 
-                        borderRadius: '999px', 
-                        cursor: 'pointer',
-                        background: content.formats.includes(format) ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${content.formats.includes(format) ? 'var(--accent)' : 'var(--glass-border)'}`,
-                        color: 'white',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s ease'
-                      }}
+                      className={`choice-chip${content.formats.includes(format) ? ' is-selected' : ''}`}
                     >
                       {format}
                     </div>
@@ -563,16 +551,7 @@ const CreatorOnboarding = () => {
                     <div 
                       key={source}
                       onClick={() => toggleReferralSource(source)}
-                      style={{ 
-                        padding: '0.5rem 1rem', 
-                        borderRadius: '999px', 
-                        cursor: 'pointer',
-                        background: referralSources.includes(source) ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${referralSources.includes(source) ? 'var(--accent)' : 'var(--glass-border)'}`,
-                        color: 'white',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s ease'
-                      }}
+                      className={`choice-chip${referralSources.includes(source) ? ' is-selected' : ''}`}
                     >
                       {source}
                     </div>

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Save, ArrowLeft, Plus, Trash2, Camera, PlayCircle, AtSign, Music, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi, getMediaUrl } from '../lib/api';
-import { Country, State, City } from 'country-state-city';
+// [Reason] Load country/state without the 7.7MB city dataset until a state is selected
+import { Country, State, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
 
 const EditProfile = () => {
@@ -27,6 +28,8 @@ const EditProfile = () => {
     countryCode: '',
     stateCode: ''
   });
+  // [Reason] Hold async city options so city.json is not imported with the page
+  const [availableCities, setAvailableCities] = useState([]);
 
   const [socials, setSocials] = useState([]);
   const [content, setContent] = useState({ niches: [], formats: [] });
@@ -90,6 +93,19 @@ const EditProfile = () => {
       .catch(err => setError('Failed to load profile data'))
       .finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (locationCodes.countryCode && locationCodes.stateCode) {
+      // [Reason] City JSON is a separate async chunk; ignore stale results if the user changes state
+      getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode).then((cities) => {
+        if (!cancelled) setAvailableCities(cities);
+      });
+    } else {
+      setAvailableCities([]);
+    }
+    return () => { cancelled = true; };
+  }, [locationCodes.countryCode, locationCodes.stateCode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -277,7 +293,7 @@ const EditProfile = () => {
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City</label>
               <SearchableDropdown
-                options={locationCodes.stateCode ? City.getCitiesOfState(locationCodes.countryCode, locationCodes.stateCode).map(c => ({ value: c.name, label: c.name })) : []}
+                options={availableCities.map(c => ({ value: c.name, label: c.name }))}
                 value={profile.city}
                 onChange={handleCityChange}
                 placeholder="Select City"
@@ -400,16 +416,7 @@ const EditProfile = () => {
                     <div 
                       key={niche}
                       onClick={() => toggleNiche(niche)}
-                      style={{ 
-                        padding: '0.5rem 1rem', 
-                        borderRadius: '999px', 
-                        cursor: 'pointer',
-                        background: content.niches.includes(niche) ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${content.niches.includes(niche) ? 'var(--accent)' : 'var(--glass-border)'}`,
-                        color: 'white',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s ease'
-                      }}
+                      className={`choice-chip${content.niches.includes(niche) ? ' is-selected' : ''}`}
                     >
                       {niche}
                     </div>
@@ -424,16 +431,7 @@ const EditProfile = () => {
                     <div 
                       key={format}
                       onClick={() => toggleFormat(format)}
-                      style={{ 
-                        padding: '0.5rem 1rem', 
-                        borderRadius: '999px', 
-                        cursor: 'pointer',
-                        background: content.formats.includes(format) ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${content.formats.includes(format) ? 'var(--accent)' : 'var(--glass-border)'}`,
-                        color: 'white',
-                        fontSize: '0.875rem',
-                        transition: 'all 0.2s ease'
-                      }}
+                      className={`choice-chip${content.formats.includes(format) ? ' is-selected' : ''}`}
                     >
                       {format}
                     </div>

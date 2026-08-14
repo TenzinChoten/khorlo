@@ -36,6 +36,11 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# [Reason] Vite mode files only contain the public API origin, not secrets
+!frontend/.env.example
+!frontend/.env.development
+!frontend/.env.production
+
 # vercel
 .vercel
 

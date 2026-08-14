@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
 
 const formatFollowers = (n) => {
@@ -10,6 +11,7 @@ const formatFollowers = (n) => {
 };
 
 const SearchInfluencers = () => {
+  const navigate = useNavigate();
   const [influencers, setInfluencers] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,15 @@ const SearchInfluencers = () => {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement</div>
                   </div>
                 </div>
-                <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.875rem', padding: '0.5rem' }}>View Profile</button>
+                {/* [Reason] The button had no handler, so brands could not open a creator profile */}
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  style={{ width: '100%', fontSize: '0.875rem', padding: '0.5rem' }}
+                  onClick={() => navigate(`/dashboard/influencers/${inf.id}`)}
+                >
+                  View Profile
+                </button>
               </div>
             );
           })}

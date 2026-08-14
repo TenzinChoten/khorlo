@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# [Reason] Keep machine-local overrides and secrets out of git; commit only mode/example files
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.development
+!.env.production
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +30,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel

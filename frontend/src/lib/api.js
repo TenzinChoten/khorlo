@@ -1,9 +1,18 @@
-const API_BASE = 'http://localhost:3000/api';
+// [Reason] Normalize the public API origin so env values never produce /api/api or missing slashes
+function getApiOrigin() {
+  const raw = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim();
+  return raw.replace(/\/+$/, '').replace(/\/api$/i, '');
+}
+
+const API_ORIGIN = getApiOrigin();
+const API_BASE = `${API_ORIGIN}/api`;
 
 export async function fetchApi(path, options = {}) {
   const isFormData = options.body instanceof FormData;
+  // [Reason] Paths are always /resource; join against /api without a double slash
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${normalizedPath}`, {
     ...options,
     credentials: 'include',
     headers: isFormData ? undefined : {
@@ -28,8 +37,24 @@ export async function fetchApi(path, options = {}) {
 
 export function getMediaUrl(url) {
   if (!url) return null;
-  if (url.startsWith('/uploads')) {
-    return `http://localhost:3000${url}`;
+
+  // [Reason] Absolute, data, and blob URLs are already usable in <img> / CSS
+  if (/^(https?:|data:|blob:)/i.test(url)) {
+    try {
+      const parsed = new URL(url);
+      // [Reason] Rewrite leftover localhost upload URLs so production never loads local media
+      if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+        return `${API_ORIGIN}${parsed.pathname}${parsed.search}`;
+      }
+    } catch {
+      return url;
+    }
+    return url;
+  }
+
+  const path = url.startsWith('/') ? url : `/${url}`;
+  if (path.startsWith('/uploads')) {
+    return `${API_ORIGIN}${path}`;
   }
   return url;
 }

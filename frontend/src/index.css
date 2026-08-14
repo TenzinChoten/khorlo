@@ -68,6 +68,23 @@ a {
   box-shadow: 0px 0px 0px var(--text-primary) !important;
 }
 
+/* [Reason] Press/hover shift on chrome and FAQ rows moves the click target away from the cursor */
+.sidebar.glass-panel,
+.sidebar.glass-panel:hover,
+.sidebar.glass-panel:active,
+.top-nav.glass-panel,
+.top-nav.glass-panel:hover,
+.top-nav.glass-panel:active {
+  transform: none !important;
+  box-shadow: none;
+}
+
+.faq-item.glass-panel,
+.faq-item.glass-panel:hover,
+.faq-item.glass-panel:active {
+  transform: none !important;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -142,6 +159,39 @@ input[type=number]::-webkit-inner-spin-button {
 }
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+/* [Reason] Light theme: leftover dark-theme white text made typed values invisible on white fields */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="image"]),
+textarea,
+select {
+  color: var(--text-primary) !important;
+  background-color: #ffffff !important;
+  caret-color: var(--text-primary);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 1;
+}
+
+/* [Reason] Unselected chips used white text on a light page, so labels only appeared after click */
+.choice-chip {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid var(--text-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.choice-chip.is-selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
 }
 
 .gradient-text {

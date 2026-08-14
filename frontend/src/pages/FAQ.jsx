@@ -34,8 +34,8 @@ const FAQ = () => {
   return (
     <div className="animate-fade-in" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', minHeight: 'calc(100vh - 100px)' }}>
       <div style={{ textAlign: 'center', marginBottom: '4rem', marginTop: '2rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '50%', marginBottom: '1.5rem', border: '1px solid var(--glass-border)' }}>
-          <MessageSquare size={32} color="white" />
+        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(17,17,17,0.05)', padding: '1rem', borderRadius: '50%', marginBottom: '1.5rem', border: '1px solid var(--glass-border)' }}>
+          <MessageSquare size={32} color="var(--text-primary)" />
         </div>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '1rem', letterSpacing: '-0.02em' }}>Frequently Asked Questions</h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1.125rem', maxWidth: '600px', margin: '0 auto' }}>
@@ -49,7 +49,7 @@ const FAQ = () => {
           return (
             <div 
               key={index} 
-              className="glass-panel"
+              className="glass-panel faq-item"
               style={{ 
                 padding: '0',
                 overflow: 'hidden',
@@ -57,8 +57,13 @@ const FAQ = () => {
                 border: isOpen ? '1px solid var(--accent)' : '1px solid var(--glass-border)'
               }}
             >
-              <button 
-                onClick={() => toggleAccordion(index)}
+              <button
+                type="button"
+                onClick={(e) => {
+                  // [Reason] Stop the parent glass-panel press shift from cancelling the accordion click
+                  e.stopPropagation();
+                  toggleAccordion(index);
+                }}
                 style={{ 
                   width: '100%', 
                   display: 'flex', 
@@ -67,7 +72,7 @@ const FAQ = () => {
                   padding: '1.5rem', 
                   background: 'transparent', 
                   border: 'none', 
-                  color: 'white', 
+                  color: 'var(--text-primary)', 
                   fontSize: '1.125rem',
                   fontWeight: 500,
                   cursor: 'pointer',

@@ -1,39 +1,42 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import './App.css'
 
-// Layouts
+// [Reason] Layouts and landing sections stay eager so first paint does not wait on a route chunk
 import LandingLayout from './layouts/LandingLayout'
-import DashboardLayout from './layouts/DashboardLayout'
-
-// Pages
 import Hero from './components/Hero'
 import Features from './components/Features'
 import Pricing from './components/Pricing'
 import About from './components/About'
 import ScrollToTop from './components/ScrollToTop'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import BusinessDashboard from './pages/BusinessDashboard'
-import InfluencerDashboard from './pages/InfluencerDashboard'
-import SearchInfluencers from './pages/SearchInfluencers'
-import SearchCampaigns from './pages/SearchCampaigns'
-import CampaignDetail from './pages/CampaignDetail'
-import ApplicationReview from './pages/ApplicationReview'
-import Profile from './pages/Profile'
-import EditProfile from './pages/EditProfile'
-import ChangePassword from './pages/ChangePassword'
-import Chat from './pages/Chat'
-import Notifications from './pages/Notifications'
-import FAQ from './pages/FAQ'
-import BusinessOnboarding from './pages/BusinessOnboarding'
-import CreatorOnboarding from './pages/CreatorOnboarding'
-import CheckoutSuccess from './pages/CheckoutSuccess'
-import Billing from './pages/Billing'
-import CreateCampaign from './pages/CreateCampaign'
-import PublishedCampaigns from './pages/PublishedCampaigns'
+
+// [Reason] Dashboard chrome is unused on marketing/auth routes
+const DashboardLayout = lazy(() => import('./layouts/DashboardLayout'))
+
+// [Reason] Split each route so visitors do not download the full app on first load
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const BusinessDashboard = lazy(() => import('./pages/BusinessDashboard'))
+const InfluencerDashboard = lazy(() => import('./pages/InfluencerDashboard'))
+const SearchInfluencers = lazy(() => import('./pages/SearchInfluencers'))
+const InfluencerPublicProfile = lazy(() => import('./pages/InfluencerPublicProfile'))
+const SearchCampaigns = lazy(() => import('./pages/SearchCampaigns'))
+const CampaignDetail = lazy(() => import('./pages/CampaignDetail'))
+const ApplicationReview = lazy(() => import('./pages/ApplicationReview'))
+const Profile = lazy(() => import('./pages/Profile'))
+const EditProfile = lazy(() => import('./pages/EditProfile'))
+const ChangePassword = lazy(() => import('./pages/ChangePassword'))
+const Chat = lazy(() => import('./pages/Chat'))
+const Notifications = lazy(() => import('./pages/Notifications'))
+const FAQ = lazy(() => import('./pages/FAQ'))
+const BusinessOnboarding = lazy(() => import('./pages/BusinessOnboarding'))
+const CreatorOnboarding = lazy(() => import('./pages/CreatorOnboarding'))
+const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'))
+const Billing = lazy(() => import('./pages/Billing'))
+const CreateCampaign = lazy(() => import('./pages/CreateCampaign'))
+const PublishedCampaigns = lazy(() => import('./pages/PublishedCampaigns'))
 
 // A wrapper for the landing page content
 const LandingPage = () => (
@@ -44,6 +47,15 @@ const LandingPage = () => (
     <About />
   </>
 )
+
+// [Reason] Match existing page loading copy while a route chunk downloads
+function RouteFallback() {
+  return (
+    <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+      Loading...
+    </div>
+  )
+}
 
 function App() {
   React.useEffect(() => {
@@ -73,7 +85,8 @@ function App() {
     let cards = [];
     
     const applyTilt = () => {
-      cards = document.querySelectorAll('.glass-panel');
+      // [Reason] Sidebar/header tilt shifts hit targets so Log Out and nav clicks miss
+      cards = document.querySelectorAll('.glass-panel:not(.sidebar):not(.top-nav)');
       cards.forEach(card => {
         card.addEventListener('mousemove', handleMouseMove);
         card.addEventListener('mouseleave', handleMouseLeave);
@@ -105,6 +118,7 @@ function App() {
     <>
       <div className="noise-overlay"></div>
       <ScrollToTop />
+      <Suspense fallback={<RouteFallback />}>
       <Routes>
         {/* Public Routes with Landing Layout */}
       <Route element={<LandingLayout />}>
@@ -127,6 +141,8 @@ function App() {
         <Route path="business/campaigns" element={<PublishedCampaigns />} />
         <Route path="influencer" element={<InfluencerDashboard />} />
         <Route path="search-influencers" element={<SearchInfluencers />} />
+        {/* [Reason] Avoid /dashboard/influencer/:id so it does not collide with the creator dashboard */}
+        <Route path="influencers/:id" element={<InfluencerPublicProfile />} />
         <Route path="search-campaigns" element={<SearchCampaigns />} />
         <Route path="campaign/:id" element={<CampaignDetail />} />
         <Route path="application/:id" element={<ApplicationReview />} />
@@ -139,6 +155,7 @@ function App() {
         <Route path="billing" element={<Billing />} />
       </Route>
     </Routes>
+      </Suspense>
     </>
   )
 }

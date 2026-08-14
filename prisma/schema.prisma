@@ -1,6 +1,3 @@
-// Khorlo — Creator Marketplace Database Schema
-// Prisma ORM v7 · PostgreSQL · Fully normalized (3NF)
-
 generator client {
   provider = "prisma-client"
   output   = "../app/generated/prisma"
@@ -10,9 +7,340 @@ datasource db {
   provider = "postgresql"
 }
 
-// ─────────────────────────────────────────────
-// Enums
-// ─────────────────────────────────────────────
+model User {
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  password          String
+  role              Role
+  heardAboutUs      String?
+  emailVerifiedAt   DateTime?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  businessProfile   BusinessProfile?
+  influencerProfile InfluencerProfile?
+  sentMessages      Message[]          @relation("MessageSender")
+  notifications     Notification[]
+  reviewsReceived   Review[]           @relation("ReviewsReceived")
+  reviewsGiven      Review[]           @relation("ReviewsGiven")
+  socialAccounts    SocialAccount[]
+
+  @@index([role])
+  @@index([isActive])
+  @@index([email])
+}
+
+model BusinessProfile {
+  id                 String         @id @default(cuid())
+  userId             String         @unique
+  companyName        String
+  companyLogo        String?
+  website            String?
+  companyDescription String?
+  country            String?
+  state              String?
+  city               String?
+  isVerified         Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaigns          Campaign[]
+  subscriptions      Subscription[]
+
+  @@index([country, state, city])
+}
+
+model InfluencerProfile {
+  id                String                    @id @default(cuid())
+  userId            String                    @unique
+  displayName       String
+  profilePhoto      String?
+  bio               String?
+  age               Int?
+  gender            Gender?
+  country           String?
+  state             String?
+  city              String?
+  ethnicity         String?
+  previousBrands    String?
+  applicationStatus ApplicationApprovalStatus @default(PENDING)
+  approvedAt        DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  applications      Application[]
+  contentFormats    InfluencerContentFormat[]
+  contentNiches     InfluencerContentNiche[]
+  user              User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  portfolioItems    Portfolio[]
+
+  @@index([country, state, city])
+  @@index([gender])
+  @@index([applicationStatus])
+}
+
+model SocialAccount {
+  id             String   @id @default(cuid())
+  userId         String
+  platform       Platform
+  username       String
+  profileUrl     String?
+  followers      Int      @default(0)
+  engagementRate Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([platform])
+  @@index([followers])
+  @@index([engagementRate])
+}
+
+model ContentNiche {
+  id          String                   @id @default(cuid())
+  name        String                   @unique
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  campaigns   CampaignContentNiche[]
+  influencers InfluencerContentNiche[]
+}
+
+model InfluencerContentNiche {
+  id             String            @id @default(cuid())
+  influencerId   String
+  contentNicheId String
+  createdAt      DateTime          @default(now())
+  contentNiche   ContentNiche      @relation(fields: [contentNicheId], references: [id], onDelete: Cascade)
+  influencer     InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@unique([influencerId, contentNicheId])
+  @@index([contentNicheId])
+}
+
+model ContentFormat {
+  id          String                    @id @default(cuid())
+  name        String                    @unique
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  campaigns   CampaignContentFormat[]
+  influencers InfluencerContentFormat[]
+}
+
+model InfluencerContentFormat {
+  id              String            @id @default(cuid())
+  influencerId    String
+  contentFormatId String
+  createdAt       DateTime          @default(now())
+  contentFormat   ContentFormat     @relation(fields: [contentFormatId], references: [id], onDelete: Cascade)
+  influencer      InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@unique([influencerId, contentFormatId])
+  @@index([contentFormatId])
+}
+
+model Campaign {
+  id                  String                  @id @default(cuid())
+  businessId          String
+  title               String
+  description         String
+  productName         String?
+  compensationType    CompensationType
+  budget              Float?
+  currency            String?                 @default("USD")
+  creatorSlots        Int                     @default(1)
+  applicationDeadline DateTime?
+  contentDeadline     DateTime?
+  locationType        LocationType            @default(ONLINE)
+  country             String?
+  state               String?
+  city                String?
+  address             String?
+  status              CampaignStatus          @default(DRAFT)
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  applications        Application[]
+  business            BusinessProfile         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  contentFormats      CampaignContentFormat[]
+  contentNiches       CampaignContentNiche[]
+  images              CampaignImage[]
+  reviews             Review[]
+
+  @@index([businessId])
+  @@index([status])
+  @@index([compensationType])
+  @@index([locationType])
+  @@index([applicationDeadline])
+  @@index([country, state, city])
+}
+
+model CampaignContentNiche {
+  id             String       @id @default(cuid())
+  campaignId     String
+  contentNicheId String
+  createdAt      DateTime     @default(now())
+  campaign       Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contentNiche   ContentNiche @relation(fields: [contentNicheId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, contentNicheId])
+  @@index([contentNicheId])
+}
+
+model CampaignContentFormat {
+  id              String        @id @default(cuid())
+  campaignId      String
+  contentFormatId String
+  quantity        Int           @default(1)
+  createdAt       DateTime      @default(now())
+  campaign        Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contentFormat   ContentFormat @relation(fields: [contentFormatId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, contentFormatId])
+  @@index([contentFormatId])
+}
+
+model CampaignImage {
+  id         String            @id @default(cuid())
+  campaignId String
+  imageUrl   String
+  imageType  CampaignImageType @default(OTHER)
+  caption    String?
+  sortOrder  Int               @default(0)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  campaign   Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([imageType])
+}
+
+model Application {
+  id           String            @id @default(cuid())
+  campaignId   String
+  influencerId String
+  coverLetter  String?
+  status       ApplicationStatus @default(PENDING)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  campaign     Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  influencer   InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  conversation Conversation?
+
+  @@unique([campaignId, influencerId])
+  @@index([status])
+  @@index([influencerId])
+}
+
+model Conversation {
+  id            String      @id @default(cuid())
+  applicationId String      @unique
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  messages      Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  message        String
+  attachmentUrl  String?
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  campaignId String
+  reviewerId String
+  revieweeId String
+  rating     Int
+  review     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  reviewee   User     @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+  reviewer   User     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, reviewerId, revieweeId])
+  @@index([revieweeId])
+  @@index([campaignId])
+}
+
+model Plan {
+  id                String         @id @default(cuid())
+  name              String         @unique
+  price             Float
+  billingCycle      BillingCycle
+  campaignLimit     Int
+  messageLimit      Int
+  advancedSearch    Boolean        @default(false)
+  featuredCampaigns Boolean        @default(false)
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  subscriptions     Subscription[]
+
+  @@index([isActive])
+  @@index([billingCycle])
+}
+
+model Subscription {
+  id         String             @id @default(cuid())
+  businessId String
+  planId     String
+  startsAt   DateTime
+  expiresAt  DateTime
+  status     SubscriptionStatus @default(ACTIVE)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  business   BusinessProfile    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  plan       Plan               @relation(fields: [planId], references: [id])
+
+  @@index([businessId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Portfolio {
+  id           String            @id @default(cuid())
+  influencerId String
+  title        String
+  description  String?
+  thumbnail    String?
+  url          String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  influencer   InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  @@index([influencerId])
+}
 
 enum Role {
   ADMIN
@@ -95,468 +423,4 @@ enum ApplicationApprovalStatus {
   PENDING
   APPROVED
   REJECTED
-}
-
-// ─────────────────────────────────────────────
-// Users
-// ─────────────────────────────────────────────
-
-model User {
-  id              String    @id @default(cuid())
-  name            String
-  email           String    @unique
-  password        String
-  role            Role
-  heardAboutUs    String?
-  emailVerifiedAt DateTime?
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  businessProfile   BusinessProfile?
-  influencerProfile InfluencerProfile?
-  socialAccounts    SocialAccount[]
-  notifications     Notification[]
-  sentMessages      Message[]        @relation("MessageSender")
-  reviewsGiven      Review[]         @relation("ReviewsGiven")
-  reviewsReceived   Review[]         @relation("ReviewsReceived")
-  passwordResetTokens PasswordResetToken[]
-
-  @@index([role])
-  @@index([isActive])
-  @@index([email])
-}
-
-// ─────────────────────────────────────────────
-// Authentication Tokens
-// ─────────────────────────────────────────────
-
-model PasswordResetToken {
-  id        String   @id @default(cuid())
-  userId    String
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([token])
-}
-
-// ─────────────────────────────────────────────
-// Business Profile
-// ─────────────────────────────────────────────
-
-model BusinessProfile {
-  id                 String  @id @default(cuid())
-  userId             String  @unique
-  companyName        String
-  companyLogo        String?
-  website            String?
-  companyDescription String?
-  country            String?
-  state              String?
-  city               String?
-  isVerified         Boolean @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  // Relations
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  campaigns     Campaign[]
-  subscriptions Subscription[]
-
-  @@index([country, state, city])
-}
-
-// ─────────────────────────────────────────────
-// Influencer Profile
-// ─────────────────────────────────────────────
-
-model InfluencerProfile {
-  id                String                    @id @default(cuid())
-  userId            String                    @unique
-  displayName       String
-  profilePhoto      String?
-  bio               String?
-  age               Int?
-  gender            Gender?
-  country           String?
-  state             String?
-  city              String?
-  ethnicity         String?
-  previousBrands    String?
-  applicationStatus ApplicationApprovalStatus @default(PENDING)
-  approvedAt        DateTime?
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-
-  // Relations
-  user           User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contentNiches  InfluencerContentNiche[]
-  contentFormats InfluencerContentFormat[]
-  applications   Application[]
-  portfolioItems Portfolio[]
-
-  @@index([country, state, city])
-  @@index([gender])
-  @@index([applicationStatus])
-}
-
-// ─────────────────────────────────────────────
-// Social Accounts
-// ─────────────────────────────────────────────
-
-model SocialAccount {
-  id             String   @id @default(cuid())
-  userId         String
-  platform       Platform
-  username       String
-  profileUrl     String?
-  followers      Int      @default(0)
-  engagementRate Float    @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, platform])
-  @@index([platform])
-  @@index([followers])
-  @@index([engagementRate])
-}
-
-// ─────────────────────────────────────────────
-// Content Niches (Master Table)
-// ─────────────────────────────────────────────
-
-model ContentNiche {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  influencers InfluencerContentNiche[]
-  campaigns   CampaignContentNiche[]
-}
-
-// Influencer ↔ ContentNiche join table
-model InfluencerContentNiche {
-  id             String @id @default(cuid())
-  influencerId   String
-  contentNicheId String
-  createdAt      DateTime @default(now())
-
-  // Relations
-  influencer   InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  contentNiche ContentNiche      @relation(fields: [contentNicheId], references: [id], onDelete: Cascade)
-
-  @@unique([influencerId, contentNicheId])
-  @@index([contentNicheId])
-}
-
-// ─────────────────────────────────────────────
-// Content Formats (Master Table)
-// ─────────────────────────────────────────────
-
-model ContentFormat {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  influencers InfluencerContentFormat[]
-  campaigns   CampaignContentFormat[]
-}
-
-// Influencer ↔ ContentFormat join table
-model InfluencerContentFormat {
-  id              String @id @default(cuid())
-  influencerId    String
-  contentFormatId String
-  createdAt       DateTime @default(now())
-
-  // Relations
-  influencer    InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  contentFormat ContentFormat     @relation(fields: [contentFormatId], references: [id], onDelete: Cascade)
-
-  @@unique([influencerId, contentFormatId])
-  @@index([contentFormatId])
-}
-
-// ─────────────────────────────────────────────
-// Campaign
-// ─────────────────────────────────────────────
-
-model Campaign {
-  id                  String           @id @default(cuid())
-  businessId          String
-  title               String
-  description         String
-  productName         String?
-  compensationType    CompensationType
-  budget              Float?
-  currency            String?          @default("USD")
-  creatorSlots        Int              @default(1)
-  applicationDeadline DateTime?
-  contentDeadline     DateTime?
-  locationType        LocationType     @default(ONLINE)
-  country             String?
-  state               String?
-  city                String?
-  address             String?
-  status              CampaignStatus   @default(DRAFT)
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-
-  // Relations
-  business       BusinessProfile        @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  images         CampaignImage[]
-  contentNiches  CampaignContentNiche[]
-  contentFormats CampaignContentFormat[]
-  applications   Application[]
-  reviews        Review[]
-
-  @@index([businessId])
-  @@index([status])
-  @@index([compensationType])
-  @@index([locationType])
-  @@index([applicationDeadline])
-  @@index([country, state, city])
-}
-
-// Campaign ↔ ContentNiche join table
-model CampaignContentNiche {
-  id             String @id @default(cuid())
-  campaignId     String
-  contentNicheId String
-  createdAt      DateTime @default(now())
-
-  // Relations
-  campaign     Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  contentNiche ContentNiche @relation(fields: [contentNicheId], references: [id], onDelete: Cascade)
-
-  @@unique([campaignId, contentNicheId])
-  @@index([contentNicheId])
-}
-
-// Campaign ↔ ContentFormat join table (with quantity)
-model CampaignContentFormat {
-  id              String @id @default(cuid())
-  campaignId      String
-  contentFormatId String
-  quantity        Int    @default(1)
-  createdAt       DateTime @default(now())
-
-  // Relations
-  campaign      Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  contentFormat ContentFormat  @relation(fields: [contentFormatId], references: [id], onDelete: Cascade)
-
-  @@unique([campaignId, contentFormatId])
-  @@index([contentFormatId])
-}
-
-// ─────────────────────────────────────────────
-// Campaign Images
-// ─────────────────────────────────────────────
-
-model CampaignImage {
-  id         String            @id @default(cuid())
-  campaignId String
-  imageUrl   String
-  imageType  CampaignImageType @default(OTHER)
-  caption    String?
-  sortOrder  Int               @default(0)
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-
-  // Relations
-  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-
-  @@index([campaignId])
-  @@index([imageType])
-}
-
-// ─────────────────────────────────────────────
-// Applications
-// ─────────────────────────────────────────────
-
-model Application {
-  id           String            @id @default(cuid())
-  campaignId   String
-  influencerId String
-  coverLetter  String?
-  status       ApplicationStatus @default(PENDING)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-
-  // Relations
-  campaign     Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  influencer   InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-  conversation Conversation?
-
-  // Prevent duplicate applications
-  @@unique([campaignId, influencerId])
-  @@index([status])
-  @@index([influencerId])
-}
-
-// ─────────────────────────────────────────────
-// Conversations
-// ─────────────────────────────────────────────
-
-model Conversation {
-  id            String   @id @default(cuid())
-  applicationId String   @unique
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  messages   Message[]
-}
-
-
-// ─────────────────────────────────────────────
-// Messages
-// ─────────────────────────────────────────────
-
-model Message {
-  id             String   @id @default(cuid())
-  conversationId String
-  senderId       String
-  message        String
-  attachmentUrl  String?
-  isRead         Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  // Relations
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-
-  @@index([conversationId])
-  @@index([senderId])
-  @@index([isRead])
-  @@index([createdAt])
-}
-
-// ─────────────────────────────────────────────
-// Reviews
-// ─────────────────────────────────────────────
-
-model Review {
-  id         String   @id @default(cuid())
-  campaignId String
-  reviewerId String
-  revieweeId String
-  rating     Int      // 1–5
-  review     String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  // Relations
-  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  reviewer User     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
-  reviewee User     @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
-
-  // One user can review another only once per campaign
-  @@unique([campaignId, reviewerId, revieweeId])
-  @@index([revieweeId])
-  @@index([campaignId])
-}
-
-// ─────────────────────────────────────────────
-// Subscription Plans
-// ─────────────────────────────────────────────
-
-model Plan {
-  id                String       @id @default(cuid())
-  name              String       @unique
-  price             Float
-  billingCycle      BillingCycle
-  campaignLimit     Int
-  messageLimit      Int
-  advancedSearch    Boolean      @default(false)
-  featuredCampaigns Boolean      @default(false)
-  isActive          Boolean      @default(true)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-
-  // Relations
-  subscriptions Subscription[]
-
-  @@index([isActive])
-  @@index([billingCycle])
-}
-
-// ─────────────────────────────────────────────
-// Subscriptions
-// ─────────────────────────────────────────────
-
-model Subscription {
-  id         String             @id @default(cuid())
-  businessId String
-  planId     String
-  startsAt   DateTime
-  expiresAt  DateTime
-  status     SubscriptionStatus @default(ACTIVE)
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-
-  // Relations
-  business BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  plan     Plan            @relation(fields: [planId], references: [id], onDelete: Restrict)
-
-  @@index([businessId])
-  @@index([status])
-  @@index([expiresAt])
-}
-
-// ─────────────────────────────────────────────
-// Notifications
-// ─────────────────────────────────────────────
-
-model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  title     String
-  body      String
-  type      NotificationType
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([isRead])
-  @@index([type])
-  @@index([createdAt])
-}
-
-// ─────────────────────────────────────────────
-// Portfolio
-// ─────────────────────────────────────────────
-
-model Portfolio {
-  id           String   @id @default(cuid())
-  influencerId String
-  title        String
-  description  String?
-  thumbnail    String?
-  url          String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  influencer InfluencerProfile @relation(fields: [influencerId], references: [id], onDelete: Cascade)
-
-  @@index([influencerId])
 }

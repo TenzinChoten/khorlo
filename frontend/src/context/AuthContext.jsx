@@ -33,8 +33,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await fetchApi('/auth/logout', { method: 'POST' }).catch(() => {});
+    // [Reason] Drop the client user immediately; cookie clear can fail across localhost ports
     setUser(null);
+    await fetchApi('/auth/logout', { method: 'POST' }).catch(() => {});
   };
 
   return (

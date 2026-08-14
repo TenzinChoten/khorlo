@@ -87,11 +87,13 @@ const DashboardLayout = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    if (window.confirm('Are you sure you want to log out?')) {
-      await logout();
-      navigate('/');
-    }
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to log out?')) return;
+    // [Reason] Clear local session first so a slow/failed logout request cannot leave the user stuck
+    await logout();
+    navigate('/');
   };
 
   const handleNotificationClick = () => {
@@ -177,7 +179,7 @@ const DashboardLayout = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="logout-btn" onClick={handleLogout}>
+          <button type="button" className="logout-btn" onClick={handleLogout}>
             <LogOut size={20} />
             <span>Log Out</span>
           </button>
@@ -194,7 +196,7 @@ const DashboardLayout = () => {
           </button>
           
           <div className="top-nav-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }} ref={notifRef}>
-            <Link to="/dashboard/faq" className="faq-btn">
+            <Link to="/dashboard/faq" className="faq-btn" onClick={(e) => e.stopPropagation()}>
               <MessageSquare size={16} strokeWidth={2.5} />
               FAQs
             </Link>
