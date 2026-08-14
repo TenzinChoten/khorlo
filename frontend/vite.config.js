@@ -19,10 +19,6 @@ export default defineConfig({
               test: /node_modules[\\/]country-state-city[\\/]lib[\\/](country|state)/,
             },
             {
-              name: 'location-cities',
-              test: /node_modules[\\/]country-state-city[\\/]lib[\\/](city|assets[\\/]city)/,
-            },
-            {
               name: 'image-cropper',
               test: /node_modules[\\/]react-easy-crop[\\/]/,
             },

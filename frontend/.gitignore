@@ -31,3 +31,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# [Reason] Per-country city JSON is generated from country-state-city before Vite runs
+src/generated/cities/*.json
