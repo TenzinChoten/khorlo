@@ -296,4 +296,11 @@ async function applySubscriptionEvent(
   if (updated.status !== subscription.status) {
     await notifyStatusChange(updated, updated.status);
   }
+
+  if (["CANCELLED", "EXPIRED", "FAILED"].includes(updated.status)) {
+    const { ensureDefaultFreeSubscription } = await import(
+      "@/src/services/subscription.service"
+    );
+    await ensureDefaultFreeSubscription(updated.businessId);
+  }
 }

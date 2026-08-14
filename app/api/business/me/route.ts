@@ -101,6 +101,10 @@ export async function PATCH(request: NextRequest) {
       });
     }
 
+    const { ensureDefaultFreeSubscription } = await import(
+      "@/src/services/subscription.service"
+    );
+
     const updated = await prisma.businessProfile.upsert({
       where: { userId: authUser.id },
       create: {
@@ -126,6 +130,9 @@ export async function PATCH(request: NextRequest) {
         user: { select: { name: true, email: true } },
       }
     });
+
+    // [Reason] Onboarding upsert is the usual brand-create path, so assign Free here too
+    await ensureDefaultFreeSubscription(updated.id);
 
     return NextResponse.json({ profile: updated });
   } catch (error) {

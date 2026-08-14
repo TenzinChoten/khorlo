@@ -14,6 +14,7 @@ const CreateCampaign = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [planBlocked, setPlanBlocked] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const bannerInputRef = useRef(null);
   const logoInputRef = useRef(null);
@@ -88,6 +89,21 @@ const CreateCampaign = () => {
     return () => { cancelled = true; };
   }, [locationCodes.countryCode, locationCodes.stateCode]);
 
+  useEffect(() => {
+    // [Reason] Expired Free (or over-limit) plans should fail before the user fills the form
+    fetchApi('/subscriptions/me')
+      .then((res) => {
+        const sub = res.subscription;
+        if (!sub) return;
+        const expired = sub.status === 'EXPIRED' || new Date(sub.expiresAt).getTime() <= Date.now();
+        if (expired && !(sub.plan?.price > 0 && sub.status === 'ACTIVE')) {
+          setPlanBlocked(true);
+          setError('Your Free plan has expired. Upgrade or start a plan again to post a campaign.');
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const handleCountryChange = (val) => {
     if (!val) {
       setLocationCodes({ countryCode: '', stateCode: '' });
@@ -143,6 +159,10 @@ const CreateCampaign = () => {
     e.preventDefault();
     if (campaign.niches.length === 0 || campaign.formats.length === 0) {
       setError('Please select required niches and formats.');
+      return;
+    }
+    if (planBlocked) {
+      setError('Your Free plan has expired. Upgrade or start a plan again to post a campaign.');
       return;
     }
     setIsSubmitting(true);
@@ -325,8 +345,18 @@ const CreateCampaign = () => {
         </div>
 
         {error && (
-          <div style={{ marginBottom: '2rem', padding: '1rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgb(239, 68, 68)', color: '#fca5a5' }}>
+          <div role="alert" style={{ marginBottom: '2rem', padding: '1rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgb(239, 68, 68)', color: '#fca5a5' }}>
             {error}
+            {planBlocked && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ marginTop: '0.75rem' }}
+                onClick={() => navigate('/dashboard/billing')}
+              >
+                View plans
+              </button>
+            )}
           </div>
         )}
 
@@ -641,7 +671,7 @@ const CreateCampaign = () => {
               </button>
             )}
             
-            <button type="submit" disabled={isSubmitting} className="btn btn-primary btn-accent" style={{ flex: 1, padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
+            <button type="submit" disabled={isSubmitting || planBlocked} className="btn btn-primary btn-accent" style={{ flex: 1, padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isSubmitting || planBlocked ? 0.7 : 1, cursor: isSubmitting || planBlocked ? 'not-allowed' : 'pointer' }}>
               {step < 3 ? (
                 <>Next <ChevronRight size={18} /></>
               ) : isSubmitting ? (

@@ -32,6 +32,22 @@ export const planRepository = {
     });
   },
 
+  async findDefaultFree(): Promise<PlanDTO | null> {
+    // [Reason] Prefer the seeded Free row so unpaid businesses land on the catalog default
+    const named = await prisma.plan.findFirst({
+      where: { isActive: true, name: "Free", price: { lte: 0 } },
+      select: planSelect,
+    });
+    if (named) {
+      return named;
+    }
+    return prisma.plan.findFirst({
+      where: { isActive: true, price: { lte: 0 } },
+      orderBy: { createdAt: "asc" },
+      select: planSelect,
+    });
+  },
+
   async setRazorpayPlanId(id: string, razorpayPlanId: string): Promise<PlanDTO> {
     return prisma.plan.update({
       where: { id },

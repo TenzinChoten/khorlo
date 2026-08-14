@@ -17,6 +17,7 @@ import {
 import type {
   CreateSubscriptionResponse,
   PlanDTO,
+  SubscriptionDTO,
   SubscriptionListResponse,
   SubscriptionResponse,
 } from "@/src/types/subscription";
@@ -65,6 +66,60 @@ async function requireBusinessProfile(userId: string) {
   return profile;
 }
 
+function isPaidPlan(plan: Pick<PlanDTO, "price">): boolean {
+  return plan.price > 0;
+}
+
+export async function ensureDefaultFreeSubscription(
+  businessId: string
+): Promise<SubscriptionDTO> {
+  await subscriptionRepository.expireStaleByBusinessId(businessId);
+  const open = await subscriptionRepository.findOpenByBusinessId(businessId);
+  if (open && isPaidPlan(open.plan)) {
+    return open;
+  }
+  if (open && !isPaidPlan(open.plan)) {
+    return open;
+  }
+
+  const latest = await subscriptionRepository.findLatestByBusinessId(businessId);
+  // [Reason] An expired Free period must stay expired so campaign posting stays blocked
+  if (latest && !isPaidPlan(latest.plan) && latest.status === "EXPIRED") {
+    return latest;
+  }
+
+  const freePlan = await planRepository.findDefaultFree();
+  if (!freePlan) {
+    throw new NotFoundError("Free plan is not configured");
+  }
+
+  const startsAt = new Date();
+  try {
+    return await subscriptionRepository.create({
+      businessId,
+      planId: freePlan.id,
+      razorpaySubscriptionId: null,
+      startsAt,
+      expiresAt: addBillingCycle(startsAt, freePlan.billingCycle),
+      status: "ACTIVE",
+    });
+  } catch (error) {
+    // [Reason] Concurrent first visits can both try to insert Free; reuse the winner
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2002"
+    ) {
+      const existing = await subscriptionRepository.findOpenByBusinessId(businessId);
+      if (existing) {
+        return existing;
+      }
+    }
+    throw error;
+  }
+}
+
 async function ensureRazorpayPlan(plan: PlanDTO): Promise<string> {
   if (plan.razorpayPlanId) {
     return plan.razorpayPlanId;
@@ -84,6 +139,7 @@ export const subscriptionService = {
   async listMine(): Promise<SubscriptionListResponse> {
     const user = await requireRole("BUSINESS");
     const profile = await requireBusinessProfile(user.id);
+    await ensureDefaultFreeSubscription(profile.id);
     const subscriptions = await subscriptionRepository.listByBusinessId(profile.id);
     return { subscriptions };
   },
@@ -91,14 +147,7 @@ export const subscriptionService = {
   async getMine(): Promise<SubscriptionResponse> {
     const user = await requireRole("BUSINESS");
     const profile = await requireBusinessProfile(user.id);
-    const subscription =
-      (await subscriptionRepository.findOpenByBusinessId(profile.id)) ??
-      (await subscriptionRepository.findLatestByBusinessId(profile.id));
-
-    if (!subscription) {
-      throw new NotFoundError("Subscription not found");
-    }
-
+    const subscription = await ensureDefaultFreeSubscription(profile.id);
     return { subscription };
   },
 
@@ -117,10 +166,17 @@ export const subscriptionService = {
     }
 
     const existing = await subscriptionRepository.findOpenByBusinessId(profile.id);
-    if (existing) {
+    if (existing && isPaidPlan(existing.plan)) {
       throw new ConflictError(
-        "An active or pending subscription already exists. Cancel it before starting a new plan."
+        "An active or pending paid subscription already exists. Cancel it before starting a new plan."
       );
+    }
+    if (existing && !isPaidPlan(existing.plan) && !isPaidPlan(plan)) {
+      return { subscription: existing, checkout: null };
+    }
+    // [Reason] Free is the default seat; end it before a paid plan takes the open-subscription slot
+    if (existing && !isPaidPlan(existing.plan) && isPaidPlan(plan)) {
+      await subscriptionRepository.update(existing.id, { status: "CANCELLED" });
     }
 
     const startsAt = new Date();
@@ -231,7 +287,8 @@ export const subscriptionService = {
       "SUBSCRIPTION"
     );
 
-    return { subscription: updated };
+    const fallback = await ensureDefaultFreeSubscription(profile.id);
+    return { subscription: fallback.status === "ACTIVE" ? fallback : updated };
   },
 };
 

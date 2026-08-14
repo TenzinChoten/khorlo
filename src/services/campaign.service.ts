@@ -13,6 +13,7 @@ import type {
   CampaignDetailResponse,
   CampaignListResponse,
 } from "@/src/types/campaign";
+import { assertCanPostCampaign } from "@/src/services/campaign-entitlement.service";
 import {
   ValidationError,
   NotFoundError,
@@ -99,6 +100,8 @@ export const campaignService = {
         "You must create a business profile before creating campaigns"
       );
     }
+
+    await assertCanPostCampaign(businessProfile.id);
 
     const { nicheIds, formatEntries } = await resolveContentRelations(data);
 

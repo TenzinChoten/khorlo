@@ -62,9 +62,29 @@ export const subscriptionRepository = {
     return subscription ? toDTO(subscription) : null;
   },
 
+  async expireStaleByBusinessId(businessId: string): Promise<number> {
+    // [Reason] ACTIVE rows past expiresAt must become EXPIRED so Free cannot keep posting
+    const result = await prisma.subscription.updateMany({
+      where: {
+        businessId,
+        status: "ACTIVE",
+        expiresAt: { lte: new Date() },
+      },
+      data: { status: "EXPIRED" },
+    });
+    return result.count;
+  },
+
   async findOpenByBusinessId(businessId: string): Promise<SubscriptionDTO | null> {
+    const now = new Date();
     const subscription = await prisma.subscription.findFirst({
-      where: { businessId, status: { in: openStatuses } },
+      where: {
+        businessId,
+        OR: [
+          { status: "PENDING" },
+          { status: "ACTIVE", expiresAt: { gt: now } },
+        ],
+      },
       include: subscriptionInclude,
       orderBy: { createdAt: "desc" },
     });

@@ -91,6 +91,74 @@ export function verifyRazorpayWebhookSignature(
   return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
 }
 
+export interface RazorpayOrderEntity {
+  id: string;
+  amount: number | string;
+  currency: string;
+  receipt?: string;
+  status?: string;
+}
+
+export class RazorpayApiError extends AppError {
+  constructor(message: string, statusCode: number) {
+    super(message, statusCode, statusCode === 401 ? "RAZORPAY_AUTH_FAILED" : "RAZORPAY_API_ERROR");
+  }
+}
+
+function mapRazorpaySdkError(error: unknown): never {
+  const err = error as { statusCode?: number; error?: { description?: string }; message?: string };
+  const statusCode = err.statusCode === 401 ? 401 : 500;
+  const message =
+    err.error?.description ||
+    err.message ||
+    (statusCode === 401 ? "Razorpay authentication failed" : "Razorpay order creation failed");
+  throw new RazorpayApiError(message, statusCode);
+}
+
+export async function createRazorpayOrder(input: {
+  amountPaise: number;
+  currency: string;
+  receipt: string;
+  notes?: Record<string, string>;
+}): Promise<RazorpayOrderEntity> {
+  try {
+    const client = getRazorpayClient();
+    const order = await client.orders.create({
+      amount: input.amountPaise,
+      currency: input.currency,
+      receipt: input.receipt,
+      notes: input.notes,
+    });
+    return order as RazorpayOrderEntity;
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    mapRazorpaySdkError(error);
+  }
+}
+
+/**
+ * Verifies Standard Checkout payment HMAC: HMAC_SHA256(order_id|payment_id, KEY_SECRET).
+ */
+export function verifyCheckoutPaymentSignature(input: {
+  orderId: string;
+  paymentId: string;
+  signature: string;
+}): boolean {
+  const expected = crypto
+    .createHmac("sha256", getRazorpayKeySecret())
+    .update(`${input.orderId}|${input.paymentId}`)
+    .digest("hex");
+
+  const expectedBuffer = Buffer.from(expected, "utf8");
+  const actualBuffer = Buffer.from(input.signature, "utf8");
+
+  if (expectedBuffer.length !== actualBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
+}
+
 export function unixSecondsToDate(value: number | null | undefined): Date | null {
   if (!value || value <= 0) {
     return null;

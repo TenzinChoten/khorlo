@@ -32,6 +32,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Business profile not found" }, { status: 404 });
     }
 
+    // [Reason] The live create path bypasses campaignService, so entitlement must run here too
+    const { assertCanPostCampaign } = await import(
+      "@/src/services/campaign-entitlement.service"
+    );
+    await assertCanPostCampaign(business.id);
+
     const data = await request.json();
 
     const campaign = await prisma.campaign.create({

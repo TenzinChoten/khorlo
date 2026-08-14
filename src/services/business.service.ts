@@ -30,6 +30,11 @@ export const businessService = {
     }
 
     const profile = await businessRepository.create(user.id, result.data);
+    // [Reason] New brands start on Free until they buy a paid plan
+    const { ensureDefaultFreeSubscription } = await import(
+      "@/src/services/subscription.service"
+    );
+    await ensureDefaultFreeSubscription(profile.id);
 
     return { profile };
   },

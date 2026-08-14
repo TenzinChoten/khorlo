@@ -416,6 +416,15 @@ export const campaignRepository = {
   async delete(id: string): Promise<void> {
     await prisma.campaign.delete({ where: { id } });
   },
+
+  async countActiveByBusinessId(businessId: string): Promise<number> {
+    return prisma.campaign.count({
+      where: {
+        businessId,
+        status: { in: ["DRAFT", "OPEN"] },
+      },
+    });
+  },
 };
 
 // ─────────────────────────────────────────────

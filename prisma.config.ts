@@ -6,6 +6,8 @@ export default defineConfig({
 
   migrations: {
     path: "prisma/migrations",
+    // [Reason] Keep marketplace plan prices in the existing Plan table via seed, not a new schema
+    seed: "npx tsx prisma/seed.ts",
   },
 
   datasource: {

@@ -1,0 +1,139 @@
+{
+  "families": [
+    {
+      "key": "FREE",
+      "displayName": "Free",
+      "cta": "Start Free",
+      "headline": "Launch one campaign and see if Khorlo fits.",
+      "pitch": "For brands testing influencer marketing before they commit.",
+      "tier": "free",
+      "recommended": false,
+      "support": "Standard support",
+      "benefits": [
+        "1 live campaign to prove the channel",
+        "50 messages/month to start conversations",
+        "Basic influencer discovery",
+        "Standard support"
+      ],
+      "variants": [
+        {
+          "name": "Free",
+          "billingCycle": "MONTHLY",
+          "price": 0,
+          "campaignLimit": 1,
+          "messageLimit": 50,
+          "advancedSearch": false,
+          "featuredCampaigns": false
+        }
+      ]
+    },
+    {
+      "key": "STARTER",
+      "displayName": "Starter",
+      "cta": "Start Starter",
+      "headline": "The best entry plan for small businesses.",
+      "pitch": "Run a consistent creator program without agency overhead.",
+      "tier": "paid",
+      "recommended": false,
+      "support": "Priority support",
+      "benefits": [
+        "5 active campaigns to stay consistently live",
+        "500 messages/month to reach the right creators",
+        "Advanced search to shortlist faster",
+        "Priority support when you need a human"
+      ],
+      "variants": [
+        {
+          "name": "Starter",
+          "billingCycle": "MONTHLY",
+          "price": 999,
+          "campaignLimit": 5,
+          "messageLimit": 500,
+          "advancedSearch": true,
+          "featuredCampaigns": false
+        },
+        {
+          "name": "Starter Yearly",
+          "billingCycle": "YEARLY",
+          "price": 9590,
+          "campaignLimit": 5,
+          "messageLimit": 500,
+          "advancedSearch": true,
+          "featuredCampaigns": false
+        }
+      ]
+    },
+    {
+      "key": "GROWTH",
+      "displayName": "Growth",
+      "cta": "Start Growing",
+      "headline": "Scale creator outreach without hiring a team.",
+      "pitch": "The recommended plan for brands running multiple campaigns at once.",
+      "tier": "paid",
+      "recommended": true,
+      "support": "Priority support",
+      "benefits": [
+        "20 active campaigns for a full content calendar",
+        "2,500 messages/month to fill every brief",
+        "Advanced search plus featured campaign placement",
+        "Priority support as you scale"
+      ],
+      "variants": [
+        {
+          "name": "Growth",
+          "billingCycle": "MONTHLY",
+          "price": 2499,
+          "campaignLimit": 20,
+          "messageLimit": 2500,
+          "advancedSearch": true,
+          "featuredCampaigns": true
+        },
+        {
+          "name": "Growth Yearly",
+          "billingCycle": "YEARLY",
+          "price": 23990,
+          "campaignLimit": 20,
+          "messageLimit": 2500,
+          "advancedSearch": true,
+          "featuredCampaigns": true
+        }
+      ]
+    },
+    {
+      "key": "PRO",
+      "displayName": "Pro",
+      "cta": "Go Pro",
+      "headline": "Built for agencies and high-volume brands.",
+      "pitch": "Run large creator rosters with room to grow.",
+      "tier": "paid",
+      "recommended": false,
+      "support": "Premium priority support",
+      "benefits": [
+        "100 active campaigns for multi-brand programs",
+        "10,000 messages/month for high-volume outreach",
+        "Advanced search and featured placement",
+        "Premium priority support"
+      ],
+      "variants": [
+        {
+          "name": "Pro",
+          "billingCycle": "MONTHLY",
+          "price": 5999,
+          "campaignLimit": 100,
+          "messageLimit": 10000,
+          "advancedSearch": true,
+          "featuredCampaigns": true
+        },
+        {
+          "name": "Pro Yearly",
+          "billingCycle": "YEARLY",
+          "price": 57590,
+          "campaignLimit": 100,
+          "messageLimit": 10000,
+          "advancedSearch": true,
+          "featuredCampaigns": true
+        }
+      ]
+    }
+  ]
+}
