@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Briefcase, Music, ExternalLink } from 'lucide-react';
-// [Reason] Load country/state without the 7.7MB city dataset until a state is selected
-import { Country, State, getCitiesOfState } from '../lib/locationData';
+// [Reason] Location lists are async chunks; only fetch countries/states/cities when this form needs them
+import { getAllCountries, getStatesOfCountry, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
 import { isPublicHttpUrl, sanitizePublicText, sanitizePublicUrl } from '../lib/publicUrl';
@@ -30,6 +30,7 @@ const BusinessOnboarding = () => {
   const [city, setCity] = useState(savedState.city || '');
   
   const [locationCodes, setLocationCodes] = useState(savedState.locationCodes || { countryCode: '', stateCode: '' });
+  const [availableCountries, setAvailableCountries] = useState([]);
   const [availableStates, setAvailableStates] = useState([]);
   const [availableCities, setAvailableCities] = useState([]);
 
@@ -63,11 +64,24 @@ const BusinessOnboarding = () => {
   };
 
   useEffect(() => {
+    let cancelled = false;
+    // [Reason] Country JSON is a separate async chunk loaded only on this location form
+    getAllCountries().then((countries) => {
+      if (!cancelled) setAvailableCountries(countries);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     if (locationCodes.countryCode) {
-      setAvailableStates(State.getStatesOfCountry(locationCodes.countryCode));
+      getStatesOfCountry(locationCodes.countryCode).then((states) => {
+        if (!cancelled) setAvailableStates(states);
+      });
     } else {
       setAvailableStates([]);
     }
+    return () => { cancelled = true; };
   }, [locationCodes.countryCode]);
 
   useEffect(() => {
@@ -289,12 +303,12 @@ const BusinessOnboarding = () => {
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
                   <SearchableDropdown
-                    options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
+                    options={availableCountries.map(c => ({ value: c.isoCode, label: c.name }))}
                     value={country}
                     onChange={(opt) => {
                       const name = opt ? (typeof opt === 'string' ? opt : opt.label) : '';
                       setCountry(name);
-                      const countryObj = Country.getAllCountries().find(c => c.name === name);
+                      const countryObj = availableCountries.find(c => c.name === name);
                       setLocationCodes(prev => ({ ...prev, countryCode: countryObj ? countryObj.isoCode : '', stateCode: '' }));
                       setState('');
                       setCity('');

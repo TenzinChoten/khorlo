@@ -15,10 +15,6 @@ export default defineConfig({
               test: /node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom)[\\/]/,
             },
             {
-              name: 'location-data',
-              test: /node_modules[\\/]country-state-city[\\/]lib[\\/](country|state)/,
-            },
-            {
               name: 'image-cropper',
               test: /node_modules[\\/]react-easy-crop[\\/]/,
             },

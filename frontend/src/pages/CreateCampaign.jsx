@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X } from 'lucide-react';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import ImageCropper from '../components/ImageCropper';
-// [Reason] Load country/state without the 7.7MB city dataset until a state is selected
-import { Country, State, getCitiesOfState } from '../lib/locationData';
+// [Reason] Location lists are async chunks; only fetch countries/states/cities when this form needs them
+import { getAllCountries, getStatesOfCountry, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
 
 
@@ -21,6 +21,8 @@ const CreateCampaign = () => {
   const timeoutRef = useRef(null);
   const [cropperData, setCropperData] = useState({ imageSrc: null, type: null, aspect: 1, cropShape: 'rect', filename: 'image.jpg' });
   const [locationCodes, setLocationCodes] = useState({ countryCode: '', stateCode: '' });
+  const [availableCountries, setAvailableCountries] = useState([]);
+  const [availableStates, setAvailableStates] = useState([]);
   // [Reason] Hold async city options so city.json is not imported with the page
   const [availableCities, setAvailableCities] = useState([]);
   
@@ -50,6 +52,28 @@ const CreateCampaign = () => {
 
   // [Reason] Keep campaign format options aligned with the product content-format list
   const availableFormats = ['Short-form Video', 'Long-form Video', 'Photo', 'Carousel', 'Story', 'Live Stream', 'Written Article', 'Audio / Podcast'];
+
+  useEffect(() => {
+    // [Reason] Offline/hybrid campaigns are the only create-campaign path that needs country data
+    if (campaign.locationType !== 'OFFLINE' && campaign.locationType !== 'HYBRID') return undefined;
+    let cancelled = false;
+    getAllCountries().then((countries) => {
+      if (!cancelled) setAvailableCountries(countries);
+    });
+    return () => { cancelled = true; };
+  }, [campaign.locationType]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (locationCodes.countryCode) {
+      getStatesOfCountry(locationCodes.countryCode).then((states) => {
+        if (!cancelled) setAvailableStates(states);
+      });
+    } else {
+      setAvailableStates([]);
+    }
+    return () => { cancelled = true; };
+  }, [locationCodes.countryCode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -444,7 +468,7 @@ const CreateCampaign = () => {
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
                     <SearchableDropdown
-                      options={Country.getAllCountries().map(c => ({ value: JSON.stringify({ name: c.name, code: c.isoCode }), label: c.name }))}
+                      options={availableCountries.map(c => ({ value: JSON.stringify({ name: c.name, code: c.isoCode }), label: c.name }))}
                       value={campaign.country}
                       onChange={handleCountryChange}
                       placeholder="Select Country"
@@ -453,7 +477,7 @@ const CreateCampaign = () => {
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State / Region</label>
                     <SearchableDropdown
-                      options={locationCodes.countryCode ? State.getStatesOfCountry(locationCodes.countryCode).map(s => ({ value: JSON.stringify({ name: s.name, code: s.isoCode }), label: s.name })) : []}
+                      options={availableStates.map(s => ({ value: JSON.stringify({ name: s.name, code: s.isoCode }), label: s.name }))}
                       value={campaign.state}
                       onChange={handleStateChange}
                       placeholder="Select State"

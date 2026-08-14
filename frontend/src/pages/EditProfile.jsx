@@ -4,8 +4,8 @@ import { Save, ArrowLeft, Plus, Trash2, Camera, PlayCircle, AtSign, Music, KeyRo
 import { useAuth } from '../context/AuthContext';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import { isPublicHttpUrl, sanitizePublicText, sanitizePublicUrl } from '../lib/publicUrl';
-// [Reason] Load country/state without the 7.7MB city dataset until a state is selected
-import { Country, State, getCitiesOfState } from '../lib/locationData';
+// [Reason] Location lists are async chunks; only fetch countries/states/cities when this form needs them
+import { getAllCountries, findCountryByName, getStatesOfCountry, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
 
 const EditProfile = () => {
@@ -29,6 +29,8 @@ const EditProfile = () => {
     countryCode: '',
     stateCode: ''
   });
+  const [availableCountries, setAvailableCountries] = useState([]);
+  const [availableStates, setAvailableStates] = useState([]);
   // [Reason] Hold async city options so city.json is not imported with the page
   const [availableCities, setAvailableCities] = useState([]);
 
@@ -48,18 +50,19 @@ const EditProfile = () => {
     const endpoint = user.role === 'BUSINESS' ? '/business/me' : '/influencer/me';
     
     fetchApi(endpoint)
-      .then(res => {
+      .then(async (res) => {
         const data = res.profile || {};
         const isBiz = user.role === 'BUSINESS';
         
         let cCode = '';
         let sCode = '';
         if (data.country) {
-          const c = Country.getAllCountries().find(c => c.name === data.country);
+          const c = await findCountryByName(data.country);
           if (c) cCode = c.isoCode;
         }
         if (cCode && data.state) {
-          const s = State.getStatesOfCountry(cCode).find(s => s.name === data.state);
+          const states = await getStatesOfCountry(cCode);
+          const s = states.find(s => s.name === data.state);
           if (s) sCode = s.isoCode;
         }
 
@@ -94,6 +97,27 @@ const EditProfile = () => {
       .catch(err => setError('Failed to load profile data'))
       .finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    let cancelled = false;
+    // [Reason] Country JSON is a separate async chunk loaded only on this location form
+    getAllCountries().then((countries) => {
+      if (!cancelled) setAvailableCountries(countries);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (locationCodes.countryCode) {
+      getStatesOfCountry(locationCodes.countryCode).then((states) => {
+        if (!cancelled) setAvailableStates(states);
+      });
+    } else {
+      setAvailableStates([]);
+    }
+    return () => { cancelled = true; };
+  }, [locationCodes.countryCode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -281,7 +305,7 @@ const EditProfile = () => {
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
               <SearchableDropdown
-                options={Country.getAllCountries().map(c => ({ value: JSON.stringify({ name: c.name, code: c.isoCode }), label: c.name }))}
+                options={availableCountries.map(c => ({ value: JSON.stringify({ name: c.name, code: c.isoCode }), label: c.name }))}
                 value={profile.country}
                 onChange={handleCountryChange}
                 placeholder="Select Country"
@@ -290,7 +314,7 @@ const EditProfile = () => {
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State</label>
               <SearchableDropdown
-                options={locationCodes.countryCode ? State.getStatesOfCountry(locationCodes.countryCode).map(s => ({ value: JSON.stringify({ name: s.name, code: s.isoCode }), label: s.name })) : []}
+                options={availableStates.map(s => ({ value: JSON.stringify({ name: s.name, code: s.isoCode }), label: s.name }))}
                 value={profile.state}
                 onChange={handleStateChange}
                 placeholder="Select State"

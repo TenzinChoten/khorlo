@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/split-city-data.js && vite",
-    "build": "node scripts/split-city-data.js && vite build",
+    "dev": "node scripts/split-location-data.js && vite",
+    "build": "node scripts/split-location-data.js && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
