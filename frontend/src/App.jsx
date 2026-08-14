@@ -46,8 +46,64 @@ const LandingPage = () => (
 )
 
 function App() {
+  React.useEffect(() => {
+    // 3D Tilt Effect for Glass Panels
+    const handleMouseMove = (e) => {
+      const card = e.currentTarget;
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = ((y - centerY) / centerY) * -5; // Subtle 5deg max tilt
+      const rotateY = ((x - centerX) / centerX) * 5;
+      
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+      card.style.transition = 'transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    };
+    
+    const handleMouseLeave = (e) => {
+      const card = e.currentTarget;
+      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+      card.style.transition = 'transform 0.5s ease-out';
+    };
+
+    let cards = [];
+    
+    const applyTilt = () => {
+      cards = document.querySelectorAll('.glass-panel');
+      cards.forEach(card => {
+        card.addEventListener('mousemove', handleMouseMove);
+        card.addEventListener('mouseleave', handleMouseLeave);
+      });
+    };
+
+    applyTilt();
+
+    const observer = new MutationObserver(() => {
+      cards.forEach(card => {
+        card.removeEventListener('mousemove', handleMouseMove);
+        card.removeEventListener('mouseleave', handleMouseLeave);
+      });
+      applyTilt();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      cards.forEach(card => {
+        card.removeEventListener('mousemove', handleMouseMove);
+        card.removeEventListener('mouseleave', handleMouseLeave);
+      });
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <>
+      <div className="noise-overlay"></div>
       <ScrollToTop />
       <Routes>
         {/* Public Routes with Landing Layout */}

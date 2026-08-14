@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowUpRight } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -9,7 +10,6 @@ const Navbar = () => {
     e.preventDefault();
     if (location.pathname !== '/') {
       navigate('/' + hash);
-      // Use instant jump instead of smooth scroll when coming from another page
       setTimeout(() => {
         const element = document.querySelector(hash);
         if (element) element.scrollIntoView({ behavior: 'auto' });
@@ -28,19 +28,23 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar animate-fade-in">
+    <nav className="navbar" style={{ padding: '1rem 4rem', backgroundColor: 'var(--bg-color)' }}>
       <Link to="/" onClick={handleLogoClick} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
-        <img src="/logo.png" alt="Khorlo Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
-        <span className="nav-brand gradient-text" style={{ margin: 0, flex: 'none' }}>Khorlo</span>
+        <img src="/logo.png" alt="Khorlo Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', filter: 'brightness(0)' }} />
+        <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.04em', textTransform: 'lowercase', color: 'var(--text-primary)', lineHeight: 1 }}>khorlo<br/>network</span>
       </Link>
-      <div className="nav-links">
-        <a href="#features" onClick={(e) => handleNav(e, '#features')} className="nav-link" style={{ cursor: 'pointer' }}>Features</a>
-        <a href="#pricing" onClick={(e) => handleNav(e, '#pricing')} className="nav-link" style={{ cursor: 'pointer' }}>Pricing</a>
-        <a href="#about" onClick={(e) => handleNav(e, '#about')} className="nav-link" style={{ cursor: 'pointer' }}>About</a>
+      
+      <div className="nav-links" style={{ gap: '3rem', fontSize: '1.1rem', fontWeight: 600, textTransform: 'lowercase' }}>
+        <a href="#features" onClick={(e) => handleNav(e, '#features')} className="nav-link" style={{ cursor: 'pointer', color: 'var(--text-primary)' }}>features</a>
+        <a href="#pricing" onClick={(e) => handleNav(e, '#pricing')} className="nav-link" style={{ cursor: 'pointer', color: 'var(--text-primary)' }}>pricing</a>
+        <a href="#about" onClick={(e) => handleNav(e, '#about')} className="nav-link" style={{ cursor: 'pointer', color: 'var(--text-primary)' }}>who we are</a>
       </div>
+      
       <div className="nav-actions">
-        <Link to="/login" className="btn btn-outline" style={{ marginRight: '1rem', textDecoration: 'none' }}>Log In</Link>
-        <Link to="/register" className="btn btn-primary" style={{ textDecoration: 'none' }}>Sign Up</Link>
+        <Link to="/login" className="btn btn-outline" style={{ marginRight: '1rem', textDecoration: 'none', padding: '0.75rem 1.5rem', fontSize: '1rem', border: 'none' }}>log in</Link>
+        <Link to="/register" className="btn btn-primary" style={{ textDecoration: 'none', padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
+          sign up <ArrowUpRight size={18} strokeWidth={3} style={{ marginLeft: '4px' }} />
+        </Link>
       </div>
     </nav>
   );

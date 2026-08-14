@@ -1,64 +1,34 @@
-import React, { useEffect } from 'react';
-import { Infinity, Aperture, Anchor } from 'lucide-react';
+import React from 'react';
 
 const About = () => {
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in');
-            entry.target.style.opacity = '1';
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    const cards = document.querySelectorAll('.about-card');
-    cards.forEach((card) => observer.observe(card));
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section id="about" style={{ padding: '6rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-        <h2 className="section-title">About Khorlo</h2>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '1.125rem', lineHeight: 1.8 }}>
-          A society grows when they help each other. And at Khorlo we connect businesses, brands, communities with creators, innovators and people. We give you the platform to grow and connect.<p>Built by Tibetans, Built for Tibetans.</p>
-        </p>
+    <section id="about" className="editorial-section">
+      <div className="editorial-sphere sphere-3"></div>
+      
+      <div className="section-header">
+        <h2 className="section-title">who<br/>we<br/>are.</h2>
+        <div className="section-intro">
+          <p>
+            a society grows when they help each other. at khorlo we connect businesses, brands, and communities with creators, innovators and people.
+          </p>
+          <p style={{ fontWeight: 700, marginTop: '1rem', fontSize: '1.2rem' }}>
+            built by tibetans, built for tibetans.
+          </p>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '2rem' }}>
-        <div className="about-card glass-panel" style={{ padding: '2.5rem', textAlign: 'center', opacity: 0 }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <Infinity size={32} strokeWidth={1.5} />
-          </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Community First</h3>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            Upcoming creators to turn their passions into realities and for the brands and communities, their ideas to be felt and seen by all the people.
-          </p>
+      <div className="editorial-grid">
+        <div className="editorial-card">
+          <h3>community first.</h3>
+          <p>upcoming creators to turn their passions into realities and for the brands and communities, their ideas to be felt and seen by all.</p>
         </div>
-
-        <div className="about-card glass-panel" style={{ padding: '2.5rem', textAlign: 'center', opacity: 0 }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <Aperture size={32} strokeWidth={1.5} />
-          </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Shared Values</h3>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            Connect with each other through similar niches, with shared enthusiasm and goal. Grow with the same motivation and purpose.
-          </p>
+        <div className="editorial-card">
+          <h3>shared values.</h3>
+          <p>connect with each other through similar niches, with shared enthusiasm and goal. grow with the same motivation and purpose.</p>
         </div>
-
-        <div className="about-card glass-panel" style={{ padding: '2.5rem', textAlign: 'center', opacity: 0 }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <Anchor size={32} strokeWidth={1.5} />
-          </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Secure & Transparent</h3>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            From payments to contracts, everything is handled securely. We keep in mind for the society to thrive, trust is the must.
-          </p>
+        <div className="editorial-card">
+          <h3>secure & transparent.</h3>
+          <p>from payments to contracts, everything is handled securely. we keep in mind for the society to thrive, trust is the must.</p>
         </div>
       </div>
     </section>

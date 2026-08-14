@@ -1,74 +1,59 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import { ArrowUpRight } from 'lucide-react';
 
 const Pricing = () => {
-  const observerRef = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in');
-            entry.target.style.opacity = '1';
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    const cards = document.querySelectorAll('.pricing-card');
-    cards.forEach((card) => observer.observe(card));
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section id="pricing" className="pricing">
-      <h2 className="section-title">Plans for Every Brand</h2>
+    <section id="pricing" className="editorial-section">
+      <div className="section-header">
+        <h2 className="section-title">why<br/>it<br/>works.</h2>
+      </div>
       
-      <div className="pricing-grid">
-        <div className="pricing-card glass-panel" style={{ opacity: 0 }}>
-          <h3 className="bento-title">Starter</h3>
-          <div className="price">$49<span>/mo</span></div>
-          <p className="bento-desc">Perfect for small brands just getting started with influencer marketing.</p>
-          
-          <ul className="pricing-features">
-            <li>Up to 3 Active Campaigns</li>
-            <li>Basic Creator Search</li>
-            <li>Standard Messaging (100 msgs)</li>
+      <div className="editorial-grid">
+        <div className="editorial-card">
+          <h3>starter.</h3>
+          <div className="price" style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem' }}>$49/mo</div>
+          <p>perfect for small brands just getting started with influencer marketing.</p>
+          <ul style={{ listStyle: 'none', margin: '2rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem', opacity: 0.8, fontSize: '1.1rem' }}>
+            <li>up to 3 active campaigns</li>
+            <li>basic creator search</li>
+            <li>standard messaging (100 msgs)</li>
           </ul>
-          
-          <button className="btn btn-outline" style={{ marginTop: 'auto' }}>Get Started</button>
+          <button className="btn btn-outline" style={{ width: '100%' }}>
+            get started <ArrowUpRight size={20} strokeWidth={3} style={{ marginLeft: '8px' }} />
+          </button>
         </div>
         
-        <div className="pricing-card glass-panel popular" style={{ opacity: 0 }}>
-          <h3 className="bento-title">Growth</h3>
-          <div className="price">$149<span>/mo</span></div>
-          <p className="bento-desc">Ideal for scaling brands running multiple campaigns simultaneously.</p>
-          
-          <ul className="pricing-features">
-            <li>Up to 15 Active Campaigns</li>
-            <li>Advanced Creator Filter</li>
-            <li>Unlimited Messaging</li>
-            <li>Featured Campaigns</li>
+        <div className="editorial-card" style={{ backgroundColor: 'var(--text-primary)', color: 'var(--bg-color)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ color: 'var(--bg-color)', margin: 0 }}>growth.</h3>
+            <span className="pill-badge" style={{ margin: 0, backgroundColor: '#c084fc', color: '#111' }}>most popular</span>
+          </div>
+          <div className="price" style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem' }}>$149/mo</div>
+          <p style={{ color: 'var(--bg-secondary)' }}>ideal for scaling brands running multiple campaigns simultaneously.</p>
+          <ul style={{ listStyle: 'none', margin: '2rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem', opacity: 0.8, fontSize: '1.1rem' }}>
+            <li>up to 15 active campaigns</li>
+            <li>advanced creator filter</li>
+            <li>unlimited messaging</li>
+            <li>featured campaigns</li>
           </ul>
-          
-          <button className="btn btn-primary btn-accent" style={{ marginTop: 'auto' }}>Get Started</button>
+          <button className="btn btn-primary" style={{ width: '100%', backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)' }}>
+            get started <ArrowUpRight size={20} strokeWidth={3} style={{ marginLeft: '8px' }} />
+          </button>
         </div>
         
-        <div className="pricing-card glass-panel" style={{ opacity: 0 }}>
-          <h3 className="bento-title">Enterprise</h3>
-          <div className="price">$399<span>/mo</span></div>
-          <p className="bento-desc">For large agencies and enterprise brands with high volume needs.</p>
-          
-          <ul className="pricing-features">
-            <li>Unlimited Active Campaigns</li>
-            <li>Premium Support</li>
-            <li>Custom Integrations</li>
-            <li>Dedicated Account Manager</li>
+        <div className="editorial-card">
+          <h3>enterprise.</h3>
+          <div className="price" style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem' }}>$399/mo</div>
+          <p>for large agencies and enterprise brands with high volume needs.</p>
+          <ul style={{ listStyle: 'none', margin: '2rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem', opacity: 0.8, fontSize: '1.1rem' }}>
+            <li>unlimited active campaigns</li>
+            <li>premium support</li>
+            <li>custom integrations</li>
+            <li>dedicated account manager</li>
           </ul>
-          
-          <button className="btn btn-outline" style={{ marginTop: 'auto' }}>Contact Sales</button>
+          <button className="btn btn-outline" style={{ width: '100%' }}>
+            contact sales <ArrowUpRight size={20} strokeWidth={3} style={{ marginLeft: '8px' }} />
+          </button>
         </div>
       </div>
     </section>
