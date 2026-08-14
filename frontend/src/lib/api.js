@@ -4,8 +4,8 @@ function getApiOrigin() {
   return raw.replace(/\/+$/, '').replace(/\/api$/i, '');
 }
 
-const API_ORIGIN = getApiOrigin();
-const API_BASE = `${API_ORIGIN}/api`;
+export const API_ORIGIN = getApiOrigin();
+export const API_BASE = `${API_ORIGIN}/api`;
 
 export async function fetchApi(path, options = {}) {
   const isFormData = options.body instanceof FormData;
@@ -14,6 +14,7 @@ export async function fetchApi(path, options = {}) {
 
   const res = await fetch(`${API_BASE}${normalizedPath}`, {
     ...options,
+    // [Reason] Cross-origin session cookies (Vercel → Render) are omitted unless credentials are included
     credentials: 'include',
     headers: isFormData ? undefined : {
       'Content-Type': 'application/json',

@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { getAuthUser } from '@/lib/auth';
+import { getCurrentUser } from '@/src/lib/auth';
+import { AppError } from '@/src/types';
+import { handleApiError } from '@/src/utils/api-error-handler';
 
 export async function POST(request: NextRequest) {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // [Reason] Uploads must require the same session cookie as the rest of the API
+    await getCurrentUser();
 
     const data = await request.formData();
     const file: File | null = data.get('file') as unknown as File;
@@ -37,6 +39,7 @@ export async function POST(request: NextRequest) {
     // Return the URL that can be used directly in the frontend
     return NextResponse.json({ url: `/uploads/${filename}` });
   } catch (error) {
+    if (error instanceof AppError) return handleApiError(error);
     console.error("Upload error:", error);
     return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
   }

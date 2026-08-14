@@ -1,13 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getAuthUser } from "@/lib/auth";
+import { getCurrentUser } from "@/src/lib/auth";
+import { handleApiError } from "@/src/utils/api-error-handler";
 
-
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // [Reason] Dashboard stats must authenticate with the shared cookie JWT helper
+    const authUser = await getCurrentUser();
 
     const influencer = await prisma.influencerProfile.findUnique({
       where: { userId: authUser.id }
@@ -59,7 +58,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

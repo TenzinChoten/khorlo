@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Search, 
@@ -36,7 +36,8 @@ function notificationLink(type, role) {
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const location = useLocation();
+  const { user, loading, logout } = useAuth();
   const role = user?.role === 'BUSINESS' ? 'brand' : 'creator';
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -48,10 +49,17 @@ const DashboardLayout = () => {
     // [Reason] Bell badge and dropdown must show real Notification rows, not hardcoded samples
     fetchApi('/notifications/unread-count')
       .then((res) => setUnreadCount(res.count || 0))
-      .catch(() => setUnreadCount(0));
+      .catch((err) => {
+        // [Reason] Keep a 401 visible in the console; do not pretend the inbox is empty
+        if (err.status === 401) console.error(err.message);
+        setUnreadCount(0);
+      });
     fetchApi('/notifications?limit=5')
       .then((res) => setNotifications(res.notifications || []))
-      .catch(() => setNotifications([]));
+      .catch((err) => {
+        if (err.status === 401) console.error(err.message);
+        setNotifications([]);
+      });
   };
 
   const markAllNotificationsRead = async () => {
@@ -64,6 +72,14 @@ const DashboardLayout = () => {
       loadNotificationPreview();
     }
   };
+
+  useEffect(() => {
+    // [Reason] Opening /dashboard/* directly must wait for the cookie session instead of rendering empty chrome
+    if (!loading && !user) {
+      const redirect = `${location.pathname}${location.search}`;
+      navigate(`/login?redirect=${encodeURIComponent(redirect)}`, { replace: true });
+    }
+  }, [loading, user, location.pathname, location.search, navigate]);
 
   useEffect(() => {
     if (!user) return;
@@ -122,6 +138,14 @@ const DashboardLayout = () => {
       }
     }
   };
+
+  if (loading || !user) {
+    return (
+      <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-layout">

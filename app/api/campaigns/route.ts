@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
 import { campaignService } from "@/src/services/campaign.service";
 import { handleApiError } from "@/src/utils/api-error-handler";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
+import { getCurrentUser } from "@/src/lib/auth";
+import { ForbiddenError } from "@/src/types";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,14 +17,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get("auth_token")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-    const payload = jwt.verify(token, JWT_SECRET) as { id: string; role: string };
+    // [Reason] Campaign creation must use the same cookie JWT path as notifications and dashboards
+    const payload = await getCurrentUser();
 
     if (payload.role !== "BUSINESS") {
-      return NextResponse.json({ error: "Only businesses can create campaigns" }, { status: 403 });
+      throw new ForbiddenError("Only businesses can create campaigns");
     }
 
     const business = await prisma.businessProfile.findUnique({
@@ -91,7 +87,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ campaign }, { status: 201 });
   } catch (error) {
-    console.error("Error creating campaign:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

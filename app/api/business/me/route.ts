@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getAuthUser } from "@/lib/auth";
+import { getCurrentUser } from "@/src/lib/auth";
 import bcrypt from "bcryptjs";
+import { handleApiError } from "@/src/utils/api-error-handler";
 
-
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // [Reason] Profile reads must use the shared cookie JWT helper
+    const authUser = await getCurrentUser();
 
     const profile = await prisma.businessProfile.findUnique({
       where: { userId: authUser.id },
@@ -28,15 +27,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ profile: { ...profile, socialAccounts } });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authUser = await getCurrentUser();
 
     const body = await request.json();
     const { 
@@ -110,7 +107,6 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ profile: updated });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

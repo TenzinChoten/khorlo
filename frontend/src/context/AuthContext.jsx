@@ -7,29 +7,33 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshSession = async () => {
+    // [Reason] Session state must come from the cookie-backed /auth/me, not only the login JSON body
+    const data = await fetchApi('/auth/me');
+    setUser(data.user);
+    return data.user;
+  };
+
   useEffect(() => {
-    fetchApi('/auth/me')
-      .then(data => setUser(data.user))
+    refreshSession()
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   const login = async (email, password) => {
-    const data = await fetchApi('/auth/login', {
+    await fetchApi('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    setUser(data.user);
-    return data.user;
+    return refreshSession();
   };
 
   const register = async (payload) => {
-    const data = await fetchApi('/auth/register', {
+    await fetchApi('/auth/register', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    setUser(data.user);
-    return data.user;
+    return refreshSession();
   };
 
   const logout = async () => {
@@ -39,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

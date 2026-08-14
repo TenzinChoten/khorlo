@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
 import { Role } from "@/app/generated/prisma/enums";
-import { AUTH_COOKIE_NAME, authCookieOptions } from "@/src/lib/cookies";
-
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
+import { generateAccessToken } from "@/src/lib/jwt";
+import { applyAuthCookie } from "@/src/lib/cookies";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,25 +26,25 @@ export async function POST(request: NextRequest) {
 
     const hashed = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { 
-        name, 
-        email, 
-        password: hashed, 
+      data: {
+        name,
+        email,
+        password: hashed,
         role,
-        ...(role === "BUSINESS" 
+        ...(role === "BUSINESS"
           ? { businessProfile: { create: { companyName: name } } }
           : { influencerProfile: { create: { displayName: name } } })
       }
     });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+    // [Reason] Sign with jose so registration sessions work on every protected API
+    const token = await generateAccessToken({ id: user.id, role: user.role });
 
     const response = NextResponse.json({
       user: { id: user.id, name: user.name, email: user.email, role: user.role }
     }, { status: 201 });
 
-    // [Reason] Reuse shared flags so production can persist the session across Vercel → Render
-    response.cookies.set(AUTH_COOKIE_NAME, token, authCookieOptions());
+    applyAuthCookie(response, token);
 
     return response;
   } catch (error) {

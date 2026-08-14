@@ -1,26 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/src/lib/auth";
+import { handleApiError } from "@/src/utils/api-error-handler";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const token = request.cookies.get("auth_token")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-    const payload = jwt.verify(token, JWT_SECRET) as { id: string; role: string };
-    
+    // [Reason] Use the shared cookie+jose helper so /me matches every other protected route
+    const currentUser = await getCurrentUser();
+
     const user = await prisma.user.findUnique({
-      where: { id: payload.id },
-      select: { 
+      where: { id: currentUser.id },
+      select: {
         id: true, name: true, email: true, role: true,
         businessProfile: { select: { country: true } },
         influencerProfile: { select: { country: true } }
       }
     });
-    
+
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const onboardingComplete = !!(user.businessProfile?.country || user.influencerProfile?.country);
@@ -29,7 +25,7 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json({ user: userToReturn });
-  } catch {
-    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

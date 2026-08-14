@@ -25,7 +25,7 @@ export class ConflictError extends AppError {
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = "Invalid credentials") {
+  constructor(message = "Unauthenticated") {
     super(message, 401, "UNAUTHORIZED");
   }
 }
