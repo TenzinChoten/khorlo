@@ -287,6 +287,8 @@ model Plan {
   messageLimit      Int
   advancedSearch    Boolean        @default(false)
   featuredCampaigns Boolean        @default(false)
+  // [Reason] Maps this Khorlo plan 1:1 to a Razorpay Plan without storing payment instruments
+  razorpayPlanId    String?        @unique
   isActive          Boolean        @default(true)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -297,20 +299,34 @@ model Plan {
 }
 
 model Subscription {
-  id         String             @id @default(cuid())
-  businessId String
-  planId     String
-  startsAt   DateTime
-  expiresAt  DateTime
-  status     SubscriptionStatus @default(ACTIVE)
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-  business   BusinessProfile    @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  plan       Plan               @relation(fields: [planId], references: [id])
+  id                     String             @id @default(cuid())
+  businessId             String
+  planId                 String
+  // [Reason] Links the business subscription to Razorpay for webhook status sync
+  razorpaySubscriptionId String?            @unique
+  startsAt               DateTime
+  expiresAt              DateTime
+  status                 SubscriptionStatus @default(ACTIVE)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  business               BusinessProfile    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  plan                   Plan               @relation(fields: [planId], references: [id])
 
   @@index([businessId])
+  @@index([planId])
   @@index([status])
   @@index([expiresAt])
+  // Partial unique index Subscription_businessId_open_key (ACTIVE|PENDING) is in SQL
+}
+
+// [Reason] Persist Razorpay event IDs so duplicate webhook deliveries are applied once
+model RazorpayWebhookEvent {
+  id        String   @id @default(cuid())
+  eventId   String   @unique
+  event     String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model Notification {
@@ -413,9 +429,11 @@ enum BillingCycle {
 }
 
 enum SubscriptionStatus {
+  PENDING
   ACTIVE
   EXPIRED
   CANCELLED
+  FAILED
 }
 
 enum NotificationType {
