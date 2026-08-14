@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Save, ArrowLeft, Plus, Trash2, Camera, PlayCircle, AtSign, Music, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi, getMediaUrl } from '../lib/api';
+import { isPublicHttpUrl, sanitizePublicText, sanitizePublicUrl } from '../lib/publicUrl';
 // [Reason] Load country/state without the 7.7MB city dataset until a state is selected
 import { Country, State, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
@@ -69,8 +70,8 @@ const EditProfile = () => {
           email: data.user?.email || user.email || '',
           oldPassword: '',
           password: '',
-          bio: isBiz ? (data.companyDescription || '') : (data.bio || ''),
-          website: isBiz ? (data.website || '') : '',
+          bio: isBiz ? (sanitizePublicText(data.companyDescription) || '') : (sanitizePublicText(data.bio) || ''),
+          website: isBiz ? (sanitizePublicUrl(data.website) || '') : '',
           avatar: isBiz ? data.companyLogo : data.profilePhoto,
           country: data.country || '',
           state: data.state || '',
@@ -167,12 +168,17 @@ const EditProfile = () => {
 
     try {
       const isBiz = user.role === 'BUSINESS';
+      if (isBiz && profile.website.trim() && !isPublicHttpUrl(profile.website)) {
+        setError('Website must be a public company URL, not a dashboard or database link.');
+        setSaving(false);
+        return;
+      }
       const endpoint = isBiz ? '/business/me' : '/influencer/me';
       
       const payload = isBiz ? {
         companyName: profile.name,
         companyDescription: profile.bio,
-        website: profile.website,
+        website: sanitizePublicUrl(profile.website),
         country: profile.country,
         state: profile.state,
         city: profile.city,
@@ -320,10 +326,13 @@ const EditProfile = () => {
                 Website URL
               </label>
               <input 
+                // [Reason] Avoid browser autofill stuffing a Supabase dashboard URL into Website
                 type="url" 
-                name="website"
+                name="companyWebsite"
+                autoComplete="off"
+                data-1p-ignore="true"
                 value={profile.website}
-                onChange={handleChange}
+                onChange={(e) => setProfile((prev) => ({ ...prev, website: e.target.value }))}
                 placeholder="https://example.com"
                 style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
               />

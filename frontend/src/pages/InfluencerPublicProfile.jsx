@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Link as LinkIcon, MapPin } from 'lucide-react';
 import { fetchApi, getMediaUrl } from '../lib/api';
+import { sanitizePublicText, sanitizePublicUrl } from '../lib/publicUrl';
 
 const formatFollowers = (n) => {
   if (!n) return '0';
@@ -64,8 +65,8 @@ const InfluencerPublicProfile = () => {
           <div style={{ padding: '2rem 2rem 0', textAlign: 'center' }}>
             <img src={avatarUrl || defaultAvatar} alt={displayName} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--background)', margin: '0 auto 1rem', display: 'block' }} />
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>{displayName}</h2>
-            {profile.bio && (
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1rem' }}>{profile.bio}</p>
+            {sanitizePublicText(profile.bio) && (
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1rem' }}>{sanitizePublicText(profile.bio)}</p>
             )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
               <MapPin size={16} /> {location}
@@ -81,17 +82,20 @@ const InfluencerPublicProfile = () => {
             )}
             {socialAccounts.length > 0 && (
               <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
-                {socialAccounts.map((acc) => (
+                {socialAccounts.map((acc) => {
+                  const socialUrl = sanitizePublicUrl(acc.profileUrl);
+                  return (
                   <a
                     key={acc.id}
-                    href={acc.profileUrl || undefined}
-                    target={acc.profileUrl ? '_blank' : undefined}
+                    href={socialUrl || undefined}
+                    target={socialUrl ? '_blank' : undefined}
                     rel="noopener noreferrer"
                     style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem' }}
                   >
                     {acc.platform}
                   </a>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

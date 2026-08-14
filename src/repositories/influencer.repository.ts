@@ -1,4 +1,5 @@
 import { prisma } from "@/src/lib/prisma";
+import { sanitizePublicText, sanitizePublicUrl } from "@/src/lib/public-url";
 import type { Prisma } from "@/app/generated/prisma/client";
 import type {
   InfluencerProfileDTO,
@@ -71,7 +72,10 @@ type RawProfile = Prisma.InfluencerProfileGetPayload<{
 function mapSocialAccounts(
   accounts: { id: string; platform: string; username: string; profileUrl: string | null; followers: number; engagementRate: number }[]
 ): SocialAccountDTO[] {
-  return accounts as SocialAccountDTO[];
+  return accounts.map((account) => ({
+    ...account,
+    profileUrl: sanitizePublicUrl(account.profileUrl),
+  })) as SocialAccountDTO[];
 }
 
 function mapNiches(niches: RawProfile["contentNiches"]): InfluencerNicheDTO[] {
@@ -98,7 +102,7 @@ function toFullDTO(raw: RawProfile): InfluencerProfileDTO {
     userId: raw.userId,
     displayName: raw.displayName,
     profilePhoto: raw.profilePhoto,
-    bio: raw.bio,
+    bio: sanitizePublicText(raw.bio),
     age: raw.age,
     gender: raw.gender,
     country: raw.country,
@@ -121,7 +125,7 @@ export function toPublicDTO(raw: RawProfile): InfluencerPublicProfileDTO {
     id: raw.id,
     displayName: raw.displayName,
     profilePhoto: raw.profilePhoto,
-    bio: raw.bio,
+    bio: sanitizePublicText(raw.bio),
     age: raw.age,
     gender: raw.gender,
     country: raw.country,

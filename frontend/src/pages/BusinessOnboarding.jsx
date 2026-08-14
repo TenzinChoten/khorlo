@@ -5,6 +5,7 @@ import { Upload, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, B
 import { Country, State, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
 import { fetchApi } from '../lib/api';
+import { isPublicHttpUrl, sanitizePublicText, sanitizePublicUrl } from '../lib/publicUrl';
 import { useAuth } from '../context/AuthContext';
 import ImageCropper from '../components/ImageCropper';
 import { consumePostAuthRedirect } from '../lib/authRedirect';
@@ -105,6 +106,10 @@ const BusinessOnboarding = () => {
       setShowErrors(true);
       return;
     }
+    if (website.trim() && !isPublicHttpUrl(website)) {
+      alert('Website must be a public company URL, not a dashboard or database link.');
+      return;
+    }
     try {
       let companyLogoUrl = null;
       if (logoFile) {
@@ -116,8 +121,8 @@ const BusinessOnboarding = () => {
 
       const payload = {
         companyName,
-        website,
-        companyDescription: description,
+        website: sanitizePublicUrl(website),
+        companyDescription: sanitizePublicText(description),
         companyLogo: companyLogoUrl,
         country,
         state,
@@ -127,7 +132,7 @@ const BusinessOnboarding = () => {
           .map(([platform, url]) => ({
             platform: platform.toUpperCase(),
             username: new URL(url).pathname.replace('/', '') || url,
-            profileUrl: url,
+            profileUrl: sanitizePublicUrl(url),
             followers: 0,
             engagementRate: 0
           })),
@@ -248,7 +253,11 @@ const BusinessOnboarding = () => {
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Website URL</label>
                 <input 
+                  // [Reason] Avoid browser autofill stuffing a Supabase dashboard URL into Website
                   type="url" 
+                  name="companyWebsite"
+                  autoComplete="off"
+                  data-1p-ignore="true"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://example.com"

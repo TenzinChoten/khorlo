@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/src/lib/auth";
 import bcrypt from "bcryptjs";
 import { handleApiError } from "@/src/utils/api-error-handler";
+import { sanitizePublicText, sanitizePublicUrl } from "@/src/lib/public-url";
 
 export async function GET() {
   try {
@@ -25,7 +26,28 @@ export async function GET() {
       where: { userId: authUser.id }
     });
 
-    return NextResponse.json({ profile: { ...profile, socialAccounts } });
+    if (!profile) {
+      return NextResponse.json({ profile: { socialAccounts } });
+    }
+
+    const website = sanitizePublicUrl(profile.website);
+    const companyDescription = sanitizePublicText(profile.companyDescription);
+    // [Reason] Drop stored Supabase/dashboard URLs so they never reappear on Profile
+    if (website !== profile.website || companyDescription !== profile.companyDescription) {
+      await prisma.businessProfile.update({
+        where: { id: profile.id },
+        data: { website, companyDescription },
+      });
+    }
+
+    const safeSocials = socialAccounts.map((account) => ({
+      ...account,
+      profileUrl: sanitizePublicUrl(account.profileUrl),
+    }));
+
+    return NextResponse.json({
+      profile: { ...profile, website, companyDescription, socialAccounts: safeSocials },
+    });
   } catch (error) {
     return handleApiError(error);
   }
@@ -72,7 +94,7 @@ export async function PATCH(request: NextRequest) {
           userId: authUser.id,
           platform: s.platform,
           username: s.username,
-          profileUrl: s.profileUrl || null,
+          profileUrl: sanitizePublicUrl(s.profileUrl),
           followers: parseInt(s.followers) || 0,
           engagementRate: parseFloat(s.engagementRate) || 0,
         }))
@@ -84,8 +106,8 @@ export async function PATCH(request: NextRequest) {
       create: {
         userId: authUser.id,
         companyName: companyName || '',
-        companyDescription: companyDescription || null,
-        website: website || null,
+        companyDescription: sanitizePublicText(companyDescription),
+        website: sanitizePublicUrl(website),
         companyLogo: companyLogo || null,
         country: country || null,
         state: state || null,
@@ -93,8 +115,8 @@ export async function PATCH(request: NextRequest) {
       },
       update: {
         ...(companyName && { companyName }),
-        ...(companyDescription !== undefined && { companyDescription }),
-        ...(website !== undefined && { website }),
+        ...(companyDescription !== undefined && { companyDescription: sanitizePublicText(companyDescription) }),
+        ...(website !== undefined && { website: sanitizePublicUrl(website) }),
         ...(companyLogo !== undefined && { companyLogo }),
         ...(country !== undefined && { country }),
         ...(state !== undefined && { state }),

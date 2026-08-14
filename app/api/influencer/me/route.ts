@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/src/lib/auth";
 import bcrypt from "bcryptjs";
 import { handleApiError } from "@/src/utils/api-error-handler";
+import { sanitizePublicText, sanitizePublicUrl } from "@/src/lib/public-url";
 
 export async function GET() {
   try {
@@ -23,7 +24,25 @@ export async function GET() {
       where: { userId: authUser.id }
     });
 
-    return NextResponse.json({ profile: { ...profile, socialAccounts } });
+    if (!profile) {
+      return NextResponse.json({ profile: { socialAccounts } });
+    }
+
+    const bio = sanitizePublicText(profile.bio);
+    // [Reason] Strip infra/dashboard text if it was saved into a creator bio
+    if (bio !== profile.bio) {
+      await prisma.influencerProfile.update({
+        where: { id: profile.id },
+        data: { bio },
+      });
+    }
+
+    const safeSocials = socialAccounts.map((account) => ({
+      ...account,
+      profileUrl: sanitizePublicUrl(account.profileUrl),
+    }));
+
+    return NextResponse.json({ profile: { ...profile, bio, socialAccounts: safeSocials } });
   } catch (error) {
     return handleApiError(error);
   }
@@ -70,7 +89,7 @@ export async function PATCH(request: NextRequest) {
           userId: authUser.id,
           platform: s.platform,
           username: s.username,
-          profileUrl: s.profileUrl || null,
+          profileUrl: sanitizePublicUrl(s.profileUrl),
           followers: parseInt(s.followers) || 0,
           engagementRate: parseFloat(s.engagementRate) || 0,
         }))
@@ -82,7 +101,7 @@ export async function PATCH(request: NextRequest) {
       create: {
         userId: authUser.id,
         displayName: displayName || '',
-        bio: bio || null,
+        bio: sanitizePublicText(bio),
         profilePhoto: profilePhoto || null,
         age: age || null,
         gender: gender || null,
@@ -94,7 +113,7 @@ export async function PATCH(request: NextRequest) {
       },
       update: {
         ...(displayName && { displayName }),
-        ...(bio !== undefined && { bio }),
+        ...(bio !== undefined && { bio: sanitizePublicText(bio) }),
         ...(profilePhoto !== undefined && { profilePhoto }),
         ...(age !== undefined && { age }),
         ...(gender !== undefined && { gender }),

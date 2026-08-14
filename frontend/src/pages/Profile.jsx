@@ -3,6 +3,7 @@ import { Edit3, Link as LinkIcon, MapPin, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi, getMediaUrl } from '../lib/api';
+import { displayWebsiteHost, sanitizePublicText, sanitizePublicUrl } from '../lib/publicUrl';
 import AddPortfolioModal from '../components/AddPortfolioModal';
 
 const Profile = () => {
@@ -30,7 +31,9 @@ const Profile = () => {
   const displayName = isBusiness ? (profile.companyName || user.name) : (profile.displayName || user.name);
   const rawAvatarUrl = isBusiness ? profile.companyLogo : profile.profilePhoto;
   const avatarUrl = getMediaUrl(rawAvatarUrl);
-  const bio = isBusiness ? profile.companyDescription : profile.bio;
+  const bio = sanitizePublicText(isBusiness ? profile.companyDescription : profile.bio);
+  const website = sanitizePublicUrl(profile.website);
+  const websiteLabel = displayWebsiteHost(website);
   const location = [profile.city, profile.state, profile.country].filter(Boolean).join(', ') || 'Global';
 
   // Social stats for influencers
@@ -64,7 +67,7 @@ const Profile = () => {
             <img src={avatarUrl || defaultAvatar} alt="Profile" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--background)', margin: '0 auto 1rem', display: 'block' }} />
 
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>{displayName || 'No name set'}</h2>
-            {!isBusiness && profile.bio && (
+            {!isBusiness && bio && (
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1rem' }}>{bio}</p>
             )}
 
@@ -72,9 +75,9 @@ const Profile = () => {
               <MapPin size={16} /> {location}
             </div>
 
-            {isBusiness && profile.website && (
-              <a href={profile.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem', textDecoration: 'none' }}>
-                <LinkIcon size={14} /> {profile.website}
+            {isBusiness && website && (
+              <a href={website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem', textDecoration: 'none' }}>
+                <LinkIcon size={14} /> {websiteLabel}
               </a>
             )}
 
@@ -84,15 +87,18 @@ const Profile = () => {
 
             {!isBusiness && socialAccounts.length > 0 && (
               <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
-                {socialAccounts.map(acc => (
-                  <a key={acc.id} href={acc.profileUrl || '#'} target="_blank" rel="noopener noreferrer"
+                {socialAccounts.map(acc => {
+                  const socialUrl = sanitizePublicUrl(acc.profileUrl);
+                  return (
+                  <a key={acc.id} href={socialUrl || undefined} target={socialUrl ? '_blank' : undefined} rel="noopener noreferrer"
                     style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.2s ease' }}
                     onMouseEnter={e => e.target.style.color = 'var(--accent)'}
                     onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
                   >
                     {acc.platform}
                   </a>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
