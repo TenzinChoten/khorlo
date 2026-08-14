@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
+import { AUTH_COOKIE_NAME, authCookieOptions } from "@/src/lib/cookies";
 
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
@@ -38,13 +39,8 @@ export async function POST(request: NextRequest) {
       user: { id: user.id, name: user.name, email: user.email, role: user.role, onboardingComplete }
     });
 
-    response.cookies.set("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/"
-    });
+    // [Reason] Reuse shared flags so production can persist the session across Vercel → Render
+    response.cookies.set(AUTH_COOKIE_NAME, token, authCookieOptions());
 
     return response;
   } catch (error) {
