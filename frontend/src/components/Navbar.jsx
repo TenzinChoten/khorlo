@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, MessageSquare, LogIn } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -44,11 +44,18 @@ const Navbar = () => {
         <a href="#about" onClick={(e) => handleNav(e, '#about')} className="nav-link" style={{ cursor: 'pointer', color: 'var(--text-primary)' }}>who we are</a>
       </div>
       
-      <div className="nav-actions">
+      <div className="nav-actions" style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to="/faq" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginRight: '0.75rem', textDecoration: 'none', padding: '0.4rem 0.8rem', fontSize: '0.85rem', border: 'none' }}>
+          <MessageSquare size={14} strokeWidth={2.5} />
+          faqs
+        </Link>
         {/* [Reason] Preserve post-auth campaign return while keeping the pulled navbar styles */}
-        <Link to={`/login${authQuery}`} className="btn btn-outline" style={{ marginRight: '1rem', textDecoration: 'none', padding: '0.75rem 1.5rem', fontSize: '1rem', border: 'none' }}>log in</Link>
-        <Link to={`/register${authQuery}`} className="btn btn-primary" style={{ textDecoration: 'none', padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
-          sign up <ArrowUpRight size={18} strokeWidth={3} style={{ marginLeft: '4px' }} />
+        <Link to={`/login${authQuery}`} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginRight: '0.75rem', textDecoration: 'none', padding: '0.4rem 0.8rem', fontSize: '0.85rem', border: 'none' }}>
+          <LogIn size={14} strokeWidth={2.5} />
+          log in
+        </Link>
+        <Link to={`/register${authQuery}`} className="btn btn-primary" style={{ textDecoration: 'none', padding: '0.4rem 0.8rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}>
+          sign up <ArrowUpRight size={14} strokeWidth={3} style={{ marginLeft: '4px' }} />
         </Link>
       </div>
     </nav>

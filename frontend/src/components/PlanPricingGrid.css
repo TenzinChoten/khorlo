@@ -35,6 +35,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
 }
 
 .plan-pricing__toggle-btn[aria-pressed="true"] {
@@ -49,12 +50,31 @@
 }
 
 .plan-pricing__save {
+  position: absolute;
+  top: -10px;
+  right: -38px;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  padding: 0.1rem 0.45rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  background: #c084fc;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  border: 1px solid var(--text-primary);
+  box-shadow: 3px 3px 0 var(--text-primary);
+  border-radius: 8px;
+  transform: rotate(8deg);
+  z-index: 10;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.plan-pricing__toggle-btn[aria-pressed="true"] .plan-pricing__save {
+  background: #e9d5ff;
   color: #111;
 }
 
@@ -195,6 +215,7 @@
   letter-spacing: -0.04em;
   text-transform: lowercase;
   margin-bottom: 1rem;
+  text-align: center;
 }
 
 .plan-compare__scroll {
@@ -221,11 +242,48 @@
 .plan-compare__table th {
   font-weight: 800;
   text-transform: lowercase;
+  background: var(--text-primary);
+  color: var(--bg-color);
+  border: 1px solid var(--text-primary);
+}
+
+.plan-compare__table td:first-child {
+  font-weight: 800;
+  background: var(--text-primary);
+  color: var(--bg-color);
+  border: 1px solid var(--text-primary);
 }
 
 .plan-compare__table th[data-recommended="true"] {
-  background: var(--text-primary);
   color: var(--bg-color);
+  position: relative;
+  z-index: 10;
+  background: transparent;
+  border: none;
+}
+
+.plan-compare__table th[data-recommended="true"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--text-primary);
+  border: 1px solid var(--text-primary);
+  z-index: -1;
+}
+
+.plan-compare__table th[data-recommended="true"]::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 100%;
+  height: 100%;
+  background: #c084fc;
+  z-index: -2;
+  pointer-events: none;
 }
 
 .plan-compare__table td[data-recommended="true"] {

@@ -4,7 +4,7 @@ const Features = () => {
   return (
     <section id="features" className="editorial-section">
       <div className="section-header">
-        <h2 className="section-title" style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', lineHeight: 0.9 }}>platform<br/>that provides.</h2>
+        <h2 className="section-title">platform<br/>that provides.</h2>
       </div>
       
       <div className="editorial-grid">
