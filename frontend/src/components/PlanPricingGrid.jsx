@@ -73,7 +73,7 @@ const PlanPricingGrid = ({
             onClick={() => onBillingCycleChange('YEARLY')}
           >
             Yearly
-            <span className="plan-pricing__save">Save 20%</span>
+            <span className="plan-pricing__save">save<br />20%</span>
           </button>
         </div>
       </div>
