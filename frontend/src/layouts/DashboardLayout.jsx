@@ -157,10 +157,10 @@ const DashboardLayout = () => {
 
       {/* Sidebar */}
       <aside className={`sidebar glass-panel ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start' }}>
-          <img src="/logo.png" alt="Khorlo Logo" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
-          <span className="gradient-text">Khorlo</span>
-        </div>
+        <Link to={role === 'brand' ? "/dashboard/business" : "/dashboard/influencer"} className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', textDecoration: 'none' }}>
+          <img src="/logo.png" alt="Khorlo Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', filter: 'brightness(0)' }} />
+          <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.04em', textTransform: 'lowercase', color: 'var(--text-primary)', lineHeight: 1 }}>khorlo<br/>network</span>
+        </Link>
         
         <nav className="sidebar-nav">
           <div className="nav-group">
@@ -220,12 +220,12 @@ const DashboardLayout = () => {
           </button>
           
           <div className="top-nav-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }} ref={notifRef}>
-            <Link to="/dashboard/faq" className="faq-btn" onClick={(e) => e.stopPropagation()}>
-              <MessageSquare size={16} strokeWidth={2.5} />
-              FAQs
+            <Link to="/dashboard/faq" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginRight: '0.75rem', textDecoration: 'none', padding: '0.4rem 0.8rem', fontSize: '0.85rem', border: 'none' }} onClick={(e) => e.stopPropagation()}>
+              <MessageSquare size={14} strokeWidth={2.5} />
+              faqs
             </Link>
-            <button className="notification-btn" onClick={handleNotificationClick}>
-              <Bell size={20} />
+            <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem 0.8rem', border: 'none', position: 'relative' }} onClick={handleNotificationClick}>
+              <Bell size={16} strokeWidth={2.5} />
               {unreadCount > 0 && (
                 <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
               )}

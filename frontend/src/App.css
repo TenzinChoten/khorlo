@@ -239,7 +239,7 @@
 /* Footer */
 .footer {
   padding: 1.5rem 2rem;
-  border-top: 1px solid var(--glass-border);
+  border-top: 2px solid var(--glass-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -342,7 +342,7 @@
 
 /* Editorial Layouts */
 .editorial-section {
-  padding: 8rem 4rem;
+  padding: 6rem 4rem;
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
@@ -359,7 +359,8 @@
   .section-header {
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 4rem;
   }
 }
 
@@ -369,6 +370,83 @@
   line-height: 1.6;
   color: var(--text-secondary);
   padding-bottom: 1rem;
+}
+
+.comic-bubble {
+  position: relative;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  border: 2px solid var(--text-primary);
+  border-radius: 40px; /* Highly rounded for an oval-like speech bubble */
+  padding: 2rem 3rem;
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
+  z-index: 10;
+  max-width: 500px;
+  text-align: center; /* Classic comic centering */
+  box-shadow: 8px 8px 0 var(--text-primary);
+}
+
+/* The pointing tail (Points UP towards title on mobile) */
+.comic-bubble::before {
+  content: "";
+  position: absolute;
+  left: 40px;
+  top: -22px;
+  border-width: 0 0 22px 22px;
+  border-style: solid;
+  border-color: transparent transparent var(--text-primary) transparent;
+}
+
+.comic-bubble::after {
+  content: "";
+  position: absolute;
+  left: 42px;
+  top: -18px;
+  border-width: 0 0 19px 19px;
+  border-style: solid;
+  border-color: transparent transparent var(--bg-color) transparent;
+}
+
+@media (min-width: 1024px) {
+  /* Points LEFT towards title on desktop */
+  .comic-bubble::before {
+    left: -22px;
+    top: 50px;
+    border-width: 15px 22px 15px 0;
+    border-color: transparent var(--text-primary) transparent transparent;
+  }
+  
+  .comic-bubble::after {
+    left: -18px;
+    top: 52px;
+    border-width: 13px 19px 13px 0;
+    border-color: transparent var(--bg-color) transparent transparent;
+  }
+}
+
+.comic-bubble p {
+  color: #000;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.comic-bubble .comic-emp {
+  font-weight: 800;
+}
+
+.comic-bubble .comic-highlight {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;
+  font-weight: 900;
+  font-size: 1.2rem;
+  margin-top: 1.25rem;
+  display: block;
+  text-transform: uppercase;
 }
 
 .editorial-grid {

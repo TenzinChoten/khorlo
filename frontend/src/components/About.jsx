@@ -7,13 +7,13 @@ const About = () => {
       
       <div className="section-header">
         <h2 className="section-title">who<br/>we<br/>are.</h2>
-        <div className="section-intro">
+        <div className="section-intro comic-bubble">
           <p>
-            a society grows when they help each other. at khorlo we connect businesses, brands, and communities with creators, innovators and people.
+            "a <strong className="comic-emp">society grows</strong> when they help <strong className="comic-emp">each other</strong>. at khorlo we connect <strong className="comic-emp">businesses, brands,</strong> and <strong className="comic-emp">communities</strong> with creators, innovators and people."
           </p>
-          <p style={{ fontWeight: 700, marginTop: '1rem', fontSize: '1.2rem' }}>
-            built by tibetans, built for tibetans.
-          </p>
+          <span className="comic-highlight">
+            built by tibetans,<br/>built for tibetans.
+          </span>
         </div>
       </div>
 

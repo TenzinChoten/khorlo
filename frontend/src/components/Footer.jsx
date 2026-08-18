@@ -2,7 +2,7 @@ import React from 'react';
 
 const Footer = () => {
   return (
-    <footer className="footer" style={{ borderTop: '2px solid var(--text-primary)', padding: '2rem 4rem', backgroundColor: 'var(--bg-color)', display: 'flex' }}>
+    <footer className="footer" style={{ padding: '2rem 4rem', backgroundColor: 'var(--bg-color)', display: 'flex' }}>
       <div className="footer-brand" style={{ fontWeight: 700, fontSize: '1rem', flex: 1, textTransform: 'lowercase' }} >
         <span>built by tibetans. built for tibetans.</span>
       </div>
