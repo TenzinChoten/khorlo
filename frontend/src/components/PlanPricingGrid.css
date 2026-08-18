@@ -17,8 +17,6 @@
 .plan-pricing__toggle {
   display: inline-flex;
   padding: 0.35rem;
-  border: 1px solid var(--text-primary);
-  box-shadow: 6px 6px 0 var(--text-primary);
   background: var(--bg-color);
 }
 
@@ -74,7 +72,7 @@
 }
 
 .plan-pricing__toggle-btn[aria-pressed="true"] .plan-pricing__save {
-  background: #e9d5ff;
+  background: #c084fc;
   color: #111;
 }
 
@@ -221,6 +219,7 @@
 .plan-compare__scroll {
   overflow-x: auto;
   border: 1px solid var(--text-primary);
+  border-top: none;
   box-shadow: 8px 8px 0 var(--text-primary);
 }
 
@@ -229,6 +228,7 @@
   border-collapse: collapse;
   min-width: 640px;
   background: var(--bg-color);
+  border-top: 1px solid var(--text-primary);
 }
 
 .plan-compare__table th,
@@ -237,6 +237,11 @@
   text-align: left;
   border-bottom: 1px solid var(--glass-border);
   font-size: 0.95rem;
+}
+
+.plan-compare__table th {
+  padding: 0.9rem 1rem;
+  position: relative;
 }
 
 .plan-compare__table th {
@@ -255,39 +260,18 @@
 }
 
 .plan-compare__table th[data-recommended="true"] {
-  color: var(--bg-color);
   position: relative;
-  z-index: 10;
-  background: transparent;
-  border: none;
-}
-
-.plan-compare__table th[data-recommended="true"]::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--text-primary);
-  border: 1px solid var(--text-primary);
-  z-index: -1;
-}
-
-.plan-compare__table th[data-recommended="true"]::after {
-  content: '';
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 100%;
-  height: 100%;
   background: #c084fc;
-  z-index: -2;
-  pointer-events: none;
+  color: #111;
+  border-color: #c084fc;
 }
+
+
+
+
 
 .plan-compare__table td[data-recommended="true"] {
-  background: rgba(17, 17, 17, 0.04);
+  background: rgba(192, 132, 252, 0.08);
   font-weight: 600;
 }
 

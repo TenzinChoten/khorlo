@@ -19,7 +19,7 @@ const Features = () => {
         </div>
         
         <div className="editorial-card">
-          <h3>curated connections.</h3>
+          <h3>connections.</h3>
           <p>built-in messaging and application tracking keeps all your influencer interactions in one organized place.</p>
         </div>
         

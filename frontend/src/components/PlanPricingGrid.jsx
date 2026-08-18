@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { PLAN_FAMILIES, formatInr, matchPlan } from '../lib/plans';
 import './PlanPricingGrid.css';
 
@@ -39,6 +40,8 @@ const PlanPricingGrid = ({
   heading,
   intro,
 }) => {
+  const [showCompare, setShowCompare] = useState(false);
+
   const rows = [
     { key: 'campaigns', label: 'Active campaigns' },
     { key: 'messages', label: 'Creator messages' },
@@ -118,36 +121,69 @@ const PlanPricingGrid = ({
         })}
       </div>
 
-      <section className="plan-compare" aria-labelledby="plan-compare-title">
-        <h3 id="plan-compare-title" className="plan-compare__title">Compare at a glance</h3>
-        <div className="plan-compare__scroll">
-          <table className="plan-compare__table">
-            <thead>
-              <tr>
-                <th scope="col">What you get</th>
-                {PLAN_FAMILIES.map((family) => (
-                  <th key={family.key} scope="col" data-recommended={family.recommended ? 'true' : 'false'}>
-                    {family.displayName}
-                    {family.recommended ? ' · recommended' : ''}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.key}>
-                  <th scope="row">{row.label}</th>
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        margin: '2.5rem 0 1.5rem 0', 
+        width: '100%' 
+      }}>
+        <div style={{ flex: 1, borderBottom: '1px solid var(--text-primary)', opacity: 0.15 }}></div>
+        <button 
+          className="btn" 
+          onClick={() => setShowCompare(!showCompare)}
+          aria-expanded={showCompare}
+          style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem 1rem', 
+            fontWeight: 'bold', 
+            border: 'none', 
+            boxShadow: 'none', 
+            background: 'transparent', 
+            color: 'var(--text-primary)',
+            opacity: 0.8,
+            transition: 'opacity 0.2s ease'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+        >
+          {showCompare ? 'Hide feature comparison' : 'Compare at a glance'}
+          {showCompare ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </button>
+        <div style={{ flex: 1, borderBottom: '1px solid var(--text-primary)', opacity: 0.15 }}></div>
+      </div>
+
+      {showCompare && (
+        <section className="plan-compare" aria-labelledby="plan-compare-title">
+          <div className="plan-compare__scroll">
+            <table className="plan-compare__table">
+              <thead>
+                <tr>
+                  <th scope="col">What you get</th>
                   {PLAN_FAMILIES.map((family) => (
-                    <td key={family.key} data-recommended={family.recommended ? 'true' : 'false'}>
-                      {compareValue(family, row.key)}
-                    </td>
+                    <th key={family.key} scope="col" data-recommended={family.recommended ? 'true' : 'false'}>
+                    {family.displayName}
+                  </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.key}>
+                    <th scope="row">{row.label}</th>
+                    {PLAN_FAMILIES.map((family) => (
+                      <td key={family.key} data-recommended={family.recommended ? 'true' : 'false'}>
+                        {compareValue(family, row.key)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
 };
