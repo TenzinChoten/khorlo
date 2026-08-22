@@ -47,14 +47,14 @@ const ShareCampaignModal = ({ open, onClose, campaignTitle, campaignUrl, descrip
 
   return (
     <div className="share-campaign-overlay" onClick={onClose}>
-      <div className="glass-panel share-campaign-sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="apple-panel share-campaign-sheet" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Share Campaign</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close share menu"
-            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', color: 'var(--apple-text-secondary)', cursor: 'pointer' }}
           >
             <X size={20} />
           </button>

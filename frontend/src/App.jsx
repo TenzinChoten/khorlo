@@ -116,7 +116,6 @@ function App() {
 
   return (
     <>
-      <div className="noise-overlay"></div>
       <ScrollToTop />
       <Suspense fallback={<RouteFallback />}>
       <Routes>

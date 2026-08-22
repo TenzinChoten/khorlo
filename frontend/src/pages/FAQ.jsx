@@ -34,11 +34,11 @@ const FAQ = () => {
   return (
     <div className="animate-fade-in" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', minHeight: 'calc(100vh - 100px)' }}>
       <div style={{ textAlign: 'center', marginBottom: '4rem', marginTop: '2rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(17,17,17,0.05)', padding: '1rem', borderRadius: '50%', marginBottom: '1.5rem', border: '1px solid var(--glass-border)' }}>
-          <MessageSquare size={32} color="var(--text-primary)" />
+        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'var(--apple-surface)', padding: '1rem', borderRadius: '50%', marginBottom: '1.5rem', border: '1px solid var(--apple-border)' }}>
+          <MessageSquare size={32} color="var(--apple-text-primary)" />
         </div>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '1rem', letterSpacing: '-0.02em' }}>Frequently Asked Questions</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.125rem', maxWidth: '600px', margin: '0 auto' }}>
+        <p style={{ color: 'var(--apple-text-secondary)', fontSize: '1.125rem', maxWidth: '600px', margin: '0 auto' }}>
           Everything you need to know about Khorlo, campaigns, and getting the most out of the platform.
         </p>
       </div>
@@ -49,12 +49,12 @@ const FAQ = () => {
           return (
             <div 
               key={index} 
-              className="glass-panel faq-item"
+              className="apple-panel faq-item"
               style={{ 
                 padding: '0',
                 overflow: 'hidden',
                 transition: 'all 0.3s ease',
-                border: isOpen ? '1px solid var(--accent)' : '1px solid var(--glass-border)'
+                border: isOpen ? '1px solid var(--apple-accent)' : '1px solid var(--apple-border)'
               }}
             >
               <button
@@ -72,7 +72,7 @@ const FAQ = () => {
                   padding: '1.5rem', 
                   background: 'transparent', 
                   border: 'none', 
-                  color: 'var(--text-primary)', 
+                  color: 'var(--apple-text-primary)', 
                   fontSize: '1.125rem',
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -80,7 +80,7 @@ const FAQ = () => {
                 }}
               >
                 <span>{item.question}</span>
-                {isOpen ? <ChevronUp size={20} color="var(--accent)" /> : <ChevronDown size={20} color="var(--text-secondary)" />}
+                {isOpen ? <ChevronUp size={20} color="var(--apple-accent)" /> : <ChevronDown size={20} color="var(--apple-text-secondary)" />}
               </button>
               
               <div 
@@ -89,7 +89,7 @@ const FAQ = () => {
                   opacity: isOpen ? 1 : 0, 
                   transition: 'all 0.3s ease',
                   padding: isOpen ? '0 1.5rem 1.5rem 1.5rem' : '0 1.5rem',
-                  color: 'var(--text-secondary)',
+                  color: 'var(--apple-text-secondary)',
                   lineHeight: 1.6
                 }}
               >
@@ -100,9 +100,9 @@ const FAQ = () => {
         })}
       </div>
 
-      <div style={{ marginTop: '4rem', textAlign: 'center', padding: '3rem', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed var(--glass-border)' }}>
+      <div style={{ marginTop: '4rem', textAlign: 'center', padding: '3rem', background: 'var(--apple-bg)', borderRadius: '16px', border: '1px dashed var(--apple-border)' }}>
         <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Still have questions?</h3>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>We're here to help you navigate the platform.</p>
+        <p style={{ color: 'var(--apple-text-secondary)', marginBottom: '1.5rem' }}>We're here to help you navigate the platform.</p>
         <button className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>Contact Support</button>
       </div>
     </div>

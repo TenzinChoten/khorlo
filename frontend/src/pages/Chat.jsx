@@ -163,17 +163,17 @@ const Chat = () => {
     <div className={`animate-fade-in messages-page${activeId ? ' chat-open' : ''}`}>
       <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1.5rem' }}>Messages</h1>
 
-      <div className="glass-panel messages-shell">
+      <div className="apple-panel messages-shell">
         <div className="messages-sidebar">
-          <div style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
+          <div style={{ padding: '1rem', borderBottom: '1px solid var(--apple-border)' }}>
             <div style={{ position: 'relative' }}>
-              <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+              <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--apple-text-secondary)' }} />
               <input
                 type="text"
                 placeholder="Search conversations..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem 0.5rem 0.5rem 2.25rem', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', borderRadius: '8px', outline: 'none', fontSize: '0.875rem' }}
+                style={{ width: '100%', padding: '0.5rem 0.5rem 0.5rem 2.25rem', background: 'var(--apple-bg)', border: 'none', color: 'var(--apple-text-primary)', borderRadius: '8px', outline: 'none', fontSize: '0.875rem' }}
               />
             </div>
           </div>
@@ -199,11 +199,11 @@ const Chat = () => {
                   onClick={() => openConversation(item.conversationId)}
                   style={{
                     padding: '1rem',
-                    borderBottom: '1px solid rgba(255,255,255,0.02)',
+                    borderBottom: '1px solid var(--apple-border)',
                     display: 'flex',
                     gap: '1rem',
                     cursor: 'pointer',
-                    background: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    background: isActive ? 'var(--apple-bg)' : 'transparent',
                     transition: 'background 0.2s ease',
                   }}
                 >
@@ -217,19 +217,19 @@ const Chat = () => {
                       <span style={{ fontWeight: 600, fontSize: '0.875rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.otherParticipant?.name || 'Participant'}
                       </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', flexShrink: 0 }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--apple-text-secondary)', flexShrink: 0 }}>
                         {formatMessageTime(item.latestMessage?.createdAt || item.updatedAt)}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--apple-text-secondary)', marginBottom: '0.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.campaign?.title || 'Campaign'}
                     </div>
-                    <div style={{ fontSize: '0.875rem', color: unread > 0 ? 'white' : 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: '0.875rem', color: unread > 0 ? 'var(--apple-text-primary)' : 'var(--apple-text-secondary)', fontWeight: unread > 0 ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.latestMessage?.message || 'No messages yet'}
                     </div>
                   </div>
                   {unread > 0 && (
-                    <div style={{ minWidth: '20px', height: '20px', padding: '0 0.35rem', background: 'var(--accent)', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600, alignSelf: 'center' }}>
+                    <div style={{ minWidth: '20px', height: '20px', padding: '0 0.35rem', background: 'var(--apple-accent)', color: '#fff', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600, alignSelf: 'center' }}>
                       {unread}
                     </div>
                   )}
@@ -254,7 +254,7 @@ const Chat = () => {
             </div>
           ) : (
             <>
-              <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--apple-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
                   <button className="messages-back" onClick={closeConversation} aria-label="Back to conversations">
                     <ArrowLeft size={20} />
@@ -266,7 +266,7 @@ const Chat = () => {
                   />
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{other?.name || 'Participant'}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--apple-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {conversation?.campaign?.title || 'Campaign'}
                     </div>
                   </div>
@@ -306,7 +306,8 @@ const Chat = () => {
                       )}
                       <div
                         style={{
-                          background: isMine ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
+                          background: isMine ? 'var(--apple-accent)' : 'var(--apple-bg)',
+                          color: isMine ? '#fff' : 'var(--apple-text-primary)',
                           padding: '0.85rem 1rem',
                           borderRadius: isMine ? '12px 12px 0 12px' : '12px 12px 12px 0',
                           maxWidth: '75%',
@@ -314,11 +315,11 @@ const Chat = () => {
                       >
                         <p style={{ fontSize: '0.875rem', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.message}</p>
                         {msg.attachmentUrl && (
-                          <a href={msg.attachmentUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: isMine ? 'rgba(255,255,255,0.85)' : 'var(--accent)', display: 'block', marginTop: '0.5rem' }}>
+                          <a href={msg.attachmentUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: isMine ? 'rgba(255,255,255,0.85)' : 'var(--apple-accent)', display: 'block', marginTop: '0.5rem' }}>
                             Attachment
                           </a>
                         )}
-                        <span style={{ fontSize: '0.75rem', color: isMine ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)', display: 'block', marginTop: '0.5rem', textAlign: isMine ? 'right' : 'left' }}>
+                        <span style={{ fontSize: '0.75rem', color: isMine ? 'rgba(255,255,255,0.7)' : 'var(--apple-text-secondary)', display: 'block', marginTop: '0.5rem', textAlign: isMine ? 'right' : 'left' }}>
                           {formatMessageTime(msg.createdAt)}
                         </span>
                       </div>
@@ -331,19 +332,19 @@ const Chat = () => {
                 {sendError && (
                   <div style={{ color: '#ff3b30', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{sendError}</div>
                 )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '9999px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--apple-bg)', padding: '0.5rem 1rem', borderRadius: '9999px' }}>
                   <input
                     type="text"
                     placeholder={canSend ? 'Type a message...' : 'Messaging unavailable until the application is accepted'}
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     disabled={!canSend || sending}
-                    style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '0.875rem' }}
+                    style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--apple-text-primary)', outline: 'none', fontSize: '0.875rem' }}
                   />
                   <button
                     type="submit"
                     disabled={!canSend || sending || !draft.trim()}
-                    style={{ background: 'var(--accent)', border: 'none', color: 'white', padding: '0.5rem', borderRadius: '50%', cursor: !canSend || sending || !draft.trim() ? 'not-allowed' : 'pointer', display: 'flex', opacity: !canSend || sending || !draft.trim() ? 0.5 : 1 }}
+                    style={{ background: 'var(--apple-accent)', border: 'none', color: '#fff', padding: '0.5rem', borderRadius: '50%', cursor: !canSend || sending || !draft.trim() ? 'not-allowed' : 'pointer', display: 'flex', opacity: !canSend || sending || !draft.trim() ? 0.5 : 1 }}
                     aria-label="Send message"
                   >
                     <Send size={16} />

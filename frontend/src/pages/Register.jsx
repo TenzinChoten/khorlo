@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { getSafeInternalPath, resolvePostAuthDestination } from '../lib/authRedirect';
 
 const inputStyle = {
-  width: '100%', padding: '0.75rem 1rem', borderRadius: '8px',
-  background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-  color: 'white', outline: 'none'
+  width: '100%', padding: '1rem', borderRadius: '0',
+  background: '#ffffff', border: '2px solid var(--text-primary)',
+  color: 'var(--text-primary)', outline: 'none', fontWeight: 500
 };
 
 const Register = () => {

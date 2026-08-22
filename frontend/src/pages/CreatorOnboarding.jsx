@@ -139,6 +139,7 @@ const CreatorOnboarding = () => {
   };
 
   const handleBack = () => {
+    setShowErrors(false);
     if (step > 1) setStep(step - 1);
   };
 
@@ -218,11 +219,11 @@ const CreatorOnboarding = () => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 2rem', minHeight: 'calc(100vh - 80px)' }}>
-      <div className="glass-panel animate-fade-in" style={{ padding: '3rem', width: '100%', maxWidth: '700px', height: 'fit-content' }}>
+      <div className="glass-panel animate-fade-in" style={{ padding: '3rem', width: '100%', maxWidth: '700px', height: 'fit-content', overflow: 'visible' }}>
         
         {/* Progress Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3rem', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0, transform: 'translateY(-50%)' }}>
+          <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'var(--bg-secondary)', zIndex: 0, transform: 'translateY(-50%)' }}>
             <div style={{ width: `${((step - 1) / 3) * 100}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.3s ease' }}></div>
           </div>
           {[1, 2, 3, 4].map(s => (
@@ -266,9 +267,14 @@ const CreatorOnboarding = () => {
 
         <form onSubmit={step === 4 ? handleSubmit : handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
+          {showErrors && (
+            <div role="alert" style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '2px solid #ef4444', color: '#dc2626', fontWeight: 600 }}>
+              {step === 4 ? "Please select at least one option to continue." : "Please fill out all required fields to continue."}
+            </div>
+          )}
           {/* STEP 1: Basic Info */}
           {step === 1 && (
-            <div className="animate-fade-in">
+            <div className="animate-fade-in" style={{ position: 'relative', zIndex: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
                 <label style={{ 
                   width: '120px', height: '120px', borderRadius: '50%', 
@@ -299,36 +305,36 @@ const CreatorOnboarding = () => {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Display Name <span style={{ color: showErrors && !basicInfo.displayName ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Display Name <span style={{ color: showErrors && !basicInfo.displayName ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <input 
                   type="text" 
                   value={basicInfo.displayName}
                   onChange={(e) => setBasicInfo({...basicInfo, displayName: e.target.value})}
                   placeholder="Jane Doe"
                   required
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }}
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Age <span style={{ color: showErrors && !basicInfo.age ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Age <span style={{ color: showErrors && !basicInfo.age ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="number" 
                     value={basicInfo.age}
                     required
                     onChange={(e) => setBasicInfo({...basicInfo, age: e.target.value})}
                     placeholder="25" 
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }} 
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Gender <span style={{ color: showErrors && !basicInfo.gender ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Gender <span style={{ color: showErrors && !basicInfo.gender ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <select 
                     value={basicInfo.gender}
                     required
                     onChange={(e) => setBasicInfo({...basicInfo, gender: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none', appearance: 'none' }}
                   >
                     <option value="">Select...</option>
                     <option value="MALE">Male</option>
@@ -341,7 +347,7 @@ const CreatorOnboarding = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country <span style={{ color: showErrors && !basicInfo.country ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country <span style={{ color: showErrors && !basicInfo.country ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <SearchableDropdown
                     options={availableCountries.map(c => ({ value: c.isoCode, label: c.name }))}
                     value={basicInfo.country}
@@ -355,7 +361,7 @@ const CreatorOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region {availableStates.length > 0 && <span style={{ color: showErrors && !basicInfo.state ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>State/Region {availableStates.length > 0 && <span style={{ color: showErrors && !basicInfo.state ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
                   <SearchableDropdown
                     options={availableStates.map(s => ({ value: s.isoCode, label: s.name }))}
                     value={basicInfo.state}
@@ -370,7 +376,7 @@ const CreatorOnboarding = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City {availableCities.length > 0 && <span style={{ color: showErrors && !basicInfo.city ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>City {availableCities.length > 0 && <span style={{ color: showErrors && !basicInfo.city ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span>}</label>
                   <SearchableDropdown
                     options={availableCities.map(c => ({ value: c.name, label: c.name }))}
                     value={basicInfo.city}
@@ -392,7 +398,7 @@ const CreatorOnboarding = () => {
                   <select 
                     value={basicInfo.ethnicity} 
                     onChange={(e) => setBasicInfo({...basicInfo, ethnicity: e.target.value})} 
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none', appearance: 'none' }}
                   >
                     <option value="" style={{ color: 'black' }}>Select Ethnicity...</option>
                     <option value="Asian" style={{ color: 'black' }}>Asian</option>
@@ -416,7 +422,7 @@ const CreatorOnboarding = () => {
                     value={basicInfo.previousBrands} 
                     onChange={(e) => setBasicInfo({...basicInfo, previousBrands: e.target.value})} 
                     placeholder="e.g. Nike, Sephora, Samsung" 
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }} 
                   />
                 </div>
               </div>
@@ -428,7 +434,7 @@ const CreatorOnboarding = () => {
           {step === 2 && (
             <div className="animate-fade-in">
               {socials.map((social, index) => (
-                <div key={social.id} style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1rem', position: 'relative' }}>
+                <div key={social.id} style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--text-primary)', marginBottom: '1rem', position: 'relative' }}>
                   {socials.length > 1 && (
                     <button type="button" onClick={() => removeSocial(social.id)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
                       <Trash2 size={18} />
@@ -437,12 +443,12 @@ const CreatorOnboarding = () => {
                   
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Platform <span style={{ color: showErrors && !social.platform ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Platform <span style={{ color: showErrors && !social.platform ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <select 
                         value={social.platform}
                         required
                         onChange={(e) => updateSocial(social.id, 'platform', e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none', appearance: 'none' }}
                       >
                         <option value="INSTAGRAM">Instagram</option>
                         <option value="TIKTOK">TikTok</option>
@@ -451,7 +457,7 @@ const CreatorOnboarding = () => {
                       </select>
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Username / Handle <span style={{ color: showErrors && !social.username ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Username / Handle <span style={{ color: showErrors && !social.username ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <div style={{ position: 'relative' }}>
                         {social.platform === 'INSTAGRAM' && <Camera size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
                         {social.platform === 'TIKTOK' && <Music size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
@@ -463,7 +469,7 @@ const CreatorOnboarding = () => {
                           value={social.username}
                           onChange={(e) => updateSocial(social.id, 'username', e.target.value)}
                           placeholder="@username" 
-                          style={{ width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                          style={{ width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }} 
                           required 
                         />
                         {social.username && (
@@ -488,18 +494,18 @@ const CreatorOnboarding = () => {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Followers <span style={{ color: showErrors && !social.followers ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Followers <span style={{ color: showErrors && !social.followers ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <input 
                         type="number" 
                         value={social.followers}
                         onChange={(e) => updateSocial(social.id, 'followers', e.target.value)}
                         placeholder="10000" 
-                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }} 
                         required 
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement Rate (%) <span style={{ color: showErrors && !social.engagementRate ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement Rate (%) <span style={{ color: showErrors && !social.engagementRate ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                       <input 
                         type="number" 
                         step="0.01"
@@ -507,7 +513,7 @@ const CreatorOnboarding = () => {
                         required
                         onChange={(e) => updateSocial(social.id, 'engagementRate', e.target.value)}
                         placeholder="5.2" 
-                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }} 
                       />
                     </div>
                   </div>
@@ -524,7 +530,7 @@ const CreatorOnboarding = () => {
           {step === 3 && (
             <div className="animate-fade-in">
               <div style={{ marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Niches <span style={{ color: showErrors && content.niches.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Niches <span style={{ color: showErrors && content.niches.length === 0 ? '#ef4444' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableNiches.map(niche => (
                     <div 
@@ -539,7 +545,7 @@ const CreatorOnboarding = () => {
               </div>
 
               <div>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Formats <span style={{ color: showErrors && content.formats.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Formats <span style={{ color: showErrors && content.formats.length === 0 ? '#ef4444' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableFormats.map(format => (
                     <div 
@@ -559,7 +565,7 @@ const CreatorOnboarding = () => {
           {step === 4 && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Where did you hear about Khorlo? (Select all that apply)</h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Where did you hear about Khorlo? (Select all that apply) <span style={{ color: showErrors && referralSources.length === 0 ? '#ef4444' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableReferralSources.map(source => (
                     <div 

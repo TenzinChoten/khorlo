@@ -292,9 +292,9 @@ const CreateCampaign = () => {
       <button 
         type="button"
         onClick={() => navigate('/dashboard/business')}
-        style={{ position: 'absolute', top: '1rem', right: '2rem', background: 'var(--glass-border)', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', zIndex: 10 }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = 'white'; e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--glass-border)'; }}
+        style={{ position: 'absolute', top: '1rem', right: '2rem', background: 'var(--apple-border)', border: 'none', color: 'var(--apple-text-secondary)', cursor: 'pointer', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', zIndex: 10 }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--apple-text-primary)'; e.currentTarget.style.background = 'var(--apple-surface)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--apple-text-secondary)'; e.currentTarget.style.background = 'var(--apple-border)'; }}
         title="Close"
       >
         <X size={24} />
@@ -310,20 +310,20 @@ const CreateCampaign = () => {
         />
       )}
       
-      <div className="glass-panel animate-fade-in" style={{ padding: '3rem', width: '100%', maxWidth: '800px', height: 'fit-content' }}>
+      <div className="apple-panel animate-fade-in" style={{ padding: '3rem', width: '100%', maxWidth: '800px', height: 'fit-content' }}>
         
         {/* Progress Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3rem', position: 'relative', maxWidth: '400px', margin: '0 auto 3rem' }}>
-          <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0, transform: 'translateY(-50%)' }}>
-            <div style={{ width: `${((step - 1) / 2) * 100}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.3s ease' }}></div>
+          <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'var(--apple-surface)', zIndex: 0, transform: 'translateY(-50%)' }}>
+            <div style={{ width: `${((step - 1) / 2) * 100}%`, height: '100%', background: 'var(--apple-accent)', transition: 'width 0.3s ease' }}></div>
           </div>
           {[1, 2, 3].map(s => (
             <div key={s} style={{ 
               width: '32px', height: '32px', borderRadius: '50%', 
-              background: step >= s ? 'var(--accent)' : 'var(--background)',
-              border: `2px solid ${step >= s ? 'var(--accent)' : 'rgba(255,255,255,0.2)'}`,
+              background: step >= s ? 'var(--apple-accent)' : 'var(--apple-surface)',
+              border: `2px solid ${step >= s ? 'var(--apple-accent)' : 'var(--apple-border)'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 600, color: step >= s ? 'white' : 'var(--text-secondary)',
+              fontWeight: 600, color: step >= s ? 'white' : 'var(--apple-text-secondary)',
               zIndex: 1, transition: 'all 0.3s ease'
             }}>
               {step > s ? <Check size={16} /> : s}
@@ -337,7 +337,7 @@ const CreateCampaign = () => {
             {step === 2 && "Compensation"}
             {step === 3 && "Targeting & Formats"}
           </h2>
-          <p style={{ color: 'var(--text-secondary)' }}>
+          <p style={{ color: 'var(--apple-text-secondary)' }}>
             {step === 1 && "Set the foundational details for your new campaign."}
             {step === 2 && "Determine the budget and how creators will be compensated."}
             {step === 3 && "Specify the niches and content formats you are looking for."}
@@ -345,7 +345,7 @@ const CreateCampaign = () => {
         </div>
 
         {error && (
-          <div role="alert" style={{ marginBottom: '2rem', padding: '1rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgb(239, 68, 68)', color: '#fca5a5' }}>
+          <div role="alert" style={{ marginBottom: '2rem', padding: '1rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '2px solid #ef4444', color: '#dc2626', fontWeight: 600 }}>
             {error}
             {planBlocked && (
               <button
@@ -373,7 +373,7 @@ const CreateCampaign = () => {
                   <input type="file" accept="image/*" style={{ display: 'none' }} ref={bannerInputRef} onChange={(e) => handleFileUpload(e, 'banner')} />
                   <div 
                     onClick={() => bannerInputRef.current?.click()}
-                    style={{ width: '100%', height: '150px', borderRadius: '12px', background: campaign.bannerUrl ? `url(${getMediaUrl(campaign.bannerUrl)}) center/cover` : 'rgba(255,255,255,0.05)', border: campaign.bannerUrl ? 'none' : '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                    style={{ width: '100%', height: '150px', borderRadius: '12px', background: campaign.bannerUrl ? `url(${getMediaUrl(campaign.bannerUrl)}) center/cover` : 'var(--apple-surface)', border: campaign.bannerUrl ? 'none' : '2px dashed var(--apple-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--apple-text-secondary)' }}
                   >
                     {!campaign.bannerUrl && (
                       <>
@@ -384,11 +384,11 @@ const CreateCampaign = () => {
                   </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Brand Logo <span style={{ color: error && !campaign.logoUrl ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Brand Logo <span style={{ color: error && !campaign.logoUrl ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input type="file" accept="image/*" style={{ display: 'none' }} ref={logoInputRef} onChange={(e) => handleFileUpload(e, 'logo')} />
                   <div 
                     onClick={() => logoInputRef.current?.click()}
-                    style={{ width: '150px', height: '150px', borderRadius: '12px', background: campaign.logoUrl ? `url(${getMediaUrl(campaign.logoUrl)}) center/cover` : 'rgba(255,255,255,0.05)', border: campaign.logoUrl ? 'none' : '2px dashed var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                    style={{ width: '150px', height: '150px', borderRadius: '12px', background: campaign.logoUrl ? `url(${getMediaUrl(campaign.logoUrl)}) center/cover` : 'var(--apple-surface)', border: campaign.logoUrl ? 'none' : '2px dashed var(--apple-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--apple-text-secondary)' }}
                   >
                     {!campaign.logoUrl && (
                       <>
@@ -402,14 +402,14 @@ const CreateCampaign = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Title <span style={{ color: error && !campaign.title ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Title <span style={{ color: error && !campaign.title ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="text" 
                     value={campaign.title}
                     onChange={(e) => setCampaign({...campaign, title: e.target.value})}
                     placeholder="e.g. Summer Tech Essentials Launch"
                     required
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }}
                   />
                 </div>
                 <div>
@@ -419,37 +419,37 @@ const CreateCampaign = () => {
                     value={campaign.productName}
                     onChange={(e) => setCampaign({...campaign, productName: e.target.value})}
                     placeholder="e.g. Smart Home Hub V2"
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Description <span style={{ color: error && !campaign.description ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Description <span style={{ color: error && !campaign.description ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <textarea 
                   value={campaign.description}
                   onChange={(e) => setCampaign({...campaign, description: e.target.value})}
                   placeholder="Describe the campaign goals and requirements..."
                   rows="4"
                   required
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', resize: 'vertical' }}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none', resize: 'vertical' }}
                 ></textarea>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Status <span style={{ color: error && !campaign.status ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Status <span style={{ color: error && !campaign.status ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <select 
                     value={campaign.status}
                     onChange={(e) => setCampaign({...campaign, status: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none', appearance: 'none' }}
                   >
                     <option value="OPEN">Open</option>
                     <option value="DRAFT">Draft</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Application Deadline <span style={{ color: error && !campaign.deadline ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Application Deadline <span style={{ color: error && !campaign.deadline ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="date" 
                     value={campaign.deadline}
@@ -464,28 +464,28 @@ const CreateCampaign = () => {
                         return { ...prev, deadline: newDeadline, contentDeadline: newContentDeadline };
                       });
                     }}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }} 
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Content Deadline <span style={{ color: error && !campaign.contentDeadline ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Content Deadline <span style={{ color: error && !campaign.contentDeadline ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="date" 
                     min={campaign.deadline}
                     value={campaign.contentDeadline}
                     required
                     onChange={(e) => setCampaign({...campaign, contentDeadline: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }} 
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Location Type <span style={{ color: error && !campaign.locationType ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Location Type <span style={{ color: error && !campaign.locationType ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <select 
                   value={campaign.locationType}
                   onChange={(e) => setCampaign({...campaign, locationType: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none', appearance: 'none' }}
                 >
                   <option value="ONLINE">Online (Remote)</option>
                   <option value="OFFLINE">Offline (In-Person)</option>
@@ -524,7 +524,7 @@ const CreateCampaign = () => {
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Address</label>
-                    <input type="text" value={campaign.address} onChange={(e) => setCampaign({...campaign, address: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} placeholder="Street address" />
+                    <input type="text" value={campaign.address} onChange={(e) => setCampaign({...campaign, address: e.target.value})} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }} placeholder="Street address" />
                   </div>
                 </div>
               )}
@@ -536,7 +536,7 @@ const CreateCampaign = () => {
           {step === 2 && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Compensation Type <span style={{ color: error && !campaign.compensationType ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Compensation Type <span style={{ color: error && !campaign.compensationType ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                   {['PAID', 'FREE_PRODUCT', 'PAID_PLUS_PRODUCT'].map(type => (
                     <div 
@@ -547,9 +547,9 @@ const CreateCampaign = () => {
                         borderRadius: '8px', 
                         cursor: 'pointer',
                         textAlign: 'center',
-                        background: campaign.compensationType === type ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${campaign.compensationType === type ? 'var(--accent)' : 'var(--glass-border)'}`,
-                        color: 'white',
+                        background: campaign.compensationType === type ? 'var(--apple-accent)' : 'var(--apple-bg)',
+                        border: `1px solid ${campaign.compensationType === type ? 'var(--apple-accent)' : 'var(--apple-border)'}`,
+                        color: campaign.compensationType === type ? '#ffffff' : 'var(--apple-text-primary)',
                         transition: 'all 0.2s ease'
                       }}
                     >
@@ -561,24 +561,24 @@ const CreateCampaign = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Number of Creators Needed <span style={{ color: error && !campaign.creatorSlots ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Number of Creators Needed <span style={{ color: error && !campaign.creatorSlots ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                   <input 
                     type="number" 
                     min="1"
                     value={campaign.creatorSlots === '' ? '' : campaign.creatorSlots}
                     required
                     onChange={(e) => setCampaign({...campaign, creatorSlots: e.target.value === '' ? '' : parseInt(e.target.value)})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }}
                   />
                 </div>
                 {(campaign.compensationType === 'PAID' || campaign.compensationType === 'PAID_PLUS_PRODUCT') && (
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Budget & Currency <span style={{ color: error && (!campaign.budget || !campaign.currency) ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Budget & Currency <span style={{ color: error && (!campaign.budget || !campaign.currency) ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <select 
                         value={campaign.currency}
                         onChange={(e) => setCampaign({...campaign, currency: e.target.value})}
-                        style={{ padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                        style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none', appearance: 'none' }}
                       >
                         <option value="USD">USD</option>
                         <option value="EUR">EUR</option>
@@ -592,7 +592,7 @@ const CreateCampaign = () => {
                         required
                         onChange={(e) => setCampaign({...campaign, budget: e.target.value})}
                         placeholder="e.g. 500 - 1,500"
-                        style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                        style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }}
                       />
                     </div>
                   </div>
@@ -605,7 +605,7 @@ const CreateCampaign = () => {
           {step === 3 && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Niches <span style={{ color: error && campaign.niches.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Niches <span style={{ color: error && campaign.niches.length === 0 ? '#ef4444' : 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableNiches.map(niche => (
                     <div 
@@ -620,20 +620,20 @@ const CreateCampaign = () => {
               </div>
 
               <div>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Formats <span style={{ color: error && campaign.formats.length === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Required Formats <span style={{ color: error && campaign.formats.length === 0 ? '#ef4444' : 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableFormats.map(format => (
-                    <div key={format} onClick={() => !campaign.formats.includes(format) && toggleFormat(format)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '999px', background: campaign.formats.includes(format) ? 'rgba(17,17,17,0.08)' : '#ffffff', border: `1px solid ${campaign.formats.includes(format) ? 'var(--accent)' : 'var(--text-primary)'}`, transition: 'all 0.2s ease', cursor: campaign.formats.includes(format) ? 'default' : 'pointer' }}>
+                    <div key={format} onClick={() => !campaign.formats.includes(format) && toggleFormat(format)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '999px', background: campaign.formats.includes(format) ? 'var(--apple-bg)' : 'var(--apple-surface)', border: `1px solid ${campaign.formats.includes(format) ? 'var(--apple-accent)' : 'var(--apple-border)'}`, transition: 'all 0.2s ease', cursor: campaign.formats.includes(format) ? 'default' : 'pointer' }}>
                       <div 
                         onClick={(e) => { if (campaign.formats.includes(format)) { e.stopPropagation(); toggleFormat(format); } }}
                         // [Reason] Unselected format labels were white on a light chip and disappeared
-                        style={{ cursor: 'pointer', color: 'var(--text-primary)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                        style={{ cursor: 'pointer', color: 'var(--apple-text-primary)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                       >
                         {campaign.formats.includes(format) && <Check size={14} />} {format}
                       </div>
                       
                       {campaign.formats.includes(format) && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem', marginLeft: '0.25rem', borderLeft: '1px solid rgba(59,130,246,0.3)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem', marginLeft: '0.25rem', borderLeft: '1px solid var(--apple-border)' }}>
                           <button 
                             type="button"
                             onMouseDown={(e) => startChangingQuantity(e, format, -1)}
@@ -641,9 +641,9 @@ const CreateCampaign = () => {
                             onMouseLeave={stopChangingQuantity}
                             onTouchStart={(e) => startChangingQuantity(e, format, -1)}
                             onTouchEnd={stopChangingQuantity}
-                            style={{ background: 'rgba(17,17,17,0.08)', border: 'none', color: 'var(--text-primary)', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+                            style={{ background: 'var(--apple-surface)', border: 'none', color: 'var(--apple-text-primary)', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
                           >-</button>
-                          <span style={{ color: 'var(--text-primary)', fontSize: '0.875rem', fontWeight: 600, minWidth: '1.2rem', textAlign: 'center' }}>
+                          <span style={{ color: 'var(--apple-text-primary)', fontSize: '0.875rem', fontWeight: 600, minWidth: '1.2rem', textAlign: 'center' }}>
                             {campaign.formatQuantities[format] || 1}
                           </span>
                           <button 
@@ -653,7 +653,7 @@ const CreateCampaign = () => {
                             onMouseLeave={stopChangingQuantity}
                             onTouchStart={(e) => startChangingQuantity(e, format, 1)}
                             onTouchEnd={stopChangingQuantity}
-                            style={{ background: 'rgba(59,130,246,0.2)', border: 'none', color: 'var(--accent)', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+                            style={{ background: 'var(--apple-surface)', border: 'none', color: 'var(--apple-text-primary)', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
                           >+</button>
                         </div>
                       )}

@@ -148,7 +148,7 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout apple-layout">
       {/* Mobile Overlay */}
       <div 
         className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`}
@@ -156,7 +156,7 @@ const DashboardLayout = () => {
       />
 
       {/* Sidebar */}
-      <aside className={`sidebar glass-panel ${isSidebarOpen ? 'open' : ''}`}>
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <Link to={role === 'brand' ? "/dashboard/business" : "/dashboard/influencer"} className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', textDecoration: 'none' }}>
           <img src="/logo.png" alt="Khorlo Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', filter: 'brightness(0)' }} />
           <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.04em', textTransform: 'lowercase', color: 'var(--text-primary)', lineHeight: 1 }}>khorlo<br/>network</span>
@@ -213,7 +213,7 @@ const DashboardLayout = () => {
       {/* Main Content Area */}
       <main className="dashboard-main">
         {/* Top Navigation */}
-        <header className="top-nav glass-panel" style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderRadius: 0, justifyContent: 'space-between' }}>
+        <header className="top-nav">
           
           <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
             <Menu size={24} />

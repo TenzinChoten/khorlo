@@ -105,16 +105,16 @@ const SearchableDropdown = ({ options, value, onChange, placeholder, disabled })
             width: '100%', 
             padding: '0.75rem 2.5rem 0.75rem 1rem',
             borderRadius: '8px', 
-            background: 'rgba(255,255,255,0.05)', 
-            border: '1px solid var(--glass-border)', 
-            color: 'white', 
+            background: 'var(--apple-bg)', 
+            border: '1px solid var(--apple-border)', 
+            color: 'var(--apple-text-primary)', 
             outline: 'none',
             cursor: disabled ? 'not-allowed' : 'text'
           }}
         />
         <ChevronDown 
           size={18} 
-          color="var(--text-secondary)" 
+          color="var(--apple-text-secondary)" 
           style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} 
         />
       </div>
@@ -122,19 +122,20 @@ const SearchableDropdown = ({ options, value, onChange, placeholder, disabled })
       {isOpen && !disabled && (
         <div 
           ref={listRef}
+          className="dropdown-scroll"
           style={{
             position: 'absolute',
             top: 'calc(100% + 4px)',
             left: 0,
             right: 0,
-            background: 'rgba(20, 20, 30, 0.95)',
+            background: 'var(--apple-surface)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid var(--glass-border)',
+            border: '1px solid var(--apple-border)',
             borderRadius: '8px',
-            maxHeight: '250px',
+            maxHeight: '350px',
             overflowY: 'auto',
             zIndex: 50,
-            boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
+            boxShadow: 'var(--apple-shadow)'
           }}
         >
           {filteredOptions.length > 0 ? (
@@ -151,9 +152,9 @@ const SearchableDropdown = ({ options, value, onChange, placeholder, disabled })
                   style={{
                     padding: '0.75rem 1rem',
                     cursor: 'pointer',
-                    color: 'white',
-                    background: isHighlighted ? 'var(--accent)' : 'transparent',
-                    borderLeft: isSelected && !isHighlighted ? '2px solid var(--accent)' : '2px solid transparent',
+                    color: isHighlighted ? '#fff' : 'var(--apple-text-primary)',
+                    background: isHighlighted ? 'var(--apple-accent)' : 'transparent',
+                    borderLeft: isSelected && !isHighlighted ? '2px solid var(--apple-accent)' : '2px solid transparent',
                     transition: 'background 0.1s ease',
                     fontSize: '0.875rem'
                   }}
@@ -163,7 +164,7 @@ const SearchableDropdown = ({ options, value, onChange, placeholder, disabled })
               );
             })
           ) : (
-            <div style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)', textAlign: 'center', fontSize: '0.875rem' }}>
+            <div style={{ padding: '0.75rem 1rem', color: 'var(--apple-text-secondary)', textAlign: 'center', fontSize: '0.875rem' }}>
               No results found
             </div>
           )}

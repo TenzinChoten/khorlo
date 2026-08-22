@@ -1,16 +1,5 @@
-import { PrismaClient } from "@/app/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+import { prisma } from "@/src/lib/prisma";
 
-const connectionString = process.env.DATABASE_URL || "postgresql://tenzinchoeying@localhost:5432/khorlo?schema=public";
-
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-
-export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
+export { prisma };
 export default prisma;
+

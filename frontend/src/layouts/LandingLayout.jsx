@@ -5,13 +5,16 @@ import Footer from '../components/Footer';
 
 const LandingLayout = () => {
   return (
-    <div className="app-container">
-      <Navbar />
+    <>
+      <div className="noise-overlay"></div>
+      <div className="app-container">
+        <Navbar />
       <main style={{ flex: 1, paddingTop: '80px' }}>
         <Outlet />
       </main>
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

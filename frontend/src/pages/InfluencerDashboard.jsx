@@ -53,8 +53,8 @@ const InfluencerDashboard = () => {
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', color: 'var(--accent)' }}>
+        <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="apple-icon-wrapper" style={{ width: '48px', height: '48px' }}>
             <Briefcase size={24} />
           </div>
           <div>
@@ -62,8 +62,8 @@ const InfluencerDashboard = () => {
             <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.activePartnerships ?? 0}</p>
           </div>
         </div>
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
+        <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="apple-icon-wrapper" style={{ width: '48px', height: '48px' }}>
             <Award size={24} />
           </div>
           <div>
@@ -71,19 +71,19 @@ const InfluencerDashboard = () => {
             <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.pendingApplications ?? 0}</p>
           </div>
         </div>
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '12px', color: '#f59e0b' }}>
-            <Eye size={24} />
+        <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="apple-icon-wrapper" style={{ width: '48px', height: '48px' }}>
+            <TrendingUp size={24} />
           </div>
           <div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Total Applications</p>
-            <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.totalApplications ?? 0}</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Profile Views</p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.profileViews ?? 0}</p>
           </div>
         </div>
       </div>
 
       {/* Applications */}
-      <div className="glass-panel" style={{ padding: '2rem' }}>
+      <div className="apple-panel" style={{ padding: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>My Applications</h2>
         {applications.length === 0 ? (
           <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>
@@ -105,9 +105,8 @@ const InfluencerDashboard = () => {
                 <div 
                   key={app.id} 
                   onClick={() => app.campaignId && navigate(`/dashboard/campaign/${app.campaignId}`)}
-                  style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s ease' }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} 
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
+                  className="apple-card-hover"
+                  style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                     <img src={logoSrc} alt={brand?.companyName} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} />

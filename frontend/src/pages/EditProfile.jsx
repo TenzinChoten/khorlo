@@ -249,7 +249,7 @@ const EditProfile = () => {
         <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Edit Profile</h1>
       </div>
 
-      <div className="glass-panel" style={{ padding: '2rem' }}>
+      <div className="apple-panel" style={{ padding: '2rem' }}>
         {error && (
           <div style={{ padding: '1rem', marginBottom: '1.5rem', background: 'rgba(255,59,48,0.1)', color: '#ff3b30', borderRadius: '8px' }}>
             {error}
@@ -257,7 +257,7 @@ const EditProfile = () => {
         )}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--apple-border)' }}>
             <div style={{ position: 'relative' }}>
               <img 
                 src={getMediaUrl(profile.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'U')}&background=random&color=fff`} 
@@ -267,7 +267,7 @@ const EditProfile = () => {
             </div>
             <div>
               <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Profile Picture</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Uploads must be done during onboarding for now.</p>
+              <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>Uploads must be done during onboarding for now.</p>
             </div>
           </div>
 
@@ -281,7 +281,7 @@ const EditProfile = () => {
                 name="name"
                 value={profile.name}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }}
                 required
               />
             </div>
@@ -294,7 +294,7 @@ const EditProfile = () => {
                 name="email"
                 value={profile.email}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }}
                 required
               />
             </div>
@@ -340,7 +340,7 @@ const EditProfile = () => {
               value={profile.bio}
               onChange={handleChange}
               rows="4"
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', resize: 'vertical' }}
+              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none', resize: 'vertical' }}
             ></textarea>
           </div>
 
@@ -358,16 +358,16 @@ const EditProfile = () => {
                 value={profile.website}
                 onChange={(e) => setProfile((prev) => ({ ...prev, website: e.target.value }))}
                 placeholder="https://example.com"
-                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }}
               />
             </div>
           )}
 
           {/* Social Accounts Section */}
-          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--apple-border)', paddingTop: '1.5rem' }}>
             <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Social Accounts</h3>
             {socials.map((social) => (
-              <div key={social.id} style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1rem', position: 'relative' }}>
+              <div key={social.id} style={{ background: 'var(--apple-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--apple-border)', marginBottom: '1rem', position: 'relative' }}>
                 {socials.length > 1 && (
                   <button type="button" onClick={() => removeSocial(social.id)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
                     <Trash2 size={18} />
@@ -376,11 +376,11 @@ const EditProfile = () => {
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Platform</label>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--apple-text-secondary)' }}>Platform</label>
                     <select 
                       value={social.platform}
                       onChange={(e) => updateSocial(social.id, 'platform', e.target.value)}
-                      style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none', appearance: 'none' }}
+                      style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none', appearance: 'none' }}
                     >
                       <option value="INSTAGRAM">Instagram</option>
                       <option value="TIKTOK">TikTok</option>
@@ -389,19 +389,19 @@ const EditProfile = () => {
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Username / Handle</label>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--apple-text-secondary)' }}>Username / Handle</label>
                     <div style={{ position: 'relative' }}>
-                      {social.platform === 'INSTAGRAM' && <Camera size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
-                      {social.platform === 'TIKTOK' && <Music size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
-                      {social.platform === 'YOUTUBE' && <PlayCircle size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
-                      {social.platform === 'X' && <AtSign size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
+                      {social.platform === 'INSTAGRAM' && <Camera size={18} color="var(--apple-text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
+                      {social.platform === 'TIKTOK' && <Music size={18} color="var(--apple-text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
+                      {social.platform === 'YOUTUBE' && <PlayCircle size={18} color="var(--apple-text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
+                      {social.platform === 'X' && <AtSign size={18} color="var(--apple-text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
                       
                       <input 
                         type="text" 
                         value={social.username}
                         onChange={(e) => updateSocial(social.id, 'username', e.target.value)}
                         placeholder="@username" 
-                        style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                        style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }} 
                         required 
                       />
                     </div>
@@ -409,25 +409,25 @@ const EditProfile = () => {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Followers</label>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--apple-text-secondary)' }}>Followers</label>
                     <input 
                       type="number" 
                       value={social.followers}
                       onChange={(e) => updateSocial(social.id, 'followers', e.target.value)}
                       placeholder="10000" 
-                      style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                      style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }} 
                       required 
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement Rate (%)</label>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--apple-text-secondary)' }}>Engagement Rate (%)</label>
                     <input 
                       type="number" 
                       step="0.01"
                       value={social.engagementRate}
                       onChange={(e) => updateSocial(social.id, 'engagementRate', e.target.value)}
                       placeholder="5.2" 
-                      style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }} 
+                      style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }} 
                     />
                   </div>
                 </div>
@@ -441,7 +441,7 @@ const EditProfile = () => {
 
           {/* Content Strategy (Influencer Only) */}
           {!isBusiness && (
-            <div style={{ marginTop: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+            <div style={{ marginTop: '1rem', borderTop: '1px solid var(--apple-border)', paddingTop: '1.5rem' }}>
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Content Niches</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
@@ -474,7 +474,7 @@ const EditProfile = () => {
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', borderTop: '1px solid var(--apple-border)', paddingTop: '1.5rem' }}>
             <button 
               type="button" 
               onClick={() => navigate('/dashboard/profile/change-password')}

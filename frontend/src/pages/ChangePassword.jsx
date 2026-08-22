@@ -10,7 +10,7 @@ const inputStyle = {
   borderRadius: '8px',
   background: 'rgba(255, 255, 255, 0.05)',
   border: '1px solid var(--glass-border)',
-  color: 'white',
+  color: 'var(--text-primary)',
   outline: 'none',
   fontSize: '0.95rem',
   transition: 'border-color 0.2s ease',
