@@ -117,7 +117,7 @@ const CampaignDetail = () => {
     }
   };
 
-  if (loading) return <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading campaign...</div>;
+  if (loading) return <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--apple-text-secondary)' }}>Loading campaign...</div>;
   if (error || !campaign) return <div style={{ padding: '4rem', textAlign: 'center', color: '#ff3b30' }}>{error || 'Campaign not found'}</div>;
 
   const logoImg = campaign.images?.find(img => img.imageType === 'BRAND_LOGO')?.imageUrl || campaign.business?.companyLogo;
@@ -149,15 +149,15 @@ const CampaignDetail = () => {
     <div className="animate-fade-in campaign-detail-page">
       {showApplyModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '2rem', position: 'relative' }}>
+          <div className="apple-panel" style={{ width: '100%', maxWidth: '500px', padding: '2rem', position: 'relative' }}>
             <button 
               onClick={() => setShowApplyModal(false)}
-              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'var(--apple-text-secondary)', cursor: 'pointer' }}
             >
               <X size={20} />
             </button>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>Apply to Campaign</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>{campaign.title} by {campaign.business?.companyName}</p>
+            <p style={{ color: 'var(--apple-text-secondary)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>{campaign.title} by {campaign.business?.companyName}</p>
             
             {applySuccess ? (
               <div style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '1rem', borderRadius: '12px', textAlign: 'center' }}>
@@ -172,7 +172,7 @@ const CampaignDetail = () => {
                     value={coverLetter}
                     onChange={(e) => setCoverLetter(e.target.value)}
                     rows={5}
-                    style={{ width: '100%', padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '12px', outline: 'none', resize: 'vertical' }}
+                    style={{ width: '100%', padding: '1rem', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', borderRadius: '12px', outline: 'none', resize: 'vertical' }}
                   ></textarea>
                 </div>
                 
@@ -194,7 +194,7 @@ const CampaignDetail = () => {
         </div>
       )}
 
-      <button onClick={() => navigate(-1)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.875rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+      <button onClick={() => navigate(-1)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--apple-text-secondary)', marginBottom: '2rem', fontSize: '0.875rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
         <ArrowLeft size={16} /> Back
       </button>
 
@@ -209,26 +209,26 @@ const CampaignDetail = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
             <img src={logoSrc} alt={campaign.business?.companyName} style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }} />
             <div>
-              <p style={{ color: 'var(--accent)', fontWeight: 500, marginBottom: '0.25rem' }}>{campaign.business?.companyName}</p>
+              <p style={{ color: 'var(--apple-accent)', fontWeight: 500, marginBottom: '0.25rem' }}>{campaign.business?.companyName}</p>
               <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{campaign.title}</h1>
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.875rem' }}>
-                <span style={{ padding: '4px 12px', borderRadius: '20px', background: displayStatus === 'OPEN' ? 'rgba(52, 199, 89, 0.1)' : 'rgba(255, 255, 255, 0.1)', color: displayStatus === 'OPEN' ? '#34c759' : 'var(--text-secondary)' }}>
+                <span style={{ padding: '4px 12px', borderRadius: '20px', background: displayStatus === 'OPEN' ? 'rgba(52, 199, 89, 0.1)' : 'rgba(0, 0, 0, 0.05)', color: displayStatus === 'OPEN' ? '#34c759' : 'var(--apple-text-secondary)' }}>
                   {displayStatus}
                 </span>
                 {campaign.productName && (
-                  <span style={{ color: 'var(--text-secondary)' }}>Product: <strong style={{ color: 'white' }}>{campaign.productName}</strong></span>
+                  <span style={{ color: 'var(--apple-text-secondary)' }}>Product: <strong style={{ color: 'var(--apple-text-primary)' }}>{campaign.productName}</strong></span>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>About the Campaign</h2>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '2rem', whiteSpace: 'pre-wrap' }}>
+            <p style={{ color: 'var(--apple-text-secondary)', lineHeight: 1.8, marginBottom: '2rem', whiteSpace: 'pre-wrap' }}>
               {campaign.description}
             </p>
             <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Requirements</h3>
-            <ul style={{ color: 'var(--text-secondary)', paddingLeft: '1.5rem', lineHeight: 1.8 }}>
+            <ul style={{ color: 'var(--apple-text-secondary)', paddingLeft: '1.5rem', lineHeight: 1.8 }}>
               {formatItems.map((f, i) => (
                 <li key={i}>{f.quantity}x {f.name}</li>
               ))}
@@ -239,7 +239,7 @@ const CampaignDetail = () => {
           </div>
 
           {campaign.images?.filter(img => img.imageType === 'MOOD_BOARD' || img.imageType === 'REFERENCE').length > 0 && (
-            <div className="glass-panel" style={{ padding: '2rem' }}>
+            <div className="apple-panel" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Mood Board &amp; References</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
                 {campaign.images.filter(img => img.imageType === 'MOOD_BOARD' || img.imageType === 'REFERENCE').map(img => (
@@ -250,21 +250,21 @@ const CampaignDetail = () => {
           )}
 
           {user?.role === 'BUSINESS' && (
-            <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
+            <div className="apple-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>
                 Applications
-                <span style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--text-secondary)', marginLeft: '0.75rem' }}>
+                <span style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--apple-text-secondary)', marginLeft: '0.75rem' }}>
                   {acceptedCount} / {creatorSlots} slots filled
                 </span>
               </h2>
               {loadingApps ? (
-                <div style={{ color: 'var(--text-secondary)' }}>Loading applications...</div>
+                <div style={{ color: 'var(--apple-text-secondary)' }}>Loading applications...</div>
               ) : campaignApplications.length === 0 ? (
-                <div style={{ color: 'var(--text-secondary)' }}>No applications yet.</div>
+                <div style={{ color: 'var(--apple-text-secondary)' }}>No applications yet.</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {campaignApplications.map(app => (
-                    <div key={app.id} style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div key={app.id} style={{ padding: '1.5rem', background: 'var(--apple-bg)', borderRadius: '12px', border: '1px solid var(--apple-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         {/* [Reason] Creator photos are stored as /uploads paths and must be loaded from the API host */}
                         <img src={getMediaUrl(app.influencer?.profilePhoto) || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.influencer?.displayName || 'Creator')}&background=random&color=fff`} alt={app.influencer?.displayName} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
@@ -272,13 +272,13 @@ const CampaignDetail = () => {
                           <h3 style={{ fontWeight: 600 }}>{app.influencer?.displayName}</h3>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '0.25rem' }}>
                             {app.influencer?.contentNiches?.length > 0 && (
-                              <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                              <span style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>
                                 {/* [Reason] API returns flattened niche DTOs ({ id, name }), not nested contentNiche */}
                                 {app.influencer.contentNiches.map(n => n.name).join(' • ')}
                               </span>
                             )}
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>•</span>
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                            <span style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>•</span>
+                            <span style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>
                               Applied {new Date(app.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                             </span>
                           </div>
@@ -305,13 +305,13 @@ const CampaignDetail = () => {
         </div>
 
         <div>
-          <div className="glass-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
             {!user ? (
               <button type="button" onClick={handleApplyNow} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
             ) : user.role === 'INFLUENCER' ? (
               existingApplication ? (
                 <>
-                  <button disabled className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}>
+                  <button disabled className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--apple-bg)', color: 'var(--apple-text-secondary)', cursor: 'not-allowed', border: '1px solid var(--apple-border)' }}>
                     Application {existingApplication.status}
                   </button>
                   {existingApplication.status === 'ACCEPTED' && (
@@ -327,7 +327,7 @@ const CampaignDetail = () => {
                   )}
                 </>
               ) : isClosed ? (
-                <button disabled className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}>
+                <button disabled className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--apple-bg)', color: 'var(--apple-text-secondary)', cursor: 'not-allowed', border: '1px solid var(--apple-border)' }}>
                   {slotsFilled ? 'All Creator Slots Filled' : 'Applications Closed'}
                 </button>
               ) : (
@@ -345,30 +345,30 @@ const CampaignDetail = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ color: 'var(--accent)' }}><DollarSign size={20} /></div>
+                <div style={{ color: 'var(--apple-accent)' }}><DollarSign size={20} /></div>
                 <div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Compensation</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--apple-text-secondary)' }}>Compensation</div>
                   <div style={{ fontWeight: 600 }}>{formatBudget(campaign)}</div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ color: 'var(--accent)' }}><Target size={20} /></div>
+                <div style={{ color: 'var(--apple-accent)' }}><Target size={20} /></div>
                 <div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Niches</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--apple-text-secondary)' }}>Niches</div>
                   <div style={{ fontWeight: 600 }}>{nicheNames.join(', ') || 'Any'}</div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ color: 'var(--accent)' }}><MapPin size={20} /></div>
+                <div style={{ color: 'var(--apple-accent)' }}><MapPin size={20} /></div>
                 <div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Location</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--apple-text-secondary)' }}>Location</div>
                   <div style={{ fontWeight: 600 }}>
                     {campaign.locationType === 'ONLINE' ? 'Online (Remote)' : (
                       <>
                         {[campaign.city, campaign.state, campaign.country].filter(Boolean).join(', ') || 'Global'}
-                        {campaign.address && <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{campaign.address}</div>}
+                        {campaign.address && <div style={{ fontSize: '0.8rem', color: 'var(--apple-text-secondary)', marginTop: '4px' }}>{campaign.address}</div>}
                       </>
                     )}
                   </div>
@@ -376,18 +376,18 @@ const CampaignDetail = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ color: 'var(--accent)' }}><Calendar size={20} /></div>
+                <div style={{ color: 'var(--apple-accent)' }}><Calendar size={20} /></div>
                 <div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Application Deadline</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--apple-text-secondary)' }}>Application Deadline</div>
                   <div style={{ fontWeight: 600 }}>{campaign.applicationDeadline ? new Date(campaign.applicationDeadline).toLocaleDateString() : 'Open ended'}</div>
                 </div>
               </div>
 
               {campaign.contentDeadline && (
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                  <div style={{ color: 'var(--accent)' }}><Calendar size={20} /></div>
+                  <div style={{ color: 'var(--apple-accent)' }}><Calendar size={20} /></div>
                   <div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Content Deadline</div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--apple-text-secondary)' }}>Content Deadline</div>
                     <div style={{ fontWeight: 600 }}>{new Date(campaign.contentDeadline).toLocaleDateString()}</div>
                   </div>
                 </div>
@@ -395,9 +395,9 @@ const CampaignDetail = () => {
 
               {campaign.creatorSlots && (
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                  <div style={{ color: 'var(--accent)' }}><Target size={20} /></div>
+                  <div style={{ color: 'var(--apple-accent)' }}><Target size={20} /></div>
                   <div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Creator Slots</div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--apple-text-secondary)' }}>Creator Slots</div>
                     <div style={{ fontWeight: 600 }}>{acceptedCount} / {creatorSlots} filled</div>
                   </div>
                 </div>

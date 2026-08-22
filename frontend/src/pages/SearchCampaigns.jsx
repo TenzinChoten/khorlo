@@ -58,7 +58,7 @@ const FilterDropdown = ({ id, label, openFilter, setOpenFilter, children, count 
           padding: '0.65rem 0.9rem',
           background: isOpen || count ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)',
           border: `1px solid ${isOpen || count ? 'var(--accent)' : 'var(--glass-border)'}`,
-          color: 'white',
+          color: 'var(--text-primary)',
           borderRadius: '10px',
           cursor: 'pointer',
           whiteSpace: 'nowrap',
@@ -275,7 +275,7 @@ const SearchCampaigns = () => {
             onChange={(e) => setMinBudgetInput(e.target.value)}
             onBlur={() => updateParams({ minBudget: minBudgetInput })}
             onKeyDown={(e) => { if (e.key === 'Enter') updateParams({ minBudget: minBudgetInput }); }}
-            style={{ width: '100%', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '8px' }}
+            style={{ width: '100%', padding: '0.5rem', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px' }}
           />
         </div>
       </FilterDropdown>
@@ -291,7 +291,7 @@ const SearchCampaigns = () => {
             onChange={(e) => setCityInput(e.target.value)}
             onBlur={() => updateParams({ city: cityInput.trim() })}
             onKeyDown={(e) => { if (e.key === 'Enter') updateParams({ city: cityInput.trim() }); }}
-            style={{ width: '100%', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '8px' }}
+            style={{ width: '100%', padding: '0.5rem', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px' }}
           />
         </div>
       </FilterDropdown>
@@ -320,7 +320,7 @@ const SearchCampaigns = () => {
           placeholder="Search campaigns..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '12px', outline: 'none' }}
+          style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '12px', outline: 'none' }}
         />
       </div>
 
@@ -343,7 +343,7 @@ const SearchCampaigns = () => {
                 borderRadius: '9999px',
                 border: '1px solid var(--glass-border)',
                 background: 'rgba(59,130,246,0.15)',
-                color: 'white',
+                color: 'var(--text-primary)',
                 cursor: 'pointer',
                 fontSize: '0.85rem',
               }}
@@ -365,7 +365,7 @@ const SearchCampaigns = () => {
           <div className="glass-panel campaign-filter-drawer" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h2 style={{ fontSize: '1.25rem' }}>Filters</h2>
-              <button type="button" onClick={() => setMobileOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}><X /></button>
+              <button type="button" onClick={() => setMobileOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}><X /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {filterControls}
@@ -424,14 +424,14 @@ const SearchCampaigns = () => {
                         const app = myApplications.find(a => a.campaignId === camp.id);
                         if (app) {
                           return (
-                            <span style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
+                            <span style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: 600, background: '#ffffff', color: 'var(--text-secondary)' }}>
                               Application {app.status}
                             </span>
                           );
                         }
                         if (isClosed) {
                           return (
-                            <span style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
+                            <span style={{ padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: 600, background: '#ffffff', color: 'var(--text-secondary)' }}>
                               Closed
                             </span>
                           );

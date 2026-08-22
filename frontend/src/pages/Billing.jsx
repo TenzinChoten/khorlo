@@ -143,8 +143,8 @@ const Billing = () => {
 
       <div className="glass-panel" style={{ padding: '2rem', marginTop: '2.5rem' }}>
         <h3 style={{ fontSize: '1.125rem', marginBottom: '1.5rem' }}>Payment Method</h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '12px' }}>
-          <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: '#ffffff', border: '1px solid var(--glass-border)', borderRadius: '12px' }}>
+          <div style={{ padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
             <CreditCard size={24} />
           </div>
           <div>

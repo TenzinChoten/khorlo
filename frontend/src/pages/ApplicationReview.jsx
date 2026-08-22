@@ -107,13 +107,13 @@ const ApplicationReview = () => {
       </button>
 
       {/* Header Section */}
-      <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+      <div className="apple-panel" style={{ padding: '2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
         <img src={profileImg} alt={inf.displayName} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover' }} />
         <div style={{ flex: 1, minWidth: '250px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>{inf.displayName}</h1>
-              <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--apple-text-secondary)', fontSize: '0.875rem', flexWrap: 'wrap' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MapPin size={16} /> {formatLocation()}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Calendar size={16} /> Applied {new Date(application.createdAt).toLocaleDateString()}</span>
               </div>
@@ -130,38 +130,38 @@ const ApplicationReview = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* Cover Letter */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem' }}>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 600 }}>Why they're a good fit</h2>
             {application.coverLetter ? (
-              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, whiteSpace: 'pre-wrap', fontSize: '1rem' }}>
+              <p style={{ color: 'var(--apple-text-secondary)', lineHeight: 1.8, whiteSpace: 'pre-wrap', fontSize: '1rem' }}>
                 {application.coverLetter}
               </p>
             ) : (
-              <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', color: 'var(--text-secondary)' }}>
+              <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--apple-bg)', borderRadius: '12px', color: 'var(--apple-text-secondary)' }}>
                 No cover letter provided.
               </div>
             )}
           </div>
 
           {/* Portfolio */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem' }}>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 600 }}>Portfolio</h2>
             {inf.portfolioItems?.length > 0 ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                 {inf.portfolioItems.map(item => (
-                  <div key={item.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+                  <div key={item.id} style={{ background: 'var(--apple-bg)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--apple-border)' }}>
                     {item.thumbnail ? (
                       <img src={getMediaUrl(item.thumbnail)} alt={item.title} style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
                     ) : (
-                      <div style={{ width: '100%', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
+                      <div style={{ width: '100%', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--apple-bg)', color: 'var(--apple-text-secondary)' }}>
                         <ImageIcon size={32} />
                       </div>
                     )}
                     <div style={{ padding: '1rem' }}>
                       <h3 style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.25rem' }} className="truncate">{item.title}</h3>
-                      {item.description && <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginBottom: '0.5rem' }} className="line-clamp-2">{item.description}</p>}
+                      {item.description && <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem', marginBottom: '0.5rem' }} className="line-clamp-2">{item.description}</p>}
                       {item.url && (
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--apple-accent)', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                           View external <ExternalLink size={12} />
                         </a>
                       )}
@@ -170,7 +170,7 @@ const ApplicationReview = () => {
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', color: 'var(--text-secondary)' }}>
+              <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--apple-bg)', borderRadius: '12px', color: 'var(--apple-text-secondary)' }}>
                 This creator hasn't added portfolio items yet.
               </div>
             )}
@@ -182,9 +182,9 @@ const ApplicationReview = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* Decision Area */}
-          <div className="glass-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
             <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: 600 }}>Application Decision</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
               {acceptedCount} of {creatorSlots} creator slot{creatorSlots === 1 ? '' : 's'} filled
             </p>
             
@@ -236,22 +236,22 @@ const ApplicationReview = () => {
           </div>
 
           {/* Snapshot Area */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem' }}>
             <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 600 }}>Creator Profile</h2>
             
             {inf.bio && (
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+              <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
                 {inf.bio}
               </p>
             )}
 
             {inf.contentNiches?.length > 0 && (
               <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Niches</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--apple-text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Niches</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {/* [Reason] API returns flattened { id, name } niches, not nested contentNiche objects */}
                   {inf.contentNiches.map(n => (
-                    <span key={n.id} style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', fontSize: '0.75rem' }}>
+                    <span key={n.id} style={{ padding: '4px 10px', background: 'var(--apple-bg)', borderRadius: '6px', fontSize: '0.75rem' }}>
                       {n.name}
                     </span>
                   ))}
@@ -261,11 +261,11 @@ const ApplicationReview = () => {
 
             {inf.contentFormats?.length > 0 && (
               <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Formats</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--apple-text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Formats</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {/* [Reason] API returns flattened { id, name } formats, not nested contentFormat objects */}
                   {inf.contentFormats.map(f => (
-                    <span key={f.id} style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', fontSize: '0.75rem' }}>
+                    <span key={f.id} style={{ padding: '4px 10px', background: 'var(--apple-bg)', borderRadius: '6px', fontSize: '0.75rem' }}>
                       {f.name}
                     </span>
                   ))}
@@ -276,23 +276,23 @@ const ApplicationReview = () => {
 
           {/* Social Accounts */}
           {inf.socialAccounts?.length > 0 && (
-            <div className="glass-panel" style={{ padding: '2rem' }}>
+            <div className="apple-panel" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', fontWeight: 600 }}>Social Presence</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {inf.socialAccounts.map(social => (
-                  <div key={social.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                  <div key={social.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--apple-bg)', borderRadius: '8px', border: '1px solid var(--apple-border)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ color: 'var(--accent)' }}>
+                      <div style={{ color: 'var(--apple-accent)' }}>
                         <PlatformIcon platform={social.platform} />
                       </div>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{social.platform}</div>
-                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>@{social.username}</div>
+                        <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>@{social.username}</div>
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{(social.followers || 0).toLocaleString()}</div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Followers</div>
+                      <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>Followers</div>
                     </div>
                   </div>
                 ))}
@@ -301,20 +301,20 @@ const ApplicationReview = () => {
           )}
 
           {/* Campaign Context */}
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem' }}>
             <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 600 }}>Campaign Context</h2>
             <div style={{ marginBottom: '1rem' }}>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Applied to</div>
+              <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>Applied to</div>
               <div style={{ fontWeight: 600 }}>{camp.title}</div>
             </div>
             <div style={{ marginBottom: '1rem' }}>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Compensation</div>
+              <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>Compensation</div>
               <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>
                 {camp.compensationType === 'FREE_PRODUCT' ? 'Free Product' : `${camp.currency || 'USD'} ${(camp.budget || 0).toLocaleString()}`}
               </div>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Creator slots</div>
+              <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>Creator slots</div>
               <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>
                 {acceptedCount} / {creatorSlots} filled
               </div>

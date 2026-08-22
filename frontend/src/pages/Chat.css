@@ -14,7 +14,7 @@
 
 .messages-sidebar {
   width: 320px;
-  border-right: 1px solid var(--glass-border);
+  border-right: 1px solid var(--apple-border);
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -43,7 +43,7 @@
 
 .messages-composer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid var(--apple-border);
 }
 
 .messages-back {

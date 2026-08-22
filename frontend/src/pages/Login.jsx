@@ -52,7 +52,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+              style={{ width: '100%', padding: '1rem', borderRadius: '0', background: '#ffffff', border: '2px solid var(--text-primary)', color: 'var(--text-primary)', outline: 'none', fontWeight: 500 }}
             />
           </div>
           <div>
@@ -66,7 +66,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+              style={{ width: '100%', padding: '1rem', borderRadius: '0', background: '#ffffff', border: '2px solid var(--text-primary)', color: 'var(--text-primary)', outline: 'none', fontWeight: 500 }}
             />
           </div>
 

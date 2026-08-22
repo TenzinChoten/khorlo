@@ -74,21 +74,21 @@ const Notifications = () => {
         <button
           onClick={handleMarkAll}
           disabled={markingAll || notifications.every((n) => n.isRead)}
-          style={{ background: 'transparent', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.875rem', opacity: markingAll ? 0.6 : 1 }}
+          style={{ background: 'transparent', border: 'none', color: 'var(--apple-accent)', cursor: 'pointer', fontSize: '0.875rem', opacity: markingAll ? 0.6 : 1 }}
         >
           {markingAll ? 'Updating...' : 'Mark all as read'}
         </button>
       </div>
 
-      <div className="glass-panel">
+      <div className="apple-panel">
         {loading && (
-          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading notifications...</div>
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--apple-text-secondary)' }}>Loading notifications...</div>
         )}
         {error && (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#ff3b30' }}>{error}</div>
         )}
         {!loading && !error && notifications.length === 0 && (
-          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--apple-text-secondary)' }}>
             No notifications yet.
           </div>
         )}
@@ -101,8 +101,8 @@ const Notifications = () => {
               display: 'flex',
               gap: '1rem',
               alignItems: 'flex-start',
-              borderBottom: index !== notifications.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-              background: notif.isRead ? 'transparent' : 'rgba(255,255,255,0.02)',
+              borderBottom: index !== notifications.length - 1 ? '1px solid var(--apple-border)' : 'none',
+              background: notif.isRead ? 'transparent' : 'rgba(0,0,0,0.02)',
               cursor: 'pointer',
             }}
           >
@@ -113,23 +113,23 @@ const Notifications = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'rgba(255,255,255,0.05)',
-              color: notif.isRead ? 'var(--text-secondary)' : 'var(--accent)',
+              background: 'var(--apple-bg)',
+              color: notif.isRead ? 'var(--apple-text-secondary)' : 'var(--apple-accent)',
               flexShrink: 0
             }}>
               {typeIcon(notif.type)}
             </div>
             <div style={{ flex: 1 }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: notif.isRead ? 500 : 600, marginBottom: '0.25rem', color: notif.isRead ? 'var(--text-secondary)' : 'white' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: notif.isRead ? 500 : 600, marginBottom: '0.25rem', color: notif.isRead ? 'var(--apple-text-secondary)' : 'var(--apple-text-primary)' }}>
                 {notif.title}
               </h3>
               {notif.body && (
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>{notif.body}</p>
+                <p style={{ fontSize: '0.875rem', color: 'var(--apple-text-secondary)', marginBottom: '0.25rem' }}>{notif.body}</p>
               )}
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{formatRelativeTime(notif.createdAt)}</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--apple-text-secondary)' }}>{formatRelativeTime(notif.createdAt)}</p>
             </div>
             {!notif.isRead && (
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)', marginTop: '0.5rem' }}></div>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--apple-accent)', marginTop: '0.5rem' }}></div>
             )}
           </div>
         ))}

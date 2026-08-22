@@ -103,7 +103,7 @@ const ResetPassword = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }}
               />
             </div>
             
@@ -115,7 +115,7 @@ const ResetPassword = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }}
               />
             </div>
 

@@ -74,7 +74,7 @@ const InfluencerPublicProfile = () => {
             {niches.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
                 {niches.map((n) => (
-                  <span key={n.id} style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', fontSize: '0.75rem' }}>
+                  <span key={n.id} style={{ padding: '4px 10px', background: '#ffffff', borderRadius: '6px', fontSize: '0.75rem' }}>
                     {n.name}
                   </span>
                 ))}
@@ -106,15 +106,15 @@ const InfluencerPublicProfile = () => {
           <div className="glass-panel" style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Social Stats</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ padding: '1rem', background: '#ffffff', borderRadius: '12px', border: '1px solid var(--text-primary)' }}>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Total Followers</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{formatFollowers(totalFollowers)}</div>
               </div>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ padding: '1rem', background: '#ffffff', borderRadius: '12px', border: '1px solid var(--text-primary)' }}>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Avg. Engagement</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{avgEngagement}%</div>
               </div>
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ padding: '1rem', background: '#ffffff', borderRadius: '12px', border: '1px solid var(--text-primary)' }}>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Accounts</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{socialAccounts.length}</div>
               </div>
@@ -126,7 +126,7 @@ const InfluencerPublicProfile = () => {
               <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Formats</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {formats.map((f) => (
-                  <span key={f.id} style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', fontSize: '0.75rem' }}>
+                  <span key={f.id} style={{ padding: '4px 10px', background: '#ffffff', borderRadius: '6px', fontSize: '0.75rem' }}>
                     {f.name}
                   </span>
                 ))}
@@ -146,12 +146,12 @@ const InfluencerPublicProfile = () => {
                     href={item.url || undefined}
                     target={item.url ? '_blank' : undefined}
                     rel="noopener noreferrer"
-                    style={{ textDecoration: 'none', color: 'inherit', minHeight: '180px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}
+                    style={{ textDecoration: 'none', color: 'inherit', minHeight: '180px', background: '#ffffff', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}
                   >
                     {item.thumbnail ? (
                       <img src={getMediaUrl(item.thumbnail)} alt={item.title} style={{ width: '100%', height: '110px', objectFit: 'cover' }} />
                     ) : (
-                      <div style={{ height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)' }}>
+                      <div style={{ height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff' }}>
                         <LinkIcon size={24} color="var(--text-secondary)" />
                       </div>
                     )}

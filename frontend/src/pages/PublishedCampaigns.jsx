@@ -51,8 +51,8 @@ const PublishedCampaigns = () => {
   };
 
   const tabStyle = (active) => ({
-    background: active ? 'var(--accent)' : 'transparent',
-    color: active ? 'white' : 'inherit',
+    background: active ? 'var(--apple-accent)' : 'transparent',
+    color: active ? '#fff' : 'var(--apple-text-primary)',
     padding: '0.5rem 1rem',
     fontSize: '0.875rem',
     border: active ? 'none' : undefined,
@@ -63,12 +63,12 @@ const PublishedCampaigns = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Published Campaigns</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Manage your active and drafted campaigns</p>
+          <p style={{ color: 'var(--apple-text-secondary)' }}>Manage your active and drafted campaigns</p>
         </div>
         <button onClick={() => navigate('/dashboard/business/campaigns/new')} className="btn btn-primary btn-accent">+ New Campaign</button>
       </div>
 
-      <div className="glass-panel" style={{ padding: '2rem' }}>
+      <div className="apple-panel" style={{ padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <button className="btn" style={tabStyle(filter === 'OPEN')} onClick={() => setFilter('OPEN')}>
@@ -83,10 +83,10 @@ const PublishedCampaigns = () => {
           </div>
         </div>
 
-        {loading && <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>Loading campaigns...</p>}
+        {loading && <p style={{ color: 'var(--apple-text-secondary)', textAlign: 'center' }}>Loading campaigns...</p>}
         {error && <p style={{ color: '#ff3b30', textAlign: 'center' }}>{error}</p>}
         {!loading && !error && filtered.length === 0 && (
-          <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>
+          <p style={{ color: 'var(--apple-text-secondary)', textAlign: 'center', padding: '2rem 0' }}>
             No campaigns in this category yet.
           </p>
         )}
@@ -96,34 +96,34 @@ const PublishedCampaigns = () => {
             <div
               key={campaign.id}
               onClick={() => navigate(`/dashboard/campaign/${campaign.id}`)}
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.5rem', transition: 'all 0.2s ease', cursor: 'pointer' }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+              style={{ background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', borderRadius: '12px', padding: '1.5rem', transition: 'all 0.2s ease', cursor: 'pointer' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--apple-accent)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--apple-border)'; }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'var(--apple-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <img src={campaignThumbnail(campaign)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={campaign.title} />
                   </div>
                   <div>
                     <h3 style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{campaign.title}</h3>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Posted {new Date(campaign.createdAt).toLocaleDateString()}</p>
+                    <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>Posted {new Date(campaign.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <span style={{ padding: '0.25rem 0.75rem', background: campaign.status === 'OPEN' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)', color: campaign.status === 'OPEN' ? '#10b981' : 'var(--text-secondary)', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>
+                <span style={{ padding: '0.25rem 0.75rem', background: campaign.status === 'OPEN' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0,0,0,0.05)', color: campaign.status === 'OPEN' ? '#10b981' : 'var(--apple-text-secondary)', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>
                   {campaign.status}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.875rem', color: 'var(--apple-text-secondary)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Target size={14} /> {formatPlatforms(campaign)}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><DollarSign size={14} /> {formatBudget(campaign)}</div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--apple-border)', paddingTop: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
-                  <Users size={16} color="var(--accent)" />
-                  <span><strong style={{ color: 'white' }}>{campaign._count?.applications || 0}</strong> Applicants</span>
+                  <Users size={16} color="var(--apple-accent)" />
+                  <span><strong style={{ color: 'var(--apple-text-primary)' }}>{campaign._count?.applications || 0}</strong> Applicants</span>
                 </div>
                 <button className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.875rem' }}>Manage</button>
               </div>

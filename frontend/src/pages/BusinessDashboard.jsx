@@ -47,8 +47,8 @@ const BusinessDashboard = () => {
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', color: 'var(--accent)' }}>
+        <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="apple-icon-wrapper" style={{ width: '48px', height: '48px' }}>
             <Target size={24} />
           </div>
           <div>
@@ -56,8 +56,8 @@ const BusinessDashboard = () => {
             <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.activeCampaigns ?? 0}</p>
           </div>
         </div>
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
+        <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="apple-icon-wrapper" style={{ width: '48px', height: '48px' }}>
             <Users size={24} />
           </div>
           <div>
@@ -65,8 +65,8 @@ const BusinessDashboard = () => {
             <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.totalApplications ?? 0}</p>
           </div>
         </div>
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ padding: '1rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '12px', color: '#8b5cf6' }}>
+        <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="apple-icon-wrapper" style={{ width: '48px', height: '48px' }}>
             <Activity size={24} />
           </div>
           <div>
@@ -77,7 +77,7 @@ const BusinessDashboard = () => {
       </div>
 
       {/* Your Campaigns */}
-      <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
+      <div className="apple-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Your Campaigns</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -96,9 +96,8 @@ const BusinessDashboard = () => {
               <div 
                 key={camp.id} 
                 onClick={() => navigate(`/dashboard/campaign/${camp.id}`)}
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.5rem', transition: 'all 0.2s ease', cursor: 'pointer' }} 
-                onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} 
-                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
+                className="apple-card-hover"
+                style={{ padding: '1.5rem' }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', gap: '1rem' }}>
@@ -110,7 +109,7 @@ const BusinessDashboard = () => {
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Posted {new Date(camp.createdAt).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <span style={{ padding: '0.25rem 0.75rem', background: camp.status === 'OPEN' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)', color: camp.status === 'OPEN' ? '#10b981' : 'var(--text-secondary)', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>{camp.status}</span>
+                  <span style={{ padding: '0.25rem 0.75rem', background: camp.status === 'OPEN' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0,0,0,0.05)', color: camp.status === 'OPEN' ? '#10b981' : 'var(--apple-text-secondary)', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>{camp.status}</span>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
@@ -138,7 +137,7 @@ const BusinessDashboard = () => {
       </div>
 
       {/* Recent Applications */}
-      <div className="glass-panel" style={{ padding: '2rem' }}>
+      <div className="apple-panel" style={{ padding: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Recent Applications</h2>
         {applications.length === 0 ? (
           <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>

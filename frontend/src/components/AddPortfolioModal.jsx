@@ -78,9 +78,9 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
     width: '100%',
     padding: '0.75rem 1rem',
     borderRadius: '8px',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid var(--glass-border)',
-    color: 'white',
+    background: 'var(--apple-bg)',
+    border: '1px solid var(--apple-border)',
+    color: 'var(--apple-text-primary)',
     outline: 'none',
   };
 
@@ -112,7 +112,7 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
       )}
 
       <div
-        className="glass-panel"
+        className="apple-panel"
         onClick={(e) => e.stopPropagation()}
         style={{ width: '100%', maxWidth: '520px', padding: '1.75rem', maxHeight: '90vh', overflowY: 'auto' }}
       >
@@ -121,7 +121,7 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
           <button
             type="button"
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+            style={{ background: 'transparent', border: 'none', color: 'var(--apple-text-secondary)', cursor: 'pointer' }}
           >
             <X size={20} />
           </button>
@@ -162,8 +162,8 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
                 gap: '0.5rem',
                 minHeight: '140px',
                 borderRadius: '12px',
-                border: '1px dashed var(--glass-border)',
-                background: 'rgba(255,255,255,0.03)',
+                border: '1px dashed var(--apple-border)',
+                background: 'var(--apple-bg)',
                 cursor: uploading ? 'wait' : 'pointer',
                 overflow: 'hidden',
                 position: 'relative',
@@ -173,8 +173,8 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
                 <img src={getMediaUrl(form.thumbnail)} alt="Thumbnail preview" style={{ width: '100%', height: '160px', objectFit: 'cover' }} />
               ) : (
                 <>
-                  <ImagePlus size={28} color="var(--text-secondary)" />
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  <ImagePlus size={28} color="var(--apple-text-secondary)" />
+                  <span style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>
                     {uploading ? 'Uploading…' : isEditing ? 'Click to replace thumbnail' : 'Click to upload a thumbnail'}
                   </span>
                 </>

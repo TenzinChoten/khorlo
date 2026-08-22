@@ -111,6 +111,7 @@ const BusinessOnboarding = () => {
   };
 
   const handleBack = () => {
+    setShowErrors(false);
     if (step > 1) setStep(step - 1);
   };
 
@@ -168,11 +169,11 @@ const BusinessOnboarding = () => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 2rem', minHeight: 'calc(100vh - 80px)' }}>
-      <div className="glass-panel animate-fade-in" style={{ padding: '3rem', width: '100%', maxWidth: '600px', height: 'fit-content' }}>
+      <div className="glass-panel animate-fade-in" style={{ padding: '3rem', width: '100%', maxWidth: '600px', height: 'fit-content', overflow: 'visible' }}>
         
         {/* Progress Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3rem', position: 'relative', maxWidth: '400px', margin: '0 auto 3rem' }}>
-          <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'rgba(255,255,255,0.1)', zIndex: 0, transform: 'translateY(-50%)' }}>
+          <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'var(--bg-secondary)', zIndex: 0, transform: 'translateY(-50%)' }}>
             <div style={{ width: `${((step - 1) / 2) * 100}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.3s ease' }}></div>
           </div>
           {[1, 2, 3].map(s => (
@@ -216,9 +217,14 @@ const BusinessOnboarding = () => {
 
         <form onSubmit={step === 3 ? handleSubmit : handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
+          {showErrors && (
+            <div role="alert" style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '2px solid #ef4444', color: '#dc2626', fontWeight: 600 }}>
+              {step === 3 ? "Please select at least one option to continue." : "Please fill out all required fields to continue."}
+            </div>
+          )}
           {/* STEP 1: Basic Info */}
           {step === 1 && (
-            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', position: 'relative', zIndex: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
                 <label style={{ 
                   width: '120px', height: '120px', borderRadius: '50%', 
@@ -249,7 +255,7 @@ const BusinessOnboarding = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Name <span style={{ color: showErrors && !companyName ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Name <span style={{ color: showErrors && !companyName ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <input 
                   type="text" 
                   value={companyName}
@@ -258,8 +264,8 @@ const BusinessOnboarding = () => {
                   required
                   style={{
                     width: '100%', padding: '0.75rem 1rem', borderRadius: '8px',
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                    color: 'white', outline: 'none'
+                    background: '#ffffff', border: '1px solid var(--glass-border)',
+                    color: 'var(--text-primary)', outline: 'none'
                   }}
                 />
               </div>
@@ -277,14 +283,14 @@ const BusinessOnboarding = () => {
                   placeholder="https://example.com"
                   style={{
                     width: '100%', padding: '0.75rem 1rem', borderRadius: '8px',
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                    color: 'white', outline: 'none'
+                    background: '#ffffff', border: '1px solid var(--glass-border)',
+                    color: 'var(--text-primary)', outline: 'none'
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Description <span style={{ color: showErrors && !description ? '#ffffff' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Company Description <span style={{ color: showErrors && !description ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
                 <textarea 
                   value={description}
                   required
@@ -293,8 +299,8 @@ const BusinessOnboarding = () => {
                   rows="4"
                   style={{
                     width: '100%', padding: '0.75rem 1rem', borderRadius: '8px',
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                    color: 'white', outline: 'none', resize: 'vertical'
+                    background: '#ffffff', border: '1px solid var(--glass-border)',
+                    color: 'var(--text-primary)', outline: 'none', resize: 'vertical'
                   }}
                 ></textarea>
               </div>
@@ -363,8 +369,8 @@ const BusinessOnboarding = () => {
                     placeholder="https://instagram.com/yourbrand"
                     style={{
                       width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                      color: 'white', outline: 'none'
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
                     }}
                   />
                   {socials.instagram && (
@@ -393,8 +399,8 @@ const BusinessOnboarding = () => {
                     placeholder="https://tiktok.com/@yourbrand"
                     style={{
                       width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                      color: 'white', outline: 'none'
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
                     }}
                   />
                   {socials.tiktok && (
@@ -423,8 +429,8 @@ const BusinessOnboarding = () => {
                     placeholder="https://youtube.com/@yourbrand"
                     style={{
                       width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                      color: 'white', outline: 'none'
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
                     }}
                   />
                   {socials.youtube && (
@@ -453,8 +459,8 @@ const BusinessOnboarding = () => {
                     placeholder="https://twitter.com/yourbrand"
                     style={{
                       width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                      color: 'white', outline: 'none'
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
                     }}
                   />
                   {socials.twitter && (
@@ -483,8 +489,8 @@ const BusinessOnboarding = () => {
                     placeholder="https://linkedin.com/company/yourbrand"
                     style={{
                       width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)',
-                      color: 'white', outline: 'none'
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
                     }}
                   />
                   {socials.linkedin && (
@@ -508,7 +514,7 @@ const BusinessOnboarding = () => {
           {step === 3 && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Where did you hear about Khorlo? (Select all that apply)</h3>
+                <h3 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Where did you hear about Khorlo? (Select all that apply) <span style={{ color: showErrors && referralSources.length === 0 ? '#ef4444' : 'var(--text-secondary)', fontSize: '0.875rem' }}>*</span></h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                   {availableReferralSources.map(source => (
                     <div 

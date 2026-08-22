@@ -62,38 +62,38 @@ const Profile = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
         {/* Profile Card */}
-        <div className="glass-panel" style={{ overflow: 'hidden', marginBottom: '2rem' }}>
+        <div className="apple-panel" style={{ overflow: 'hidden', marginBottom: '2rem' }}>
           <div style={{ padding: '2rem 2rem 0', textAlign: 'center' }}>
             <img src={avatarUrl || defaultAvatar} alt="Profile" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--background)', margin: '0 auto 1rem', display: 'block' }} />
 
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>{displayName || 'No name set'}</h2>
             {!isBusiness && bio && (
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1rem' }}>{bio}</p>
+              <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1rem' }}>{bio}</p>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--apple-text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
               <MapPin size={16} /> {location}
             </div>
 
             {isBusiness && website && (
-              <a href={website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem', textDecoration: 'none' }}>
+              <a href={website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--apple-accent)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem', textDecoration: 'none' }}>
                 <LinkIcon size={14} /> {websiteLabel}
               </a>
             )}
 
             {isBusiness && bio && (
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, padding: '1rem', borderTop: '1px solid var(--glass-border)', textAlign: 'left' }}>{bio}</p>
+              <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, padding: '1rem', borderTop: '1px solid var(--apple-border)', textAlign: 'left' }}>{bio}</p>
             )}
 
             {!isBusiness && socialAccounts.length > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid var(--apple-border)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
                 {socialAccounts.map(acc => {
                   const socialUrl = sanitizePublicUrl(acc.profileUrl);
                   return (
                   <a key={acc.id} href={socialUrl || undefined} target={socialUrl ? '_blank' : undefined} rel="noopener noreferrer"
-                    style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.2s ease' }}
-                    onMouseEnter={e => e.target.style.color = 'var(--accent)'}
-                    onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
+                    style={{ color: 'var(--apple-text-secondary)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.2s ease' }}
+                    onMouseEnter={e => e.target.style.color = 'var(--apple-text-primary)'}
+                    onMouseLeave={e => e.target.style.color = 'var(--apple-text-secondary)'}
                   >
                     {acc.platform}
                   </a>
@@ -108,26 +108,26 @@ const Profile = () => {
         {/* Right Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {!isBusiness && (
-            <div className="glass-panel" style={{ padding: '2rem' }}>
+            <div className="apple-panel" style={{ padding: '2rem' }}>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Social Stats</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Total Followers</div>
+                <div style={{ padding: '1rem', background: 'var(--apple-bg)', borderRadius: '12px', border: '1px solid var(--apple-border)' }}>
+                  <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Total Followers</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{formatFollowers(totalFollowers)}</div>
                 </div>
-                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Avg. Engagement</div>
+                <div style={{ padding: '1rem', background: 'var(--apple-bg)', borderRadius: '12px', border: '1px solid var(--apple-border)' }}>
+                  <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Avg. Engagement</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{avgEngagement}%</div>
                 </div>
-                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Accounts</div>
+                <div style={{ padding: '1rem', background: 'var(--apple-bg)', borderRadius: '12px', border: '1px solid var(--apple-border)' }}>
+                  <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Accounts</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{socialAccounts.length}</div>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.25rem' }}>{isBusiness ? 'Recent Campaigns' : 'Portfolio'}</h3>
               {!isBusiness && (
@@ -145,13 +145,13 @@ const Profile = () => {
 
             {isBusiness ? (
               (profile.campaigns || []).length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>No campaigns yet.</p>
+                <p style={{ color: 'var(--apple-text-secondary)', textAlign: 'center', padding: '2rem 0' }}>No campaigns yet.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {profile.campaigns.map(c => (
-                    <div key={c.id} style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={c.id} style={{ padding: '1rem', background: 'var(--apple-bg)', borderRadius: '8px', border: '1px solid var(--apple-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontWeight: 500 }}>{c.title}</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{c.status}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--apple-text-secondary)' }}>{c.status}</span>
                     </div>
                   ))}
                 </div>
@@ -165,13 +165,13 @@ const Profile = () => {
                     height: '180px',
                     background: 'transparent',
                     borderRadius: '12px',
-                    border: '1px dashed var(--glass-border)',
+                    border: '1px dashed var(--apple-border)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '0.5rem',
-                    color: 'var(--text-secondary)',
+                    color: 'var(--apple-text-secondary)',
                     cursor: 'pointer',
                   }}
                 >
@@ -179,7 +179,7 @@ const Profile = () => {
                   <span style={{ fontSize: '0.8rem' }}>Add work</span>
                 </button>
                 {(profile.portfolioItems || []).map(item => (
-                  <div key={item.id} style={{ minHeight: '180px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <div key={item.id} style={{ minHeight: '180px', background: 'var(--apple-bg)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--apple-border)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     <button
                       type="button"
                       onClick={() => setEditingPortfolioItem(item)}
@@ -191,9 +191,9 @@ const Profile = () => {
                         zIndex: 1,
                         padding: '0.35rem',
                         borderRadius: '50%',
-                        border: '1px solid var(--glass-border)',
-                        background: 'rgba(0,0,0,0.55)',
-                        color: 'white',
+                        border: '1px solid var(--apple-border)',
+                        background: 'var(--apple-surface)',
+                        color: 'var(--apple-text-primary)',
                         cursor: 'pointer',
                         display: 'flex',
                       }}
@@ -204,14 +204,14 @@ const Profile = () => {
                       {item.thumbnail ? (
                         <img src={getMediaUrl(item.thumbnail)} alt={item.title} style={{ width: '100%', height: '110px', objectFit: 'cover' }} />
                       ) : (
-                        <div style={{ height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)' }}>
-                          <LinkIcon size={24} color="var(--text-secondary)" />
+                        <div style={{ height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--apple-bg)' }}>
+                          <LinkIcon size={24} color="var(--apple-text-secondary)" />
                         </div>
                       )}
                       <div style={{ padding: '0.5rem 0.75rem' }}>
                         <p style={{ fontSize: '0.8rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</p>
                         {item.description && (
-                          <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.description}</p>
+                          <p style={{ fontSize: '0.7rem', color: 'var(--apple-text-secondary)', marginTop: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.description}</p>
                         )}
                       </div>
                     </a>

@@ -1,7 +1,7 @@
 .dashboard-layout {
   display: flex;
   height: 100vh;
-  background-color: var(--bg-color);
+  background-color: var(--apple-bg);
   overflow: hidden;
 }
 
@@ -9,10 +9,8 @@
   width: 280px;
   display: flex;
   flex-direction: column;
-  border-radius: 0;
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
+  background-color: var(--apple-surface);
+  border-right: 1px solid var(--apple-border);
 }
 
 .sidebar-brand {
@@ -52,30 +50,30 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  color: var(--text-secondary);
-  border-radius: 8px;
+  color: var(--apple-text-secondary);
+  border-radius: var(--apple-radius);
   transition: all 0.2s ease;
   font-weight: 500;
 }
 
-.sidebar-link:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+.sidebar-link:hover:not(.active) {
+  color: var(--apple-text-primary);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .sidebar-link.active {
-  color: var(--text-primary);
-  background: rgba(59, 130, 246, 0.15); /* light accent */
-  border-left: 3px solid var(--accent);
+  color: var(--apple-text-primary);
+  background: rgba(0, 0, 0, 0.05);
+  font-weight: 600;
 }
 
 .sidebar-link svg {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .sidebar-link.active svg {
   opacity: 1;
-  color: var(--accent);
+  color: var(--apple-text-primary);
 }
 
 .sidebar-footer {
@@ -109,7 +107,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--bg-color);
+  background-color: transparent;
 }
 
 .top-nav {
@@ -117,9 +115,8 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  border-bottom: 1px solid var(--glass-border);
-  position: relative;
-  z-index: 100;
+  background-color: var(--apple-surface);
+  border-bottom: 1px solid var(--apple-border);
 }
 
 .top-nav-actions {

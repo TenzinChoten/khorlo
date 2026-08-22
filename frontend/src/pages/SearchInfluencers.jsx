@@ -38,7 +38,7 @@ const SearchInfluencers = () => {
               placeholder="Name or handle..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: '240px', maxWidth: '100%', padding: '0.5rem 0.75rem 0.5rem 2.25rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '8px', outline: 'none' }}
+              style={{ width: '240px', maxWidth: '100%', padding: '0.5rem 0.75rem 0.5rem 2.25rem', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none' }}
             />
           </div>
         </div>
