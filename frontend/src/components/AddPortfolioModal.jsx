@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Save, X, ImagePlus } from 'lucide-react';
+import { Plus, Save, X, ImagePlus, Trash2 } from 'lucide-react';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import ImageCropper from './ImageCropper';
 
@@ -12,6 +12,7 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
     url: item?.url || '',
   });
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [cropImageSrc, setCropImageSrc] = useState(null);
@@ -41,6 +42,27 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
       setError('Failed to upload thumbnail. Please try again.');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this portfolio item?')) return;
+    setDeleting(true);
+    setError('');
+    try {
+      const res = await fetchApi('/influencer/me', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          portfolioItem: {
+            id: item.id,
+            _delete: true
+          },
+        }),
+      });
+      onSaved(res.profile);
+    } catch (err) {
+      setError(err.message || 'Failed to delete portfolio item');
+      setDeleting(false);
     }
   };
 
@@ -114,10 +136,10 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
       <div
         className="apple-panel"
         onClick={(e) => e.stopPropagation()}
-        style={{ width: '100%', maxWidth: '520px', padding: '1.75rem', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ width: '100%', maxWidth: '680px', padding: '2rem', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>{isEditing ? 'Edit portfolio item' : 'Add portfolio item'}</h2>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{isEditing ? 'Edit portfolio item' : 'Add portfolio item'}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -188,12 +210,22 @@ const AddPortfolioModal = ({ item, onClose, onSaved }) => {
             <input type="url" name="url" value={form.url} onChange={handleChange} placeholder="https://…" style={inputStyle} />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-outline">Cancel</button>
-            <button type="submit" disabled={saving || uploading} className="btn btn-primary" style={{ display: 'flex', gap: '0.4rem' }}>
-              {isEditing ? <Save size={16} /> : <Plus size={16} />}
-              {saving ? (isEditing ? 'Saving…' : 'Adding…') : (isEditing ? 'Save changes' : 'Add item')}
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+            {isEditing ? (
+              <button type="button" onClick={handleDelete} disabled={saving || deleting || uploading} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#ef4444', borderColor: '#ef4444' }}>
+                <Trash2 size={16} />
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            ) : (
+              <div /> // Spacer
+            )}
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button type="button" onClick={onClose} className="btn btn-outline">Cancel</button>
+              <button type="submit" disabled={saving || deleting || uploading} className="btn btn-primary" style={{ display: 'flex', gap: '0.4rem' }}>
+                {isEditing ? <Save size={16} /> : <Plus size={16} />}
+                {saving ? (isEditing ? 'Saving…' : 'Adding…') : (isEditing ? 'Save' : 'Add item')}
+              </button>
+            </div>
           </div>
         </form>
       </div>

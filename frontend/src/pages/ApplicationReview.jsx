@@ -4,18 +4,24 @@ import { fetchApi, getMediaUrl } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { 
   ArrowLeft, MapPin, ExternalLink, Calendar, 
-  MessageSquare, Camera, PlayCircle, Briefcase, AtSign, Globe, Image as ImageIcon
+  MessageSquare, Image as ImageIcon
 } from 'lucide-react';
+import { FaInstagram, FaYoutube, FaTwitter, FaFacebook, FaLinkedin, FaTiktok, FaLink } from 'react-icons/fa';
 
 const PlatformIcon = ({ platform }) => {
+  let Icon = FaLink;
+  let color = 'var(--apple-accent)';
+
   switch (platform) {
-    case 'INSTAGRAM': return <Camera size={18} />;
-    case 'YOUTUBE': return <PlayCircle size={18} />;
-    case 'LINKEDIN': return <Briefcase size={18} />;
-    case 'X': return <AtSign size={18} />;
-    case 'FACEBOOK': return <Globe size={18} />;
-    default: return <ExternalLink size={18} />;
+    case 'INSTAGRAM': Icon = FaInstagram; color = '#E1306C'; break;
+    case 'YOUTUBE': Icon = FaYoutube; color = '#FF0000'; break;
+    case 'LINKEDIN': Icon = FaLinkedin; color = '#0077b5'; break;
+    case 'X': Icon = FaTwitter; color = '#000000'; break; // Twitter/X color
+    case 'FACEBOOK': Icon = FaFacebook; color = '#1877F2'; break;
+    case 'TIKTOK': Icon = FaTiktok; color = '#000000'; break;
   }
+
+  return <Icon size={18} color={color} />;
 };
 
 const ApplicationReview = () => {
@@ -182,7 +188,7 @@ const ApplicationReview = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* Decision Area */}
-          <div className="apple-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem' }}>
             <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: 600 }}>Application Decision</h2>
             <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
               {acceptedCount} of {creatorSlots} creator slot{creatorSlots === 1 ? '' : 's'} filled
@@ -279,23 +285,49 @@ const ApplicationReview = () => {
             <div className="apple-panel" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', fontWeight: 600 }}>Social Presence</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {inf.socialAccounts.map(social => (
-                  <div key={social.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--apple-bg)', borderRadius: '8px', border: '1px solid var(--apple-border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ color: 'var(--apple-accent)' }}>
-                        <PlatformIcon platform={social.platform} />
+                {inf.socialAccounts.map(social => {
+                  const handle = social.username.replace('@', '');
+                  const url = social.platform === 'INSTAGRAM' ? `https://instagram.com/${handle}` :
+                              social.platform === 'TIKTOK' ? `https://tiktok.com/@${handle}` :
+                              social.platform === 'YOUTUBE' ? `https://youtube.com/@${handle}` :
+                              social.platform === 'X' ? `https://x.com/${handle}` :
+                              social.platform === 'FACEBOOK' ? `https://facebook.com/${handle}` :
+                              social.platform === 'LINKEDIN' ? `https://linkedin.com/in/${handle}` : '#';
+                  
+                  return (
+                    <a 
+                      key={social.id} 
+                      href={url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--apple-bg)', borderRadius: '8px', border: '1px solid var(--apple-border)', textDecoration: 'none', color: 'inherit', transition: 'all 0.2s ease', cursor: 'pointer' }}
+                      onMouseEnter={(e) => { 
+                        e.currentTarget.style.transform = 'translateY(-4px)'; 
+                        e.currentTarget.style.boxShadow = 'var(--apple-shadow-hover)';
+                        e.currentTarget.style.background = 'rgba(0,0,0,0.03)';
+                      }}
+                      onMouseLeave={(e) => { 
+                        e.currentTarget.style.transform = 'translateY(0)'; 
+                        e.currentTarget.style.boxShadow = 'none';
+                        e.currentTarget.style.background = 'var(--apple-bg)';
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div>
+                          <PlatformIcon platform={social.platform} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{social.platform}</div>
+                          <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>@{handle}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{social.platform}</div>
-                        <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>@{social.username}</div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{(social.followers || 0).toLocaleString()}</div>
+                        <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>Followers</div>
                       </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{(social.followers || 0).toLocaleString()}</div>
-                      <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem' }}>Followers</div>
-                    </div>
-                  </div>
-                ))}
+                    </a>
+                  );
+                })}
               </div>
             </div>
           )}

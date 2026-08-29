@@ -200,24 +200,26 @@ const CampaignDetail = () => {
 
       <div className="campaign-detail-layout">
         <div>
-          {bannerSrc && (
-            <div style={{ width: '100%', height: '250px', borderRadius: '16px', marginBottom: '2rem', overflow: 'hidden' }}>
-              <img src={bannerSrc} alt="Campaign Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-          )}
+          <div className="apple-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
+            {bannerSrc && (
+              <div style={{ width: '100%', height: '250px', borderRadius: '16px', marginBottom: '2rem', overflow: 'hidden' }}>
+                <img src={bannerSrc} alt="Campaign Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
-            <img src={logoSrc} alt={campaign.business?.companyName} style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }} />
-            <div>
-              <p style={{ color: 'var(--apple-accent)', fontWeight: 500, marginBottom: '0.25rem' }}>{campaign.business?.companyName}</p>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{campaign.title}</h1>
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.875rem' }}>
-                <span style={{ padding: '4px 12px', borderRadius: '20px', background: displayStatus === 'OPEN' ? 'rgba(52, 199, 89, 0.1)' : 'rgba(0, 0, 0, 0.05)', color: displayStatus === 'OPEN' ? '#34c759' : 'var(--apple-text-secondary)' }}>
-                  {displayStatus}
-                </span>
-                {campaign.productName && (
-                  <span style={{ color: 'var(--apple-text-secondary)' }}>Product: <strong style={{ color: 'var(--apple-text-primary)' }}>{campaign.productName}</strong></span>
-                )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <img src={logoSrc} alt={campaign.business?.companyName} style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }} />
+              <div>
+                <p style={{ color: 'var(--apple-accent)', fontWeight: 500, marginBottom: '0.25rem' }}>{campaign.business?.companyName}</p>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{campaign.title}</h1>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.875rem' }}>
+                  <span style={{ padding: '4px 12px', borderRadius: '20px', background: displayStatus === 'OPEN' ? 'rgba(52, 199, 89, 0.1)' : 'rgba(0, 0, 0, 0.05)', color: displayStatus === 'OPEN' ? '#34c759' : 'var(--apple-text-secondary)' }}>
+                    {displayStatus}
+                  </span>
+                  {campaign.productName && (
+                    <span style={{ color: 'var(--apple-text-secondary)' }}>Product: <strong style={{ color: 'var(--apple-text-primary)' }}>{campaign.productName}</strong></span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

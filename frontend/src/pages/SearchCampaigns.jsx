@@ -56,23 +56,25 @@ const FilterDropdown = ({ id, label, openFilter, setOpenFilter, children, count 
           alignItems: 'center',
           gap: '0.5rem',
           padding: '0.65rem 0.9rem',
-          background: isOpen || count ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)',
-          border: `1px solid ${isOpen || count ? 'var(--accent)' : 'var(--glass-border)'}`,
-          color: 'var(--text-primary)',
-          borderRadius: '10px',
+          background: isOpen || count ? 'rgba(59,130,246,0.1)' : 'var(--apple-bg)',
+          border: `1px solid ${isOpen || count ? 'var(--apple-accent)' : 'var(--apple-border)'}`,
+          color: isOpen || count ? 'var(--apple-accent)' : 'var(--apple-text-primary)',
+          borderRadius: '8px',
           cursor: 'pointer',
           whiteSpace: 'nowrap',
+          transition: 'all 0.2s ease',
+          boxShadow: 'var(--apple-shadow)'
         }}
       >
         {label}
         {count > 0 && (
-          <span style={{ background: 'var(--accent)', borderRadius: '9999px', fontSize: '0.75rem', padding: '0 0.4rem' }}>{count}</span>
+          <span style={{ background: 'var(--apple-accent)', color: '#fff', borderRadius: '9999px', fontSize: '0.75rem', padding: '0 0.4rem' }}>{count}</span>
         )}
         <ChevronDown size={14} />
       </button>
       {isOpen && (
         <div
-          className="glass-panel campaign-filter-menu"
+          className="campaign-filter-menu"
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.5rem)',
@@ -81,7 +83,13 @@ const FilterDropdown = ({ id, label, openFilter, setOpenFilter, children, count 
             maxHeight: '280px',
             overflowY: 'auto',
             padding: '0.75rem',
-            zIndex: 20,
+            zIndex: 50,
+            background: 'var(--apple-surface)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid var(--apple-border)',
+            borderRadius: '12px',
+            boxShadow: 'var(--apple-shadow)',
           }}
         >
           {children}
@@ -111,17 +119,14 @@ const SearchCampaigns = () => {
   const compensationType = searchParams.get('compensationType') || '';
   const minBudget = searchParams.get('minBudget') || '';
   const locationType = searchParams.get('locationType') || '';
-  const city = searchParams.get('city') || '';
   const deadline = searchParams.get('deadline') || '';
   const sort = searchParams.get('sort') || 'newest';
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
 
   const [searchInput, setSearchInput] = useState(searchFromUrl);
-  const [cityInput, setCityInput] = useState(city);
   const [minBudgetInput, setMinBudgetInput] = useState(minBudget);
-
+  
   useEffect(() => { setSearchInput(searchFromUrl); }, [searchFromUrl]);
-  useEffect(() => { setCityInput(city); }, [city]);
   useEffect(() => { setMinBudgetInput(minBudget); }, [minBudget]);
 
   // [Reason] Keep filters in the query string so refresh/share/back-forward preserve discovery state
@@ -165,13 +170,12 @@ const SearchCampaigns = () => {
     if (compensationType) params.set('compensationType', compensationType);
     if (minBudget) params.set('minBudget', minBudget);
     if (locationType) params.set('locationType', locationType);
-    if (city) params.set('city', city);
     if (deadline) params.set('deadline', deadline);
     params.set('sort', sort);
     params.set('page', String(page));
     params.set('limit', '12');
     return params.toString();
-  }, [searchFromUrl, niches, formats, compensationType, minBudget, locationType, city, deadline, sort, page]);
+  }, [searchFromUrl, niches, formats, compensationType, minBudget, locationType, deadline, sort, page]);
 
   useEffect(() => {
     if (user?.role === 'INFLUENCER') {
@@ -216,7 +220,6 @@ const SearchCampaigns = () => {
     ...(compensationType ? [{ key: 'compensation', label: COMPENSATION_OPTIONS.find((o) => o.value === compensationType)?.label || compensationType, onRemove: () => updateParams({ compensationType: '' }) }] : []),
     ...(minBudget ? [{ key: 'minBudget', label: `Min ${minBudget}`, onRemove: () => updateParams({ minBudget: '' }) }] : []),
     ...(locationType ? [{ key: 'location', label: LOCATION_OPTIONS.find((o) => o.value === locationType)?.label || locationType, onRemove: () => updateParams({ locationType: '' }) }] : []),
-    ...(city ? [{ key: 'city', label: city, onRemove: () => updateParams({ city: '' }) }] : []),
     ...(deadline ? [{ key: 'deadline', label: DEADLINE_OPTIONS.find((o) => o.value === deadline)?.label || deadline, onRemove: () => updateParams({ deadline: '' }) }] : []),
   ];
 
@@ -279,21 +282,8 @@ const SearchCampaigns = () => {
           />
         </div>
       </FilterDropdown>
-      <FilterDropdown id="location" label="Location" openFilter={openFilter} setOpenFilter={setOpenFilter} count={(locationType ? 1 : 0) + (city ? 1 : 0)}>
-        {radioRow(!locationType, 'Any', () => updateParams({ locationType: '' }))}
+      <FilterDropdown id="location" label="Location" openFilter={openFilter} setOpenFilter={setOpenFilter} count={locationType ? 1 : 0}>
         {LOCATION_OPTIONS.map((option) => radioRow(locationType === option.value, option.label, () => updateParams({ locationType: option.value })))}
-        <div style={{ marginTop: '0.75rem' }}>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>City</p>
-          <input
-            type="text"
-            placeholder="Filter by city"
-            value={cityInput}
-            onChange={(e) => setCityInput(e.target.value)}
-            onBlur={() => updateParams({ city: cityInput.trim() })}
-            onKeyDown={(e) => { if (e.key === 'Enter') updateParams({ city: cityInput.trim() }); }}
-            style={{ width: '100%', padding: '0.5rem', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px' }}
-          />
-        </div>
       </FilterDropdown>
       <FilterDropdown id="deadline" label="Deadline" openFilter={openFilter} setOpenFilter={setOpenFilter} count={deadline ? 1 : 0}>
         {DEADLINE_OPTIONS.map((option) => radioRow(deadline === option.value, option.label, () => updateParams({ deadline: option.value })))}
@@ -362,16 +352,25 @@ const SearchCampaigns = () => {
       {mobileOpen && (
         // [Reason] Mobile uses a bottom drawer so filters do not consume the full campaign list
         <div className="campaign-filter-drawer-overlay" onClick={() => setMobileOpen(false)}>
-          <div className="glass-panel campaign-filter-drawer" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 style={{ fontSize: '1.25rem' }}>Filters</h2>
-              <button type="button" onClick={() => setMobileOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}><X /></button>
+          <div className="campaign-filter-drawer" onClick={(e) => e.stopPropagation()} style={{
+            background: 'var(--apple-surface)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderTop: '1px solid var(--apple-border)',
+            borderTopLeftRadius: '24px',
+            borderTopRightRadius: '24px',
+            boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.1)',
+            padding: '1.5rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Filters</h2>
+              <button type="button" onClick={() => setMobileOpen(false)} style={{ background: 'rgba(0,0,0,0.05)', border: 'none', color: 'var(--apple-text-secondary)', cursor: 'pointer', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={18} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {filterControls}
             </div>
-            <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }} onClick={() => setMobileOpen(false)}>
-              Done
+            <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', borderRadius: '12px' }} onClick={() => setMobileOpen(false)}>
+              Show Results
             </button>
           </div>
         </div>

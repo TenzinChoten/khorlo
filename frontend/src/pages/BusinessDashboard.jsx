@@ -47,7 +47,11 @@ const BusinessDashboard = () => {
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-        <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div 
+          className="apple-card-hover" 
+          style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}
+          onClick={() => navigate('/dashboard/business/campaigns')}
+        >
           <div className="apple-icon-wrapper" style={{ width: '48px', height: '48px' }}>
             <Target size={24} />
           </div>
@@ -65,7 +69,13 @@ const BusinessDashboard = () => {
             <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.totalApplications ?? 0}</p>
           </div>
         </div>
-        <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div 
+          className="apple-card-hover" 
+          style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}
+          onClick={() => {
+            document.getElementById('recent-applications')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+        >
           <div className="apple-icon-wrapper" style={{ width: '48px', height: '48px' }}>
             <Activity size={24} />
           </div>
@@ -137,7 +147,7 @@ const BusinessDashboard = () => {
       </div>
 
       {/* Recent Applications */}
-      <div className="apple-panel" style={{ padding: '2rem' }}>
+      <div id="recent-applications" className="apple-panel" style={{ padding: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Recent Applications</h2>
         {applications.length === 0 ? (
           <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>
@@ -175,7 +185,7 @@ const BusinessDashboard = () => {
                       </div>
                     </td>
                     <td 
-                      style={{ padding: '1rem 0', color: 'var(--accent)', textDecoration: 'underline' }}
+                      style={{ padding: '1rem 0', color: 'var(--apple-text-primary)', textDecoration: 'none' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/dashboard/campaign/${app.campaign?.id}`);
