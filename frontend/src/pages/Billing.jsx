@@ -106,12 +106,12 @@ const Billing = () => {
       </div>
 
       {error && (
-        <div className="glass-panel" role="alert" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', color: '#f87171' }}>
+        <div className="apple-panel" role="alert" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', color: '#f87171' }}>
           {error}
         </div>
       )}
 
-      <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
+      <div className="apple-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
         {subscription ? (
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
@@ -141,10 +141,10 @@ const Billing = () => {
         loadingPlanId={payingPlanId}
       />
 
-      <div className="glass-panel" style={{ padding: '2rem', marginTop: '2.5rem' }}>
+      <div className="apple-panel" style={{ padding: '2rem', marginTop: '2.5rem' }}>
         <h3 style={{ fontSize: '1.125rem', marginBottom: '1.5rem' }}>Payment Method</h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: '#ffffff', border: '1px solid var(--glass-border)', borderRadius: '12px' }}>
-          <div style={{ padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', borderRadius: '12px' }}>
+          <div style={{ padding: '0.5rem', background: 'var(--apple-surface)', borderRadius: '8px', border: '1px solid var(--apple-border)' }}>
             <CreditCard size={24} />
           </div>
           <div>

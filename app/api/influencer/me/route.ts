@@ -159,36 +159,45 @@ export async function PATCH(request: NextRequest) {
 
     // [Reason] Create or update a single portfolio piece without wiping the rest
     if (portfolioItem) {
-      const title = typeof portfolioItem.title === "string" ? portfolioItem.title.trim() : "";
-      if (!title) {
-        return NextResponse.json({ error: "Portfolio title is required" }, { status: 400 });
-      }
-
-      const portfolioData = {
-        title,
-        description: portfolioItem.description?.trim() || null,
-        thumbnail: portfolioItem.thumbnail || null,
-        url: portfolioItem.url?.trim() || null,
-      };
-
-      if (portfolioItem.id) {
+      if (portfolioItem.id && portfolioItem._delete) {
         const ownedItem = await prisma.portfolio.findFirst({
           where: { id: portfolioItem.id, influencerId: updated.id },
         });
-        if (!ownedItem) {
-          return NextResponse.json({ error: "Portfolio item not found" }, { status: 404 });
+        if (ownedItem) {
+          await prisma.portfolio.delete({ where: { id: ownedItem.id } });
         }
-        await prisma.portfolio.update({
-          where: { id: ownedItem.id },
-          data: portfolioData,
-        });
       } else {
-        await prisma.portfolio.create({
-          data: {
-            influencerId: updated.id,
-            ...portfolioData,
-          },
-        });
+        const title = typeof portfolioItem.title === "string" ? portfolioItem.title.trim() : "";
+        if (!title) {
+          return NextResponse.json({ error: "Portfolio title is required" }, { status: 400 });
+        }
+
+        const portfolioData = {
+          title,
+          description: portfolioItem.description?.trim() || null,
+          thumbnail: portfolioItem.thumbnail || null,
+          url: portfolioItem.url?.trim() || null,
+        };
+
+        if (portfolioItem.id) {
+          const ownedItem = await prisma.portfolio.findFirst({
+            where: { id: portfolioItem.id, influencerId: updated.id },
+          });
+          if (!ownedItem) {
+            return NextResponse.json({ error: "Portfolio item not found" }, { status: 404 });
+          }
+          await prisma.portfolio.update({
+            where: { id: ownedItem.id },
+            data: portfolioData,
+          });
+        } else {
+          await prisma.portfolio.create({
+            data: {
+              influencerId: updated.id,
+              ...portfolioData,
+            },
+          });
+        }
       }
     }
 

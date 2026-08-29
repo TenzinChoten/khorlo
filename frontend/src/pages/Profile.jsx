@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Edit3, Link as LinkIcon, MapPin, Plus } from 'lucide-react';
+import { FaInstagram, FaYoutube, FaTwitter, FaFacebook, FaLinkedin, FaGithub, FaTiktok, FaLink } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi, getMediaUrl } from '../lib/api';
@@ -46,6 +47,23 @@ const Profile = () => {
 
   const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName || 'U')}&background=random&color=fff`;
 
+  const getSocialUrl = (acc) => {
+    if (acc.profileUrl) return sanitizePublicUrl(acc.profileUrl);
+    if (!acc.username) return null;
+    const username = acc.username.replace(/^@/, '').trim();
+    switch (acc.platform?.toUpperCase()) {
+      case 'INSTAGRAM': return `https://instagram.com/${username}`;
+      case 'YOUTUBE': return `https://youtube.com/@${username}`;
+      case 'TWITTER':
+      case 'X': return `https://x.com/${username}`;
+      case 'FACEBOOK': return `https://facebook.com/${username}`;
+      case 'LINKEDIN': return `https://linkedin.com/in/${username}`;
+      case 'GITHUB': return `https://github.com/${username}`;
+      case 'TIKTOK': return `https://tiktok.com/@${username}`;
+      default: return null;
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -85,18 +103,52 @@ const Profile = () => {
               <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, padding: '1rem', borderTop: '1px solid var(--apple-border)', textAlign: 'left' }}>{bio}</p>
             )}
 
-            {!isBusiness && socialAccounts.length > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid var(--apple-border)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
+            {socialAccounts.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderTop: '1px solid var(--apple-border)', paddingTop: '1.5rem', width: '100%' }}>
                 {socialAccounts.map(acc => {
-                  const socialUrl = sanitizePublicUrl(acc.profileUrl);
+                  const socialUrl = getSocialUrl(acc);
+                  
+                  let Icon = FaLink;
+                  let iconColor = 'var(--apple-text-primary)';
+                  const platform = acc.platform?.toUpperCase();
+                  if (platform === 'INSTAGRAM') { Icon = FaInstagram; iconColor = '#E1306C'; }
+                  else if (platform === 'YOUTUBE') { Icon = FaYoutube; iconColor = '#FF0000'; }
+                  else if (platform === 'TWITTER' || platform === 'X') { Icon = FaTwitter; iconColor = '#1DA1F2'; }
+                  else if (platform === 'FACEBOOK') { Icon = FaFacebook; iconColor = '#1877F2'; }
+                  else if (platform === 'LINKEDIN') { Icon = FaLinkedin; iconColor = '#0A66C2'; }
+                  else if (platform === 'GITHUB') { Icon = FaGithub; iconColor = 'var(--apple-text-primary)'; }
+                  else if (platform === 'TIKTOK') { Icon = FaTiktok; iconColor = 'var(--apple-text-primary)'; }
+
                   return (
-                  <a key={acc.id} href={socialUrl || undefined} target={socialUrl ? '_blank' : undefined} rel="noopener noreferrer"
-                    style={{ color: 'var(--apple-text-secondary)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.2s ease' }}
-                    onMouseEnter={e => e.target.style.color = 'var(--apple-text-primary)'}
-                    onMouseLeave={e => e.target.style.color = 'var(--apple-text-secondary)'}
-                  >
-                    {acc.platform}
-                  </a>
+                    <a key={acc.id} href={socialUrl || undefined} target={socialUrl ? '_blank' : undefined} rel="noopener noreferrer"
+                      style={{ 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem',
+                        padding: '0.75rem 1rem', 
+                        width: '100%',
+                        background: 'var(--apple-bg)',
+                        border: '1px solid var(--apple-border)',
+                        borderRadius: '12px',
+                        color: 'var(--apple-text-primary)', 
+                        textDecoration: 'none', 
+                        fontSize: '0.9rem', 
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease',
+                        boxShadow: 'var(--apple-shadow)'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = 'var(--apple-shadow-hover)';
+                        e.currentTarget.style.borderColor = 'var(--apple-accent)';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.boxShadow = 'var(--apple-shadow)';
+                        e.currentTarget.style.borderColor = 'var(--apple-border)';
+                      }}
+                    >
+                      <Icon size={18} color={iconColor} />
+                      <span style={{ textTransform: 'capitalize' }}>{(acc.platform || 'Link').toLowerCase()}</span>
+                    </a>
                   );
                 })}
               </div>
@@ -130,17 +182,7 @@ const Profile = () => {
           <div className="apple-panel" style={{ padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.25rem' }}>{isBusiness ? 'Recent Campaigns' : 'Portfolio'}</h3>
-              {!isBusiness && (
-                <button
-                  type="button"
-                  onClick={() => setEditingPortfolioItem(null)}
-                  className="btn btn-outline"
-                  title="Add portfolio item"
-                  style={{ padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <Plus size={18} />
-                </button>
-              )}
+
             </div>
 
             {isBusiness ? (

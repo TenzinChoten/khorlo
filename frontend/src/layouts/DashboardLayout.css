@@ -191,13 +191,15 @@
   top: 50px;
   right: 0;
   width: 320px;
-  border-radius: 12px;
+  border-radius: var(--apple-radius);
   overflow: hidden;
   z-index: 50;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-  animation: fadeIn 0.2s ease;
-  background: #1C1C1C;
-  border: 1px solid var(--glass-border);
+  box-shadow: var(--apple-shadow-hover);
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--apple-border);
 }
 
 @keyframes fadeIn {
@@ -207,7 +209,7 @@
 
 .dropdown-header {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--apple-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -217,12 +219,14 @@
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
+  color: var(--apple-text-primary);
 }
 
 .view-all {
   font-size: 0.75rem;
-  color: var(--accent);
+  color: var(--apple-accent);
   text-decoration: none;
+  font-weight: 500;
 }
 
 .view-all:hover {
@@ -237,13 +241,13 @@
 .notification-item {
   display: block;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--apple-border);
   text-decoration: none;
   transition: background 0.2s ease;
 }
 
 .notification-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .notification-item:last-child {
@@ -253,20 +257,20 @@
 .notif-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--apple-text-primary);
   margin-bottom: 0.25rem;
 }
 
 .notif-message {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: var(--apple-text-secondary);
   margin-bottom: 0.5rem;
   line-height: 1.4;
 }
 
 .notif-time {
   font-size: 0.7rem;
-  color: var(--accent);
+  color: var(--apple-accent);
   font-weight: 500;
 }
 

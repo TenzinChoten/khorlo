@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, ArrowLeft, Plus, Trash2, Camera, PlayCircle, AtSign, Music, KeyRound } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Trash2, Camera, PlayCircle, AtSign, Music, KeyRound, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import { isPublicHttpUrl, sanitizePublicText, sanitizePublicUrl } from '../lib/publicUrl';
 // [Reason] Location lists are async chunks; only fetch countries/states/cities when this form needs them
 import { getAllCountries, findCountryByName, getStatesOfCountry, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
-
+import ImageCropper from '../components/ImageCropper';
 const EditProfile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -44,6 +44,10 @@ const EditProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -132,6 +136,14 @@ const EditProfile = () => {
     return () => { cancelled = true; };
   }, [locationCodes.countryCode, locationCodes.stateCode]);
 
+  const handleImageSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => setCropImageSrc(reader.result));
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
@@ -197,11 +209,21 @@ const EditProfile = () => {
         setSaving(false);
         return;
       }
+      
+      let avatarUrl = profile.avatar;
+      if (photoFile) {
+        const formData = new FormData();
+        formData.append('file', photoFile);
+        const uploadRes = await fetchApi('/upload', { method: 'POST', body: formData });
+        avatarUrl = uploadRes.url;
+      }
+
       const endpoint = isBiz ? '/business/me' : '/influencer/me';
       
       const payload = isBiz ? {
         companyName: profile.name,
         companyDescription: profile.bio,
+        companyLogo: avatarUrl,
         website: sanitizePublicUrl(profile.website),
         country: profile.country,
         state: profile.state,
@@ -211,6 +233,7 @@ const EditProfile = () => {
         socialAccounts: socials.filter(s => s.username && s.username.trim() !== ''),
       } : {
         displayName: profile.name,
+        profilePhoto: avatarUrl,
         bio: profile.bio,
         country: profile.country,
         state: profile.state,
@@ -250,6 +273,17 @@ const EditProfile = () => {
       </div>
 
       <div className="apple-panel" style={{ padding: '2rem' }}>
+        {cropImageSrc && (
+          <ImageCropper 
+            imageSrc={cropImageSrc}
+            onCropComplete={(file, url) => {
+              setPhotoFile(file);
+              setPhotoPreview(url);
+              setCropImageSrc(null);
+            }}
+            onCancel={() => setCropImageSrc(null)}
+          />
+        )}
         {error && (
           <div style={{ padding: '1rem', marginBottom: '1.5rem', background: 'rgba(255,59,48,0.1)', color: '#ff3b30', borderRadius: '8px' }}>
             {error}
@@ -260,14 +294,17 @@ const EditProfile = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--apple-border)' }}>
             <div style={{ position: 'relative' }}>
               <img 
-                src={getMediaUrl(profile.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'U')}&background=random&color=fff`} 
+                src={photoPreview || getMediaUrl(profile.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'U')}&background=random&color=fff`} 
                 alt="Profile" 
                 style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover' }} 
               />
             </div>
             <div>
               <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Profile Picture</h3>
-              <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem' }}>Uploads must be done during onboarding for now.</p>
+              <label className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
+                <Camera size={16} /> Change Photo
+                <input type="file" accept="image/*" onChange={handleImageSelect} style={{ display: 'none' }} />
+              </label>
             </div>
           </div>
 
@@ -401,9 +438,26 @@ const EditProfile = () => {
                         value={social.username}
                         onChange={(e) => updateSocial(social.id, 'username', e.target.value)}
                         placeholder="@username" 
-                        style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }} 
+                        style={{ width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', color: 'var(--apple-text-primary)', outline: 'none' }} 
                         required 
                       />
+                      {social.username && (
+                        <a 
+                          href={
+                            social.platform === 'INSTAGRAM' ? `https://instagram.com/${social.username.replace('@', '')}` :
+                            social.platform === 'TIKTOK' ? `https://tiktok.com/@${social.username.replace('@', '')}` :
+                            social.platform === 'YOUTUBE' ? `https://youtube.com/@${social.username.replace('@', '')}` :
+                            social.platform === 'X' ? `https://x.com/${social.username.replace('@', '')}` : '#'
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--apple-text-secondary)', transition: 'color 0.2s' }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--apple-text-primary)'}
+                          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--apple-text-secondary)'}
+                        >
+                          <ExternalLink size={16} />
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>

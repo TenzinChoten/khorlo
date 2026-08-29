@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Link as LinkIcon, MapPin } from 'lucide-react';
+import { FaInstagram, FaYoutube, FaTwitter, FaFacebook, FaLinkedin, FaTiktok, FaLink } from 'react-icons/fa';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import { sanitizePublicText, sanitizePublicUrl } from '../lib/publicUrl';
 
@@ -61,9 +62,9 @@ const InfluencerPublicProfile = () => {
       <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '2rem' }}>Creator Profile</h1>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
-        <div className="glass-panel" style={{ overflow: 'hidden', marginBottom: '2rem' }}>
+        <div className="apple-panel" style={{ overflow: 'hidden', marginBottom: '2rem' }}>
           <div style={{ padding: '2rem 2rem 0', textAlign: 'center' }}>
-            <img src={avatarUrl || defaultAvatar} alt={displayName} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--background)', margin: '0 auto 1rem', display: 'block' }} />
+            <img src={avatarUrl || defaultAvatar} alt={displayName} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--apple-surface)', margin: '0 auto 1rem', display: 'block' }} />
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>{displayName}</h2>
             {sanitizePublicText(profile.bio) && (
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1rem' }}>{sanitizePublicText(profile.bio)}</p>
@@ -81,18 +82,47 @@ const InfluencerPublicProfile = () => {
               </div>
             )}
             {socialAccounts.length > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid var(--apple-border)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
                 {socialAccounts.map((acc) => {
-                  const socialUrl = sanitizePublicUrl(acc.profileUrl);
+                  const handle = (acc.username || '').replace('@', '');
+                  let socialUrl = '#';
+                  if (handle) {
+                    if (acc.platform === 'INSTAGRAM') socialUrl = `https://instagram.com/${handle}`;
+                    else if (acc.platform === 'TIKTOK') socialUrl = `https://tiktok.com/@${handle}`;
+                    else if (acc.platform === 'YOUTUBE') socialUrl = `https://youtube.com/@${handle}`;
+                    else if (acc.platform === 'X') socialUrl = `https://x.com/${handle}`;
+                    else if (acc.platform === 'FACEBOOK') socialUrl = `https://facebook.com/${handle}`;
+                    else if (acc.platform === 'LINKEDIN') socialUrl = `https://linkedin.com/in/${handle}`;
+                  }
+                  
+                  let Icon = FaLink;
+                  let iconColor = 'var(--apple-text-secondary)';
+                  if (acc.platform === 'INSTAGRAM') { Icon = FaInstagram; iconColor = '#E1306C'; }
+                  else if (acc.platform === 'YOUTUBE') { Icon = FaYoutube; iconColor = '#FF0000'; }
+                  else if (acc.platform === 'LINKEDIN') { Icon = FaLinkedin; iconColor = '#0077b5'; }
+                  else if (acc.platform === 'X') { Icon = FaTwitter; iconColor = '#000000'; }
+                  else if (acc.platform === 'FACEBOOK') { Icon = FaFacebook; iconColor = '#1877F2'; }
+                  else if (acc.platform === 'TIKTOK') { Icon = FaTiktok; iconColor = '#000000'; }
+
                   return (
                   <a
                     key={acc.id}
-                    href={socialUrl || undefined}
-                    target={socialUrl ? '_blank' : undefined}
+                    href={socialUrl}
+                    target={socialUrl !== '#' ? '_blank' : undefined}
                     rel="noopener noreferrer"
-                    style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem' }}
+                    title={acc.platform}
+                    style={{ 
+                      color: iconColor,
+                      fontSize: '1.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
-                    {acc.platform}
+                    <Icon />
                   </a>
                   );
                 })}
@@ -103,18 +133,18 @@ const InfluencerPublicProfile = () => {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Social Stats</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-              <div style={{ padding: '1rem', background: '#ffffff', borderRadius: '12px', border: '1px solid var(--text-primary)' }}>
+              <div style={{ padding: '1rem', background: 'var(--apple-bg)', borderRadius: '12px', border: '1px solid var(--apple-border)' }}>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Total Followers</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{formatFollowers(totalFollowers)}</div>
               </div>
-              <div style={{ padding: '1rem', background: '#ffffff', borderRadius: '12px', border: '1px solid var(--text-primary)' }}>
+              <div style={{ padding: '1rem', background: 'var(--apple-bg)', borderRadius: '12px', border: '1px solid var(--apple-border)' }}>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Avg. Engagement</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{avgEngagement}%</div>
               </div>
-              <div style={{ padding: '1rem', background: '#ffffff', borderRadius: '12px', border: '1px solid var(--text-primary)' }}>
+              <div style={{ padding: '1rem', background: 'var(--apple-bg)', borderRadius: '12px', border: '1px solid var(--apple-border)' }}>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Accounts</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{socialAccounts.length}</div>
               </div>
@@ -122,7 +152,7 @@ const InfluencerPublicProfile = () => {
           </div>
 
           {formats.length > 0 && (
-            <div className="glass-panel" style={{ padding: '2rem' }}>
+            <div className="apple-panel" style={{ padding: '2rem' }}>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Formats</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {formats.map((f) => (
@@ -134,7 +164,7 @@ const InfluencerPublicProfile = () => {
             </div>
           )}
 
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+          <div className="apple-panel" style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Portfolio</h3>
             {(profile.portfolioItems || []).length === 0 ? (
               <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>This creator hasn&apos;t added portfolio items yet.</p>
@@ -146,7 +176,7 @@ const InfluencerPublicProfile = () => {
                     href={item.url || undefined}
                     target={item.url ? '_blank' : undefined}
                     rel="noopener noreferrer"
-                    style={{ textDecoration: 'none', color: 'inherit', minHeight: '180px', background: '#ffffff', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}
+                    style={{ textDecoration: 'none', color: 'inherit', minHeight: '180px', background: '#ffffff', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--apple-border)', display: 'flex', flexDirection: 'column' }}
                   >
                     {item.thumbnail ? (
                       <img src={getMediaUrl(item.thumbnail)} alt={item.title} style={{ width: '100%', height: '110px', objectFit: 'cover' }} />

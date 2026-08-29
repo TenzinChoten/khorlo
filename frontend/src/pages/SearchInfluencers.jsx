@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
 
@@ -29,18 +29,17 @@ const SearchInfluencers = () => {
       {/* [Reason] Keep the creator filter in the header top-right so the grid can use the full width */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}>Discover Creators</h1>
-        <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0.75rem' }}>
-          <Filter size={18} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
-          <div style={{ position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-            <input
-              type="text"
-              placeholder="Name or handle..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ width: '240px', maxWidth: '100%', padding: '0.5rem 0.75rem 0.5rem 2.25rem', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none' }}
-            />
-          </div>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <Search size={18} style={{ position: 'absolute', left: '1rem', color: 'var(--text-secondary)' }} />
+          <input
+            type="text"
+            placeholder="Name or handle..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ width: '280px', maxWidth: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', background: 'var(--apple-surface)', border: '1px solid var(--apple-border)', borderRadius: '12px', boxShadow: 'var(--apple-shadow)', color: 'var(--apple-text-primary)', outline: 'none', fontSize: '0.9rem', transition: 'box-shadow 0.2s' }}
+            onFocus={(e) => e.target.style.boxShadow = 'var(--apple-shadow-hover)'}
+            onBlur={(e) => e.target.style.boxShadow = 'var(--apple-shadow)'}
+          />
         </div>
       </div>
 
@@ -56,7 +55,7 @@ const SearchInfluencers = () => {
             const avatarSrc = getMediaUrl(inf.profilePhoto) || fallbackAvatar;
             const niches = inf.contentNiches?.map(n => n.contentNiche?.name).filter(Boolean) || [];
             return (
-              <div key={inf.id} className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
+              <div key={inf.id} className="apple-card-hover" style={{ padding: '2rem', textAlign: 'center' }}>
                 <img
                   src={avatarSrc}
                   alt={inf.displayName}
