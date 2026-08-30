@@ -37,7 +37,9 @@ const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'))
 const Billing = lazy(() => import('./pages/Billing'))
 const CreateCampaign = lazy(() => import('./pages/CreateCampaign'))
 const PublishedCampaigns = lazy(() => import('./pages/PublishedCampaigns'))
-
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const Contact = lazy(() => import('./pages/Contact'))
 // A wrapper for the landing page content
 const LandingPage = () => (
   <>
@@ -132,6 +134,11 @@ function App() {
         <Route path="/faq" element={<FAQ />} />
         {/* [Reason] Shared campaign links must open without authentication */}
         <Route path="/campaigns/:id" element={<CampaignDetail />} />
+        
+        {/* Static Pages */}
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/contact" element={<Contact />} />
       </Route>
 
       {/* Authenticated Dashboard Routes */}

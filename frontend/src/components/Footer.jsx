@@ -1,19 +1,20 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="footer" style={{ padding: '2rem 4rem', backgroundColor: 'var(--bg-color)', display: 'flex' }}>
-      <div className="footer-brand" style={{ fontWeight: 700, fontSize: '1rem', flex: 1, textTransform: 'lowercase' }} >
+    <footer className="footer">
+      <div className="footer-brand">
         <span>built by tibetans. built for tibetans.</span>
       </div>
       
-      <div className="footer-links" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'center', flex: 1, justifyContent: 'center', fontWeight: 600, textTransform: 'lowercase' }}>
-        <a href="#" className="nav-link" style={{ color: 'var(--text-primary)' }}>terms of service</a>
-        <a href="#" className="nav-link" style={{ color: 'var(--text-primary)' }}>privacy policy</a>
-        <a href="#" className="nav-link" style={{ color: 'var(--text-primary)' }}>contact</a>
+      <div className="footer-links">
+        <Link to="/terms" className="nav-link">terms of service</Link>
+        <Link to="/privacy" className="nav-link">privacy policy</Link>
+        <Link to="/contact" className="nav-link">contact</Link>
       </div>
       
-      <div className="footer-copyright" style={{ fontWeight: 700, fontSize: '1rem', flex: 1, textAlign: 'right', textTransform: 'lowercase' }}>
+      <div className="footer-copyright">
         <span>&copy; {new Date().getFullYear()} khorlo inc.</span>
       </div>
     </footer>

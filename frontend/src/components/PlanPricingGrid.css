@@ -272,9 +272,38 @@
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 768px) and (max-width: 1023px) {
+  .plan-pricing__grid {
+    gap: 1rem;
+  }
+  .plan-card {
+    padding: 1.15rem;
+  }
+  .plan-card__name {
+    font-size: 1.15rem;
+  }
+  .plan-card__price {
+    font-size: 1.15rem;
+  }
+  .plan-card__eyebrow {
+    font-size: 0.65rem;
+  }
+  .plan-card__pitch {
+    font-size: 0.8rem;
+  }
+  .plan-card__list li {
+    font-size: 0.75rem;
+  }
+  .plan-card .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (min-width: 1024px) {
   .plan-pricing__grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem; /* slightly less gap to help fit 4 */
   }
 
   .plan-card--featured {
@@ -286,6 +315,43 @@
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .plan-card {
+    padding: 1.15rem; /* slightly smaller padding to give more inner width */
+  }
+  
+  .plan-card__eyebrow {
+    font-size: 0.65rem;
+    gap: 0.4rem;
+  }
+
+  .plan-card__badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .plan-card__name {
+    font-size: 1.1rem;
+  }
+  
+  .plan-card__price {
+    font-size: 1.15rem; /* fixed smaller size to prevent overflow of long prices */
+  }
+  
+  .plan-card__pitch {
+    font-size: 0.8rem;
+  }
+  
+  .plan-card__list li {
+    font-size: 0.75rem;
+  }
+  
+  .plan-card .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
 @media (max-width: 767px) {
   .plan-card {
     padding: 1.4rem;
@@ -294,5 +360,49 @@
   .editorial-section.plan-pricing-section {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+}
+
+@media (max-width: 425px) {
+  .plan-compare__table {
+    min-width: auto;
+  }
+  .plan-compare__table th,
+  .plan-compare__table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.65rem;
+  }
+  .plan-card {
+    padding: 1rem;
+  }
+  .plan-card__name {
+    font-size: 1rem;
+  }
+  .plan-card__price {
+    font-size: 1rem;
+  }
+  .plan-card__pitch {
+    font-size: 0.7rem;
+  }
+  .plan-card__list li {
+    font-size: 0.65rem;
+  }
+  .plan-card .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
+  }
+  
+  /* Toggle Switch */
+  .plan-pricing__toggle {
+    padding: 0.2rem;
+  }
+  .plan-pricing__toggle-btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+  }
+  .plan-pricing__save {
+    font-size: 0.5rem;
+    right: -0.75rem;
+    top: -0.75rem;
   }
 }
