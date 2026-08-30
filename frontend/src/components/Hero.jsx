@@ -14,7 +14,7 @@ const Hero = () => {
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <h1 className="hero-title" style={{ textAlign: 'left', marginBottom: 0 }}>
             <span className="word-reveal delay-100" style={{ display: 'inline-block' }}>khorlo</span><br/>
-            <span className="word-reveal delay-200" style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
+            <span className="word-reveal delay-200" style={{ display: 'inline' }}>
               network.
               <span className="pill-badge" style={{ verticalAlign: 'text-bottom', marginLeft: '0.5rem', marginBottom: '0.5rem' }}>v1.0 live now</span>
             </span>

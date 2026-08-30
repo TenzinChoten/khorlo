@@ -3,6 +3,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* Navbar */
@@ -15,9 +16,33 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: transparent;
+  padding: 1rem 4rem;
+  background-color: var(--bg-color);
   border-bottom: 1px solid var(--glass-border);
+}
+
+.nav-brand-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.nav-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: brightness(0);
+}
+
+.nav-logo-text {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-transform: lowercase;
+  color: var(--text-primary);
+  line-height: 1;
 }
 
 .nav-brand {
@@ -29,16 +54,43 @@
 
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
   align-items: center;
   justify-content: center;
   flex: 1;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.nav-links .nav-link {
+  color: var(--text-primary);
 }
 
 .nav-actions {
   flex: 1;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+}
+
+.navbar .nav-btn {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  box-shadow: none; /* prevent global .btn shadow from affecting navbar */
+}
+
+.navbar .btn-outline.nav-btn {
+  gap: 0.4rem;
+  margin-right: 0.75rem;
+  border: none;
+}
+
+.navbar .nav-btn-icon {
+  margin-left: 4px;
 }
 
 .nav-link {
@@ -238,7 +290,8 @@
 
 /* Footer */
 .footer {
-  padding: 1.5rem 2rem;
+  padding: 2rem 4rem;
+  background-color: var(--bg-color);
   border-top: 2px solid var(--glass-border);
   display: flex;
   justify-content: space-between;
@@ -246,12 +299,84 @@
   color: var(--text-secondary);
 }
 
+.footer-brand {
+  font-weight: 700;
+  font-size: 1rem;
+  flex: 1;
+  text-transform: lowercase;
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
 .footer-copyright {
+  font-weight: 700;
+  font-size: 1rem;
+  flex: 1;
   text-align: right;
+  text-transform: lowercase;
 }
 
 .footer-links .nav-link {
   font-size: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 0.75rem 2rem;
+  }
+  .nav-logo-img {
+    width: 36px;
+    height: 36px;
+  }
+  .nav-logo-text {
+    font-size: 1rem;
+  }
+  .nav-links {
+    gap: 1.5rem;
+    font-size: 0.9rem;
+  }
+  .navbar .nav-btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .footer {
+    padding: 1.5rem 2rem;
+  }
+  .footer-brand, .footer-copyright {
+    font-size: 0.85rem;
+  }
+  .footer-links {
+    gap: 2.5rem; /* User requested greater spacing */
+  }
+  .footer-links .nav-link {
+    font-size: 0.75rem;
+  }
+  
+  /* Hero */
+  .hero {
+    padding: 5rem 2rem 2rem; /* reduced further to move content up */
+  }
+  
+  /* Spheres */
+  .hero .sphere-1 {
+    width: 325px; /* ~35% smaller than 500px */
+    height: 325px;
+  }
+  .hero .sphere-2 {
+    width: 455px; /* ~35% smaller than 700px */
+    height: 455px;
+  }
+
 }
 
 @media (max-width: 768px) {
@@ -355,7 +480,7 @@
   margin-bottom: 3rem;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .section-header {
     flex-direction: row;
     align-items: center;
@@ -363,6 +488,7 @@
     gap: 4rem;
   }
 }
+
 
 .section-intro {
   max-width: 400px;
@@ -408,8 +534,8 @@
   border-color: transparent transparent var(--bg-color) transparent;
 }
 
-@media (min-width: 1024px) {
-  /* Points LEFT towards title on desktop */
+@media (min-width: 768px) {
+  /* Points LEFT towards title on desktop/tablet */
   .comic-bubble::before {
     left: -22px;
     top: 50px;
@@ -451,7 +577,7 @@
 
 .editorial-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
 }
 
@@ -487,3 +613,165 @@
   line-height: 1.5;
   font-size: 1.1rem;
 }
+
+@media (max-width: 1024px) {
+  .editorial-grid {
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .editorial-card {
+    padding: 2rem;
+  }
+  .editorial-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+  .editorial-card p {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .editorial-section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  .editorial-card h3 {
+    font-size: 1.15rem;
+  }
+  .editorial-card p {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 425px) {
+  .editorial-section {
+    padding-left: 1rem !important; /* Smaller padding for 375/320px screens */
+    padding-right: 1rem !important;
+  }
+  .editorial-card {
+    margin-right: 8px !important; /* Compensate for the 8px shadow */
+    margin-bottom: 8px !important;
+  }
+  
+  /* Footer adjustments for Mobile S/M */
+  .footer {
+    padding: 1rem;
+    gap: 1rem; /* Reduce vertical gap between footer sections */
+  }
+  .footer-links {
+    gap: 0.5rem; /* Reduce horizontal gap so links fit on one line */
+  }
+  .footer-links .nav-link {
+    font-size: 0.6rem; /* Smaller font to fit 'terms of service', 'privacy policy', 'contact' on 320px */
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .section-header {
+    gap: 0.5rem;
+  }
+  .section-title {
+    font-size: 3rem;
+  }
+  .section-intro {
+    font-size: 0.7rem;
+    max-width: 220px;
+    margin-left: auto;
+    text-align: left;
+  }
+  .comic-bubble {
+    padding: 1.15rem;
+    max-width: 250px;
+    margin-left: 9rem; /* Roughly half of the previous 290px auto margin */
+  }
+  .comic-bubble p {
+    font-size: 0.65rem;
+  }
+  .comic-bubble .comic-highlight {
+    font-size: 0.7rem;
+    margin-top: 0.6rem;
+  }
+}
+
+@media (max-width: 425px) {
+  /* hide navbar button text */
+  .nav-btn-text {
+    display: none;
+  }
+  .nav-actions {
+    gap: 0.25rem;
+  }
+  
+  .navbar .nav-btn {
+    padding: 0.35rem;
+  }
+  
+  /* Make hero buttons half size and stacked */
+  .hero-btns {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .hero .btn {
+    width: 50%;
+    padding: 0.6rem 1rem !important;
+    font-size: 0.75rem !important;
+    justify-content: center;
+  }
+
+  /* Force side-by-side layout for section headers on mobile */
+  .section-header {
+    flex-direction: row;
+    align-items: center; /* Center align for ALL headers */
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+    margin-bottom: 0;
+  }
+  
+  .section-intro {
+    font-size: 0.5rem;
+    line-height: 1.3;
+    max-width: 150px;
+    margin-left: auto;
+    text-align: left;
+    padding-bottom: 0;
+  }
+
+  .comic-bubble {
+    padding: 0.85rem;
+    max-width: 200px; /* Wider than before */
+    margin: 0;
+    margin-left: auto; /* right align on mobile */
+    box-shadow: 2px 2px 0 var(--text-primary); /* further reduced shadow */
+  }
+  
+  .comic-bubble p {
+    font-size: 0.55rem;
+    line-height: 1.3;
+  }
+  
+  .comic-bubble .comic-highlight {
+    font-size: 0.6rem;
+    margin-top: 0.35rem;
+  }
+  
+  /* Point bubble left */
+  .comic-bubble::before {
+    left: -12px;
+    top: 20px;
+    border-width: 8px 12px 8px 0;
+    border-color: transparent var(--text-primary) transparent transparent;
+  }
+  .comic-bubble::after {
+    left: -8px; /* Shift right to overlap the 2px border */
+    top: 22px; /* 2px below outer triangle top */
+    border-width: 6px 10px 6px 0; /* Extends 10px from -8px to +2px, safely inside the outer slope */
+    border-color: transparent var(--bg-color) transparent transparent;
+  }
+}
+
