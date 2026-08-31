@@ -44,7 +44,7 @@
         {
           "name": "Starter",
           "billingCycle": "MONTHLY",
-          "price": 999,
+          "price": 10,
           "campaignLimit": 5,
           "messageLimit": 500,
           "advancedSearch": true,
