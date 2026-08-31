@@ -1,7 +1,7 @@
 import { fetchApi } from './api';
 
 function getCheckoutKey(orderKeyId) {
-  return import.meta.env.VITE_RAZORPAY_KEY_ID || orderKeyId;
+  return import.meta.env.RAZORPAY_KEY_ID || orderKeyId;
 }
 
 function ensureCheckoutScript() {
