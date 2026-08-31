@@ -111,7 +111,8 @@ const PlanPricingGrid = ({
               <button
                 type="button"
                 className={family.recommended ? 'btn btn-primary' : 'btn btn-outline'}
-                disabled={Boolean(isLoading || isCurrent || (plans.length > 0 && !plan))}
+                // [Reason] Keep paid CTAs clickable so missing catalog rows surface an error instead of a dead button
+                disabled={Boolean(isLoading || isCurrent)}
                 onClick={() => onSelectPlan(family, billingCycle, plan)}
               >
                 {isCurrent ? 'Current plan' : isLoading ? 'Working…' : family.cta}

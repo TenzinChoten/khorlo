@@ -54,12 +54,14 @@ const Billing = () => {
     setError('');
     setPayingPlanId(plan.id);
     try {
+      // [Reason] Paid plans use Razorpay Standard Checkout (create-order → modal → verify-payment)
       await startRazorpayCheckout({
         planId: plan.id,
         name: 'Khorlo',
         description: `${plan.name} plan`,
         prefill: { email: user?.email, name: user?.name },
       });
+      await loadSubscription();
       navigate('/checkout/success');
     } catch (err) {
       setError(err.message || 'Payment failed');
@@ -91,7 +93,16 @@ const Billing = () => {
     if (!family) return;
     const plan = matchPlan(plans, family, billingCycle);
     if (!plan) return;
-    if (subscription && ['ACTIVE', 'PENDING'].includes(subscription.status)) return;
+
+    if (subscription && ['ACTIVE', 'PENDING'].includes(subscription.status)) {
+      // [Reason] Skip only when the same plan is already open, or a paid plan blocks another checkout
+      if (subscription.planId === plan.id) return;
+      const onPaidPlan = Number(subscription.plan?.price) > 0;
+      if (onPaidPlan) return;
+      // [Reason] Free ACTIVE should still auto-open checkout when pricing CTAs target a paid plan
+      if (family.key === 'FREE') return;
+    }
+
     autoStarted.current = true;
     handleSelectPlan(family, billingCycle, plan);
   }, [plans, subscription, user, searchParams, billingCycle]);
