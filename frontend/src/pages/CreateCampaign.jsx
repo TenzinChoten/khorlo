@@ -94,11 +94,27 @@ const CreateCampaign = () => {
     fetchApi('/subscriptions/me')
       .then((res) => {
         const sub = res.subscription;
+        const usage = res.usage;
         if (!sub) return;
-        const expired = sub.status === 'EXPIRED' || new Date(sub.expiresAt).getTime() <= Date.now();
-        if (expired && !(sub.plan?.price > 0 && sub.status === 'ACTIVE')) {
+        // [Reason] Free has no end date; only a stored paid period can expire
+        const paidExpired =
+          Boolean(sub.expiresAt) &&
+          Number(sub.plan?.price) > 0 &&
+          new Date(sub.expiresAt).getTime() <= Date.now();
+        const expired = sub.status === 'EXPIRED' || paidExpired;
+        if (expired && !(sub.plan?.price > 0 && sub.status === 'ACTIVE' && !paidExpired)) {
           setPlanBlocked(true);
-          setError('Your Free plan has expired. Upgrade or start a plan again to post a campaign.');
+          setError('Your plan has expired. Upgrade to post a campaign.');
+          return;
+        }
+        // [Reason] Stop the form when the brand is already at the plan's live-campaign cap
+        if (usage && usage.activeCampaigns >= usage.campaignLimit) {
+          setPlanBlocked(true);
+          setError(
+            `Your ${sub.plan?.name || 'current'} plan allows ${usage.campaignLimit} active campaign${
+              usage.campaignLimit === 1 ? '' : 's'
+            }. Upgrade to post more.`
+          );
         }
       })
       .catch(() => {});
@@ -162,7 +178,6 @@ const CreateCampaign = () => {
       return;
     }
     if (planBlocked) {
-      setError('Your Free plan has expired. Upgrade or start a plan again to post a campaign.');
       return;
     }
     setIsSubmitting(true);

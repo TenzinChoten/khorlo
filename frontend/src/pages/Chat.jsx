@@ -39,6 +39,7 @@ const Chat = () => {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState(null);
+  const [messageUsage, setMessageUsage] = useState(null);
 
   const feedRef = useRef(null);
 
@@ -91,6 +92,20 @@ const Chat = () => {
   }, [loadConversations]);
 
   useEffect(() => {
+    if (user?.role !== 'BUSINESS') return undefined;
+    let cancelled = false;
+    // [Reason] Brand composers need the monthly message cap before the send request fails
+    fetchApi('/subscriptions/me')
+      .then((res) => {
+        if (!cancelled) setMessageUsage(res.usage || null);
+      })
+      .catch(() => {
+        if (!cancelled) setMessageUsage(null);
+      });
+    return () => { cancelled = true; };
+  }, [user?.role]);
+
+  useEffect(() => {
     loadThread(activeId);
   }, [activeId, loadThread]);
 
@@ -138,6 +153,15 @@ const Chat = () => {
       setSendError('Messaging is only available for accepted applications.');
       return;
     }
+    if (
+      messageUsage &&
+      messageUsage.messagesThisMonth >= messageUsage.messageLimit
+    ) {
+      setSendError(
+        `Your plan allows ${messageUsage.messageLimit} messages per month. Upgrade to send more.`
+      );
+      return;
+    }
 
     setSending(true);
     setSendError(null);
@@ -148,6 +172,11 @@ const Chat = () => {
       });
       setDraft('');
       setMessages((prev) => [...prev, res.message]);
+      setMessageUsage((prev) =>
+        prev
+          ? { ...prev, messagesThisMonth: prev.messagesThisMonth + 1 }
+          : prev
+      );
       loadConversations();
     } catch (err) {
       setSendError(err.message || 'Failed to send message.');
@@ -157,7 +186,10 @@ const Chat = () => {
   };
 
   const other = conversation?.otherParticipant;
-  const canSend = conversation?.applicationStatus === 'ACCEPTED';
+  const atMessageLimit = Boolean(
+    messageUsage && messageUsage.messagesThisMonth >= messageUsage.messageLimit
+  );
+  const canSend = conversation?.applicationStatus === 'ACCEPTED' && !atMessageLimit;
 
   return (
     <div className={`animate-fade-in messages-page${activeId ? ' chat-open' : ''}`}>
@@ -329,13 +361,24 @@ const Chat = () => {
               </div>
 
               <form className="messages-composer" onSubmit={handleSend}>
+                {messageUsage && (
+                  <div style={{ color: 'var(--apple-text-secondary)', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+                    {messageUsage.messagesThisMonth} / {messageUsage.messageLimit} messages this month
+                  </div>
+                )}
                 {sendError && (
                   <div style={{ color: '#ff3b30', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{sendError}</div>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--apple-bg)', padding: '0.5rem 1rem', borderRadius: '9999px' }}>
                   <input
                     type="text"
-                    placeholder={canSend ? 'Type a message...' : 'Messaging unavailable until the application is accepted'}
+                    placeholder={
+                      atMessageLimit
+                        ? 'Monthly message limit reached. Upgrade to send more.'
+                        : canSend
+                          ? 'Type a message...'
+                          : 'Messaging unavailable until the application is accepted'
+                    }
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     disabled={!canSend || sending}

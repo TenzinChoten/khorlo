@@ -153,9 +153,18 @@ export const campaignService = {
     body: unknown
   ): Promise<CampaignDetailResponse> {
     const user = await requireRole("BUSINESS");
-    await verifyOwnership(id, user.id);
+    const businessId = await verifyOwnership(id, user.id);
 
     const data = parseValidation(updateCampaignSchema, body, "Invalid campaign data");
+    const existing = await campaignRepository.findById(id);
+    const nextStatus = data.status;
+    const wasActive =
+      existing?.status === "DRAFT" || existing?.status === "OPEN";
+    const willBeActive = nextStatus === "DRAFT" || nextStatus === "OPEN";
+    // [Reason] Reopening a closed campaign must still fit the plan's active-campaign cap
+    if (!wasActive && willBeActive) {
+      await assertCanPostCampaign(businessId, id);
+    }
 
     const { images, contentNiches, contentFormats, ...fields } = data;
 

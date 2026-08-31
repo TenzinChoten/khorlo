@@ -11,7 +11,12 @@ import {
   getRazorpayKeyId,
   verifyCheckoutPaymentSignature,
 } from "@/src/lib/razorpay";
-import { addBillingCycle } from "@/src/lib/subscription-period";
+import { expiresAtForPlan } from "@/src/lib/subscription-period";
+import {
+  assertCanChangePlan,
+  closeOpenSubscription,
+  isMoreExpensivePlan,
+} from "@/src/lib/plan-change";
 import {
   createOrderSchema,
   verifyPaymentSchema,
@@ -65,9 +70,22 @@ async function activatePlanFromCheckoutOrder(
     return existing;
   }
 
-  // [Reason] End the default Free seat before Standard Checkout activates a paid plan
-  if (existing && existing.plan.price <= 0) {
-    await subscriptionRepository.update(existing.id, { status: "CANCELLED" });
+  if (existing) {
+    if (existing.planId === plan.id) {
+      // [Reason] Same-plan PENDING checkout should activate the existing row, not insert a second seat
+      const startsAt = new Date();
+      return subscriptionRepository.update(existing.id, {
+        status: "ACTIVE",
+        startsAt,
+        expiresAt: expiresAtForPlan(plan, startsAt),
+      });
+    }
+    // [Reason] After a charge, never replace the current seat with a cheaper plan
+    if (!isMoreExpensivePlan(plan, existing.plan)) {
+      return existing;
+    }
+    // [Reason] Paid upgrade: close the cheaper seat so the new plan can take the open slot
+    await closeOpenSubscription(existing);
   }
 
   const startsAt = new Date();
@@ -76,7 +94,7 @@ async function activatePlanFromCheckoutOrder(
     planId: plan.id,
     razorpaySubscriptionId: null,
     startsAt,
-    expiresAt: addBillingCycle(startsAt, plan.billingCycle),
+    expiresAt: expiresAtForPlan(plan, startsAt),
     status: "ACTIVE",
   });
 
@@ -105,6 +123,20 @@ export const paymentService = {
       if (!plan || !plan.isActive) {
         throw new ValidationError("Invalid plan", { planId: ["Plan not found"] });
       }
+      const profile = await businessRepository.findByUserId(user.id);
+      if (!profile) {
+        throw new ValidationError("Business profile is required", {
+          planId: ["Create a brand profile before buying a plan"],
+        });
+      }
+      const existing = await subscriptionRepository.findOpenByBusinessId(profile.id);
+      if (existing?.planId === plan.id && existing.status === "ACTIVE") {
+        throw new ValidationError("This plan is already active", {
+          planId: ["Choose a more expensive plan to upgrade"],
+        });
+      }
+      // [Reason] Reject cheaper checkouts before Razorpay collects payment
+      assertCanChangePlan(existing, plan);
       // [Reason] Charge the stored plan price so the client cannot underpay
       amountPaise = Math.round(plan.price * 100);
       notes.planId = plan.id;

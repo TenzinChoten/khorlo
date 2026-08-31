@@ -36,6 +36,7 @@ const PlanPricingGrid = ({
   onBillingCycleChange,
   onSelectPlan,
   currentPlanId,
+  currentPlan,
   loadingPlanId,
   heading,
   intro,
@@ -85,8 +86,17 @@ const PlanPricingGrid = ({
         {PLAN_FAMILIES.map((family) => {
           const plan = matchPlan(plans, family, billingCycle);
           const price = priceLabel(family, billingCycle, plan);
-          const isCurrent = plan && currentPlanId && plan.id === currentPlanId;
+          const isCurrent = Boolean(
+            plan && ((currentPlanId && plan.id === currentPlanId) || (currentPlan && plan.id === currentPlan.id))
+          );
           const isLoading = plan && loadingPlanId === plan.id;
+          // [Reason] Cheaper plans stay locked so brands can only move up in price
+          const isCheaper = Boolean(
+            currentPlan && plan && !isCurrent && Number(plan.price) <= Number(currentPlan.price)
+          );
+          const isUpgrade = Boolean(
+            currentPlan && plan && Number(currentPlan.price) > 0 && Number(plan.price) > Number(currentPlan.price)
+          );
           const cardClass = [
             'plan-card',
             family.tier === 'free' ? 'plan-card--free' : '',
@@ -112,10 +122,11 @@ const PlanPricingGrid = ({
                 type="button"
                 className={family.recommended ? 'btn btn-primary' : 'btn btn-outline'}
                 // [Reason] Keep paid CTAs clickable so missing catalog rows surface an error instead of a dead button
-                disabled={Boolean(isLoading || isCurrent)}
+                disabled={Boolean(isLoading || isCurrent || isCheaper)}
+                title={isCheaper ? 'You cannot switch to a cheaper plan' : undefined}
                 onClick={() => onSelectPlan(family, billingCycle, plan)}
               >
-                {isCurrent ? 'Current plan' : isLoading ? 'Working…' : family.cta}
+                {isCurrent ? 'Current plan' : isLoading ? 'Working…' : isCheaper ? 'Unavailable' : isUpgrade ? 'Upgrade' : family.cta}
               </button>
             </article>
           );
