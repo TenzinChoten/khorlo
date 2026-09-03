@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, DollarSign, Target, MapPin, Share2, X, MessageSquare } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import ShareCampaignModal from '../components/ShareCampaignModal';
-import { getPublicCampaignPath, getPublicCampaignUrl } from '../lib/campaignShare';
+import { getApplyLoginPath, getPublicCampaignUrl } from '../lib/campaignShare';
 
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
+  const applyLoginPath = getApplyLoginPath(id);
   const [campaign, setCampaign] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -74,13 +75,12 @@ const CampaignDetail = () => {
   };
 
   const goToLoginToApply = () => {
-    // [Reason] Logged-out Apply Now must open the login page, then return to this campaign
-    navigate(`/login?redirect=${encodeURIComponent(getPublicCampaignPath(id))}`);
+    // [Reason] Hard navigation so a stuck /auth/me request cannot block Apply Now
+    window.location.assign(getApplyLoginPath(id));
   };
 
   // [Reason] Guests must hit login before the apply form; signed-in creators use the existing modal
   const handleApplyNow = () => {
-    if (authLoading) return;
     if (!user) {
       goToLoginToApply();
       return;
@@ -316,7 +316,7 @@ const CampaignDetail = () => {
                   {slotsFilled ? 'All Creator Slots Filled' : 'Applications Closed'}
                 </button>
               ) : (
-                <button type="button" onClick={handleApplyNow} disabled={authLoading} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
+                <Link to={applyLoginPath} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem', textDecoration: 'none' }}>Apply Now</Link>
               )
             ) : user.role === 'INFLUENCER' ? (
               existingApplication ? (

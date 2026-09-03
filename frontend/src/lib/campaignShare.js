@@ -2,6 +2,11 @@ export function getPublicCampaignPath(campaignId) {
   return `/campaigns/${campaignId}`;
 }
 
+// [Reason] Guest Apply Now must be a real /login URL so the click cannot be swallowed by auth loading
+export function getApplyLoginPath(campaignId) {
+  return `/login?redirect=${encodeURIComponent(getPublicCampaignPath(campaignId))}`;
+}
+
 // [Reason] Address-bar /dashboard/campaign/:id links are what people often share
 export function getCampaignIdFromDashboardPath(pathname) {
   const match = typeof pathname === 'string'
