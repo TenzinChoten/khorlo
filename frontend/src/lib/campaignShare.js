@@ -2,6 +2,14 @@ export function getPublicCampaignPath(campaignId) {
   return `/campaigns/${campaignId}`;
 }
 
+// [Reason] Address-bar /dashboard/campaign/:id links are what people often share
+export function getCampaignIdFromDashboardPath(pathname) {
+  const match = typeof pathname === 'string'
+    ? pathname.match(/^\/dashboard\/campaign\/([^/?#]+)$/)
+    : null;
+  return match?.[1] || null;
+}
+
 export function getPublicCampaignUrl(campaignId) {
   const path = getPublicCampaignPath(campaignId);
   if (typeof window === 'undefined') return path;

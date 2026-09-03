@@ -9,7 +9,7 @@ import { getPublicCampaignPath, getPublicCampaignUrl } from '../lib/campaignShar
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [campaign, setCampaign] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -80,6 +80,7 @@ const CampaignDetail = () => {
 
   // [Reason] Guests must hit login before the apply form; signed-in creators use the existing modal
   const handleApplyNow = () => {
+    if (authLoading) return;
     if (!user) {
       goToLoginToApply();
       return;
@@ -309,7 +310,14 @@ const CampaignDetail = () => {
         <div>
           <div className="apple-panel" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
             {!user ? (
-              <button type="button" onClick={handleApplyNow} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
+              // [Reason] Guests can read the brief; Apply Now is the only action that requires login
+              isClosed ? (
+                <button disabled className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--apple-bg)', color: 'var(--apple-text-secondary)', cursor: 'not-allowed', border: '1px solid var(--apple-border)' }}>
+                  {slotsFilled ? 'All Creator Slots Filled' : 'Applications Closed'}
+                </button>
+              ) : (
+                <button type="button" onClick={handleApplyNow} disabled={authLoading} className="btn btn-primary btn-accent" style={{ width: '100%', marginBottom: '1rem' }}>Apply Now</button>
+              )
             ) : user.role === 'INFLUENCER' ? (
               existingApplication ? (
                 <>

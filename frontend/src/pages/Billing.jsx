@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard } from 'lucide-react';
 import { fetchApi } from '../lib/api';
 import { startRazorpayCheckout } from '../lib/razorpayCheckout';
 import { useAuth } from '../context/AuthContext';
@@ -178,21 +177,6 @@ const Billing = () => {
         currentPlan={subscription?.status === 'ACTIVE' || subscription?.status === 'PENDING' ? subscription.plan : null}
         loadingPlanId={payingPlanId}
       />
-
-      <div className="apple-panel" style={{ padding: '2rem', marginTop: '2.5rem' }}>
-        <h3 style={{ fontSize: '1.125rem', marginBottom: '1.5rem' }}>Payment Method</h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', borderRadius: '12px' }}>
-          <div style={{ padding: '0.5rem', background: 'var(--apple-surface)', borderRadius: '8px', border: '1px solid var(--apple-border)' }}>
-            <CreditCard size={24} />
-          </div>
-          <div>
-            <p style={{ fontWeight: 500 }}>Razorpay Checkout</p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              Paid plans open the existing Razorpay modal. Card numbers and bank details stay with Razorpay.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

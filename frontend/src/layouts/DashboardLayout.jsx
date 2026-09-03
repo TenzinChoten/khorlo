@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { fetchApi } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { getCampaignIdFromDashboardPath, getPublicCampaignPath } from '../lib/campaignShare';
 import './DashboardLayout.css';
 
 function formatRelativeTime(value) {
@@ -76,6 +77,12 @@ const DashboardLayout = () => {
   useEffect(() => {
     // [Reason] Opening /dashboard/* directly must wait for the cookie session instead of rendering empty chrome
     if (!loading && !user) {
+      const sharedCampaignId = getCampaignIdFromDashboardPath(location.pathname);
+      if (sharedCampaignId) {
+        // [Reason] Shared dashboard campaign URLs must show the public brief; Apply sends guests to login
+        navigate(`${getPublicCampaignPath(sharedCampaignId)}${location.search}`, { replace: true });
+        return;
+      }
       const redirect = `${location.pathname}${location.search}`;
       navigate(`/login?redirect=${encodeURIComponent(redirect)}`, { replace: true });
     }
