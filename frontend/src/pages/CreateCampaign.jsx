@@ -220,7 +220,13 @@ const CreateCampaign = () => {
     try {
       const formData = new FormData();
       formData.append('file', croppedFile);
-      
+      // [Reason] Campaign images go to Supabase; other /upload callers stay on the filesystem
+      formData.append('purpose', 'campaign');
+      const previousUrl = type === 'banner' ? campaign.bannerUrl : campaign.logoUrl;
+      if (previousUrl) {
+        formData.append('replaceUrl', previousUrl);
+      }
+
       const res = await fetchApi('/upload', {
         method: 'POST',
         body: formData,
