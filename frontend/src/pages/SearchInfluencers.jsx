@@ -55,36 +55,37 @@ const SearchInfluencers = () => {
             const avatarSrc = getMediaUrl(inf.profilePhoto) || fallbackAvatar;
             const niches = inf.contentNiches?.map(n => n.contentNiche?.name).filter(Boolean) || [];
             return (
-              <div key={inf.id} className="apple-card-hover" style={{ padding: '2rem', textAlign: 'center' }}>
+              <div key={inf.id} className="apple-card-hover" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <img
                   src={avatarSrc}
                   alt={inf.displayName}
-                  style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', margin: '0 auto 1rem' }}
+                  style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', margin: '0 auto 1rem', flexShrink: 0 }}
                   onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackAvatar; }}
                 />
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' }}>{inf.displayName}</h3>
-                {niches.length > 0 && (
-                  <p style={{ color: 'var(--accent)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>{niches.slice(0, 2).join(' · ')}</p>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{formatFollowers(inf.totalFollowers)}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Followers</div>
+                <p style={{ color: 'var(--accent)', fontSize: '0.875rem', marginBottom: '1rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {niches.length > 0 ? niches.join(' · ') : '\u00A0'}
+                </p>
+                <div style={{ marginTop: 'auto' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{formatFollowers(inf.totalFollowers)}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Followers</div>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{inf.avgEngagement?.toFixed(1)}%</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement</div>
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{inf.avgEngagement?.toFixed(1)}%</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement</div>
-                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    style={{ width: '100%', fontSize: '0.875rem', padding: '0.5rem' }}
+                    onClick={() => navigate(`/dashboard/influencers/${inf.id}`)}
+                  >
+                    View Profile
+                  </button>
                 </div>
-                {/* [Reason] The button had no handler, so brands could not open a creator profile */}
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  style={{ width: '100%', fontSize: '0.875rem', padding: '0.5rem' }}
-                  onClick={() => navigate(`/dashboard/influencers/${inf.id}`)}
-                >
-                  View Profile
-                </button>
               </div>
             );
           })}
