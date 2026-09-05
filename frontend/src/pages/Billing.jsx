@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard } from 'lucide-react';
 import { fetchApi } from '../lib/api';
 import { startRazorpayCheckout } from '../lib/razorpayCheckout';
 import { useAuth } from '../context/AuthContext';
-import { familyByKey, matchPlan } from '../lib/plans';
+import { familyByKey, isMoreExpensivePlan, matchPlan } from '../lib/plans';
 import PlanPricingGrid from '../components/PlanPricingGrid';
 
 const Billing = () => {
@@ -13,6 +12,7 @@ const Billing = () => {
   const { user } = useAuth();
   const [plans, setPlans] = useState([]);
   const [subscription, setSubscription] = useState(null);
+  const [usage, setUsage] = useState(null);
   const [error, setError] = useState('');
   const [payingPlanId, setPayingPlanId] = useState(null);
   const [billingCycle, setBillingCycle] = useState(
@@ -22,8 +22,14 @@ const Billing = () => {
 
   const loadSubscription = () =>
     fetchApi('/subscriptions/me')
-      .then((res) => setSubscription(res.subscription || null))
-      .catch(() => setSubscription(null));
+      .then((res) => {
+        setSubscription(res.subscription || null);
+        setUsage(res.usage || null);
+      })
+      .catch(() => {
+        setSubscription(null);
+        setUsage(null);
+      });
 
   useEffect(() => {
     fetchApi('/plans')
@@ -54,12 +60,14 @@ const Billing = () => {
     setError('');
     setPayingPlanId(plan.id);
     try {
+      // [Reason] Paid plans use Razorpay Standard Checkout (create-order → modal → verify-payment)
       await startRazorpayCheckout({
         planId: plan.id,
         name: 'Khorlo',
         description: `${plan.name} plan`,
         prefill: { email: user?.email, name: user?.name },
       });
+      await loadSubscription();
       navigate('/checkout/success');
     } catch (err) {
       setError(err.message || 'Payment failed');
@@ -77,6 +85,16 @@ const Billing = () => {
       setError('Billing is available for brand accounts.');
       return;
     }
+    // [Reason] Block cheaper-plan clicks even if the grid button is forced
+    if (
+      subscription &&
+      ['ACTIVE', 'PENDING'].includes(subscription.status) &&
+      subscription.planId !== plan.id &&
+      !isMoreExpensivePlan(subscription.plan, plan)
+    ) {
+      setError('You cannot switch to a cheaper plan. Choose a higher plan or keep your current one.');
+      return;
+    }
     if (plan.price <= 0) {
       await startFreePlan(plan);
       return;
@@ -91,7 +109,14 @@ const Billing = () => {
     if (!family) return;
     const plan = matchPlan(plans, family, billingCycle);
     if (!plan) return;
-    if (subscription && ['ACTIVE', 'PENDING'].includes(subscription.status)) return;
+
+    if (subscription && ['ACTIVE', 'PENDING'].includes(subscription.status)) {
+      if (subscription.planId === plan.id) return;
+      // [Reason] Auto-start only when the requested plan is a price upgrade
+      if (!isMoreExpensivePlan(subscription.plan, plan)) return;
+      if (family.key === 'FREE') return;
+    }
+
     autoStarted.current = true;
     handleSelectPlan(family, billingCycle, plan);
   }, [plans, subscription, user, searchParams, billingCycle]);
@@ -119,8 +144,19 @@ const Billing = () => {
             </h2>
             <p style={{ color: 'var(--text-secondary)' }}>
               Status: {subscription.status}
-              {subscription.expiresAt ? ` · Renews or ends ${new Date(subscription.expiresAt).toLocaleDateString('en-IN')}` : ''}
+              {/* [Reason] Free has no renew or end date — only paid cycles show one */}
+              {Number(subscription.plan?.price) > 0 && subscription.expiresAt
+                ? ` · Renews or ends ${new Date(subscription.expiresAt).toLocaleDateString('en-IN')}`
+                : ''}
             </p>
+            {usage && (
+              <p style={{ color: 'var(--text-secondary)', marginTop: '0.75rem' }}>
+                {/* [Reason] Show remaining plan capacity so upgrades are obvious before a cap error */}
+                {usage.activeCampaigns} / {usage.campaignLimit} active campaigns
+                {' · '}
+                {usage.messagesThisMonth} / {usage.messageLimit} messages this month
+              </p>
+            )}
           </div>
         ) : (
           <div>
@@ -138,23 +174,9 @@ const Billing = () => {
         onBillingCycleChange={setBillingCycle}
         onSelectPlan={handleSelectPlan}
         currentPlanId={subscription?.status === 'ACTIVE' || subscription?.status === 'PENDING' ? subscription.planId : null}
+        currentPlan={subscription?.status === 'ACTIVE' || subscription?.status === 'PENDING' ? subscription.plan : null}
         loadingPlanId={payingPlanId}
       />
-
-      <div className="apple-panel" style={{ padding: '2rem', marginTop: '2.5rem' }}>
-        <h3 style={{ fontSize: '1.125rem', marginBottom: '1.5rem' }}>Payment Method</h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem', background: 'var(--apple-bg)', border: '1px solid var(--apple-border)', borderRadius: '12px' }}>
-          <div style={{ padding: '0.5rem', background: 'var(--apple-surface)', borderRadius: '8px', border: '1px solid var(--apple-border)' }}>
-            <CreditCard size={24} />
-          </div>
-          <div>
-            <p style={{ fontWeight: 500 }}>Razorpay Checkout</p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              Paid plans open the existing Razorpay modal. Card numbers and bank details stay with Razorpay.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

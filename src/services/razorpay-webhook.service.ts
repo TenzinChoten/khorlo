@@ -277,10 +277,18 @@ async function applySubscriptionEvent(
     unixSecondsToDate(entity?.end_at) ??
     subscription.expiresAt;
 
+  const sameExpiresAt =
+    subscription.expiresAt == null && expiresAt == null
+      ? true
+      : Boolean(
+          subscription.expiresAt &&
+            expiresAt &&
+            subscription.expiresAt.getTime() === expiresAt.getTime()
+        );
   const unchanged =
     subscription.status === nextStatus &&
     subscription.startsAt.getTime() === startsAt.getTime() &&
-    subscription.expiresAt.getTime() === expiresAt.getTime();
+    sameExpiresAt;
 
   if (unchanged) {
     return;

@@ -1,7 +1,7 @@
 import { fetchApi } from './api';
 
 function getCheckoutKey(orderKeyId) {
-  return import.meta.env.VITE_RAZORPAY_KEY_ID || orderKeyId;
+  return import.meta.env.RAZORPAY_KEY_ID || orderKeyId;
 }
 
 function ensureCheckoutScript() {
@@ -75,6 +75,57 @@ export async function startRazorpayCheckout({
       },
       modal: {
         // [Reason] Closing the modal is a cancel, not a failed charge
+        ondismiss: () => reject(new Error('Payment cancelled')),
+      },
+    });
+
+    rzp.on('payment.failed', (response) => {
+      const message = response?.error?.description || 'Payment failed';
+      reject(new Error(message));
+    });
+
+    rzp.open();
+  });
+}
+
+/**
+ * Creates a Razorpay subscription, opens Checkout with subscription_id, then relies on webhooks to activate.
+ */
+export async function startRazorpaySubscriptionCheckout({
+  planId,
+  name = 'Khorlo',
+  description = 'Khorlo subscription',
+  prefill = {},
+}) {
+  await ensureCheckoutScript();
+
+  const result = await fetchApi('/subscriptions', {
+    method: 'POST',
+    body: JSON.stringify({ planId }),
+  });
+
+  const checkout = result.checkout;
+  if (!checkout?.razorpaySubscriptionId) {
+    throw new Error('Could not start subscription checkout');
+  }
+
+  const key = getCheckoutKey(checkout.keyId);
+  if (!key) {
+    throw new Error('Razorpay key is not configured');
+  }
+
+  return new Promise((resolve, reject) => {
+    const rzp = new window.Razorpay({
+      key,
+      subscription_id: checkout.razorpaySubscriptionId,
+      name,
+      description,
+      prefill,
+      handler: (response) => {
+        // [Reason] Subscription activation is confirmed via Razorpay webhooks, not order verify
+        resolve(response);
+      },
+      modal: {
         ondismiss: () => reject(new Error('Payment cancelled')),
       },
     });

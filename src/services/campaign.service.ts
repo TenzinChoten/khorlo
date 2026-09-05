@@ -19,6 +19,10 @@ import {
   NotFoundError,
   ForbiddenError,
 } from "@/src/types";
+// [Reason] Image replacement/deletion must drop Supabase objects after the CampaignImage rows change
+import { deleteCampaignImageObjects } from "@/src/lib/campaign-image-storage";
+// [Reason] Create must relocate pending Storage objects after CampaignImage rows exist
+import { finalizeCreatedCampaignImages } from "@/src/lib/finalize-campaign-images";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -120,7 +124,11 @@ export const campaignService = {
       formatEntries,
     });
 
-    return { campaign };
+    // [Reason] Service create path also finalizes pending uploads into campaigns/<id>/
+    await finalizeCreatedCampaignImages(campaign.id, businessProfile.id);
+    const finalized = await campaignRepository.findById(campaign.id);
+
+    return { campaign: finalized ?? campaign };
   },
 
   async list(searchParams: URLSearchParams): Promise<CampaignListResponse> {
@@ -153,9 +161,18 @@ export const campaignService = {
     body: unknown
   ): Promise<CampaignDetailResponse> {
     const user = await requireRole("BUSINESS");
-    await verifyOwnership(id, user.id);
+    const businessId = await verifyOwnership(id, user.id);
 
     const data = parseValidation(updateCampaignSchema, body, "Invalid campaign data");
+    const existing = await campaignRepository.findById(id);
+    const nextStatus = data.status;
+    const wasActive =
+      existing?.status === "DRAFT" || existing?.status === "OPEN";
+    const willBeActive = nextStatus === "DRAFT" || nextStatus === "OPEN";
+    // [Reason] Reopening a closed campaign must still fit the plan's active-campaign cap
+    if (!wasActive && willBeActive) {
+      await assertCanPostCampaign(businessId, id);
+    }
 
     const { images, contentNiches, contentFormats, ...fields } = data;
 
@@ -190,6 +207,15 @@ export const campaignService = {
       formatEntries,
     });
 
+    // [Reason] Remove replaced Supabase objects only after the database update succeeds
+    if (images !== undefined) {
+      const kept = new Set(images);
+      const removed = (existing?.images ?? [])
+        .map((image) => image.imageUrl)
+        .filter((url) => !kept.has(url));
+      await deleteCampaignImageObjects(removed);
+    }
+
     return { campaign };
   },
 
@@ -197,6 +223,9 @@ export const campaignService = {
     const user = await requireRole("BUSINESS");
     await verifyOwnership(id, user.id);
 
+    const existing = await campaignRepository.findById(id);
     await campaignRepository.delete(id);
+    // [Reason] Cascade removes CampaignImage rows; Storage objects must be deleted separately
+    await deleteCampaignImageObjects(existing?.images.map((image) => image.imageUrl) ?? []);
   },
 };
