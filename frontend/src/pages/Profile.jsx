@@ -67,7 +67,7 @@ const Profile = () => {
   return (
     <div className="animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>{isBusiness ? 'Brand Profile' : 'Profile'}</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Profile</h1>
         <Link 
           to="/dashboard/profile/edit" 
           className="btn btn-outline" 
@@ -82,7 +82,7 @@ const Profile = () => {
         {/* Profile Card */}
         <div className="apple-panel" style={{ overflow: 'hidden', marginBottom: '2rem' }}>
           <div style={{ padding: '2rem 2rem 0', textAlign: 'center' }}>
-            <img src={avatarUrl || defaultAvatar} alt="Profile" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--apple-border)', margin: '0 auto 1rem', display: 'block', background: 'var(--apple-surface)' }} />
+            <img src={avatarUrl || defaultAvatar} alt="Profile" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '4px solid var(--background)', margin: '0 auto 1rem', display: 'block' }} />
 
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>{displayName || 'No name set'}</h2>
             {!isBusiness && bio && (
@@ -100,7 +100,7 @@ const Profile = () => {
             )}
 
             {isBusiness && bio && (
-              <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, padding: '1rem', borderTop: '1px solid var(--apple-border)', textAlign: 'center' }}>{bio}</p>
+              <p style={{ color: 'var(--apple-text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, padding: '1rem', borderTop: '1px solid var(--apple-border)', textAlign: 'left' }}>{bio}</p>
             )}
 
             {socialAccounts.length > 0 && (
@@ -159,7 +159,8 @@ const Profile = () => {
 
         {/* Right Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          <div className="apple-panel" style={{ padding: '2rem' }}>
+          {!isBusiness && (
+            <div className="apple-panel" style={{ padding: '2rem' }}>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Social Stats</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
                 <div style={{ padding: '1rem', background: 'var(--apple-bg)', borderRadius: '12px', border: '1px solid var(--apple-border)' }}>
@@ -176,10 +177,11 @@ const Profile = () => {
                 </div>
               </div>
             </div>
+          )}
 
           <div className="apple-panel" style={{ padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem' }}>{isBusiness ? 'Campaigns' : 'Portfolio'}</h3>
+              <h3 style={{ fontSize: '1.25rem' }}>{isBusiness ? 'Recent Campaigns' : 'Portfolio'}</h3>
 
             </div>
 

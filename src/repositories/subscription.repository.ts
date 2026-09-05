@@ -1,6 +1,6 @@
 import { prisma } from "@/src/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
-import { SubscriptionStatus } from "@/app/generated/prisma/client";
+import type { SubscriptionStatus } from "@/app/generated/prisma/enums";
 import type { PlanDTO, SubscriptionDTO } from "@/src/types/subscription";
 
 const planSelect = {
@@ -41,7 +41,7 @@ function toDTO(subscription: SubscriptionWithPlan): SubscriptionDTO {
   };
 }
 
-const openStatuses: SubscriptionStatus[] = [SubscriptionStatus.ACTIVE, SubscriptionStatus.PENDING];
+const openStatuses: SubscriptionStatus[] = ["ACTIVE", "PENDING"];
 
 export const subscriptionRepository = {
   async findById(id: string): Promise<SubscriptionDTO | null> {
@@ -67,11 +67,11 @@ export const subscriptionRepository = {
     const result = await prisma.subscription.updateMany({
       where: {
         businessId,
-        status: SubscriptionStatus.ACTIVE,
+        status: "ACTIVE",
         expiresAt: { lte: new Date() },
         plan: { price: { gt: 0 } },
       },
-      data: { status: SubscriptionStatus.EXPIRED },
+      data: { status: "EXPIRED" },
     });
     return result.count;
   },

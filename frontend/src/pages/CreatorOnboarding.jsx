@@ -483,7 +483,7 @@ const CreatorOnboarding = () => {
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
                             onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
                           >
                             <ExternalLink size={16} />

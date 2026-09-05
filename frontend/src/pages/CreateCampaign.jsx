@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X, Edit2 } from 'lucide-react';
+import { Upload, ChevronRight, ChevronLeft, Check, Image as ImageIcon, X } from 'lucide-react';
 import { fetchApi, getMediaUrl } from '../lib/api';
 import ImageCropper from '../components/ImageCropper';
 // [Reason] Location lists are async chunks; only fetch countries/states/cities when this form needs them
@@ -16,7 +16,6 @@ const CreateCampaign = () => {
   const [error, setError] = useState(null);
   const [planBlocked, setPlanBlocked] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isFetchingLogo, setIsFetchingLogo] = useState(true);
   const bannerInputRef = useRef(null);
   const logoInputRef = useRef(null);
   const intervalRef = useRef(null);
@@ -119,21 +118,6 @@ const CreateCampaign = () => {
         }
       })
       .catch(() => {});
-
-    // [Reason] Pre-fill the brand logo from the business profile if it exists
-    fetchApi('/business/me')
-      .then((res) => {
-        if (res.profile && res.profile.companyLogo) {
-          setCampaign(prev => {
-            if (!prev.logoUrl) {
-              return { ...prev, logoUrl: res.profile.companyLogo };
-            }
-            return prev;
-          });
-        }
-      })
-      .catch(() => {})
-      .finally(() => setIsFetchingLogo(false));
   }, []);
 
   const handleCountryChange = (val) => {
@@ -402,56 +386,36 @@ const CreateCampaign = () => {
           
           {/* STEP 1: Basic Info */}
           {step === 1 && (
-            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', position: 'relative', zIndex: 20 }}>
+            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               
               <div style={{ display: 'flex', gap: '2rem' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Campaign Banner</label>
-                  <div style={{ position: 'relative', width: '100%', height: '150px' }}>
-                    <input type="file" accept="image/*" style={{ display: 'none' }} ref={bannerInputRef} onChange={(e) => handleFileUpload(e, 'banner')} />
-                    <div 
-                      onClick={() => bannerInputRef.current?.click()}
-                      style={{ width: '100%', height: '100%', borderRadius: '12px', background: campaign.bannerUrl ? `url(${getMediaUrl(campaign.bannerUrl)}) center/cover` : 'var(--apple-surface)', border: campaign.bannerUrl ? '1px solid var(--apple-border)' : '2px dashed var(--apple-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--apple-text-secondary)' }}
-                    >
-                      {!campaign.bannerUrl && (
-                        <>
-                          <ImageIcon size={32} style={{ marginBottom: '0.5rem' }} />
-                          <span style={{ fontSize: '0.875rem' }}>{isUploading ? 'Uploading...' : 'Upload Banner'}</span>
-                        </>
-                      )}
-                    </div>
-                    {campaign.bannerUrl && (
-                      <button type="button" onClick={(e) => { e.preventDefault(); bannerInputRef.current?.click(); }} style={{ position: 'absolute', top: '8px', right: '8px', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--apple-surface)', color: 'var(--apple-text-primary)', border: '1px solid var(--apple-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10, transition: 'transform 0.2s' }} title="Change Banner" onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                        <Edit2 size={16} />
-                      </button>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} ref={bannerInputRef} onChange={(e) => handleFileUpload(e, 'banner')} />
+                  <div 
+                    onClick={() => bannerInputRef.current?.click()}
+                    style={{ width: '100%', height: '150px', borderRadius: '12px', background: campaign.bannerUrl ? `url(${getMediaUrl(campaign.bannerUrl)}) center/cover` : 'var(--apple-surface)', border: campaign.bannerUrl ? 'none' : '2px dashed var(--apple-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--apple-text-secondary)' }}
+                  >
+                    {!campaign.bannerUrl && (
+                      <>
+                        <ImageIcon size={32} style={{ marginBottom: '0.5rem' }} />
+                        <span style={{ fontSize: '0.875rem' }}>{isUploading ? 'Uploading...' : 'Upload Banner'}</span>
+                      </>
                     )}
                   </div>
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Brand Logo <span style={{ color: error && !campaign.logoUrl ? '#ef4444' : 'var(--apple-text-secondary)', transition: 'all 0.3s' }}>*</span></label>
-                  <div style={{ position: 'relative', width: '150px', height: '150px' }}>
-                    <input type="file" accept="image/*" style={{ display: 'none' }} ref={logoInputRef} onChange={(e) => handleFileUpload(e, 'logo')} />
-                    {isFetchingLogo ? (
-                      <div style={{ width: '100%', height: '100%', borderRadius: '12px', background: 'var(--apple-surface)', border: '2px dashed var(--apple-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--apple-text-secondary)', opacity: 0.6 }}>
-                        <span style={{ fontSize: '0.875rem' }}>Loading...</span>
-                      </div>
-                    ) : (
-                      <div 
-                        onClick={() => logoInputRef.current?.click()}
-                        style={{ width: '100%', height: '100%', borderRadius: '12px', background: campaign.logoUrl ? `url(${getMediaUrl(campaign.logoUrl)}) center/cover` : 'var(--apple-surface)', border: campaign.logoUrl ? '1px solid var(--apple-border)' : '2px dashed var(--apple-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--apple-text-secondary)', transition: 'background 0.3s ease' }}
-                      >
-                        {!campaign.logoUrl && (
-                          <>
-                            <Upload size={24} style={{ marginBottom: '0.5rem' }} />
-                            <span style={{ fontSize: '0.875rem' }}>{isUploading ? 'Uploading...' : 'Update Logo'}</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                    {campaign.logoUrl && !isFetchingLogo && (
-                      <button type="button" onClick={(e) => { e.preventDefault(); logoInputRef.current?.click(); }} style={{ position: 'absolute', top: '8px', right: '8px', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--apple-surface)', color: 'var(--apple-text-primary)', border: '1px solid var(--apple-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10, transition: 'transform 0.2s' }} title="Change Brand Logo" onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                        <Edit2 size={16} />
-                      </button>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} ref={logoInputRef} onChange={(e) => handleFileUpload(e, 'logo')} />
+                  <div 
+                    onClick={() => logoInputRef.current?.click()}
+                    style={{ width: '150px', height: '150px', borderRadius: '12px', background: campaign.logoUrl ? `url(${getMediaUrl(campaign.logoUrl)}) center/cover` : 'var(--apple-surface)', border: campaign.logoUrl ? 'none' : '2px dashed var(--apple-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--apple-text-secondary)' }}
+                  >
+                    {!campaign.logoUrl && (
+                      <>
+                        <Upload size={24} style={{ marginBottom: '0.5rem' }} />
+                        <span style={{ fontSize: '0.875rem' }}>{isUploading ? 'Uploading...' : 'Update Logo'}</span>
+                      </>
                     )}
                   </div>
                 </div>
@@ -551,7 +515,7 @@ const CreateCampaign = () => {
               </div>
 
               {(campaign.locationType === 'OFFLINE' || campaign.locationType === 'HYBRID') && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', position: 'relative', zIndex: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Country</label>
                     <SearchableDropdown
@@ -721,7 +685,7 @@ const CreateCampaign = () => {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', position: 'relative', zIndex: 10 }}>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
             {step > 1 && (
               <button type="button" onClick={handleBack} className="btn btn-outline" style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <ChevronLeft size={18} /> Back

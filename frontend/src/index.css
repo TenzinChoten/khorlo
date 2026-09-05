@@ -81,10 +81,7 @@ a {
 
 .faq-item.glass-panel,
 .faq-item.glass-panel:hover,
-.faq-item.glass-panel:active,
-.modal-panel.glass-panel,
-.modal-panel.glass-panel:hover,
-.modal-panel.glass-panel:active {
+.faq-item.glass-panel:active {
   transform: none !important;
 }
 
@@ -171,7 +168,6 @@ select {
   color: var(--text-primary) !important;
   background-color: #ffffff !important;
   caret-color: var(--text-primary);
-  font-family: inherit;
 }
 
 input::placeholder,

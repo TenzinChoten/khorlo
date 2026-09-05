@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Briefcase, Music, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { Upload, ChevronRight, ChevronLeft, Check, Camera, PlayCircle, AtSign, Briefcase, Music, ExternalLink } from 'lucide-react';
 // [Reason] Location lists are async chunks; only fetch countries/states/cities when this form needs them
 import { getAllCountries, getStatesOfCountry, getCitiesOfState } from '../lib/locationData';
 import SearchableDropdown from '../components/SearchableDropdown';
@@ -35,21 +35,13 @@ const BusinessOnboarding = () => {
   const [availableCities, setAvailableCities] = useState([]);
 
   // Step 2 State
-  const [socials, setSocials] = useState(savedState.socials || [
-    { id: 1, platform: 'INSTAGRAM', username: '', followers: '', engagementRate: '' }
-  ]);
-
-  const addSocial = () => {
-    setSocials([...socials, { id: Date.now().toString(), platform: 'INSTAGRAM', username: '', followers: '', engagementRate: '' }]);
-  };
-
-  const removeSocial = (id) => {
-    setSocials(socials.filter(s => s.id !== id));
-  };
-
-  const updateSocial = (id, field, value) => {
-    setSocials(socials.map(s => s.id === id ? { ...s, [field]: value } : s));
-  };
+  const [socials, setSocials] = useState(savedState.socials || {
+    instagram: '',
+    tiktok: '',
+    youtube: '',
+    twitter: '',
+    linkedin: ''
+  });
 
   // Step 3 State
   const [referralSources, setReferralSources] = useState(savedState.referralSources || []);
@@ -150,7 +142,15 @@ const BusinessOnboarding = () => {
         country,
         state,
         city,
-        socialAccounts: socials.filter(s => s.username && s.username.trim() !== ''),
+        socialAccounts: Object.entries(socials)
+          .filter(([_, url]) => url.trim() !== '')
+          .map(([platform, url]) => ({
+            platform: platform.toUpperCase(),
+            username: new URL(url).pathname.replace('/', '') || url,
+            profileUrl: sanitizePublicUrl(url),
+            followers: 0,
+            engagementRate: 0
+          })),
         heardAboutUs: referralSources.join(', ')
       };
       
@@ -358,98 +358,155 @@ const BusinessOnboarding = () => {
           {/* STEP 2: Social Links */}
           {step === 2 && (
             <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {socials.map((social) => (
-                <div key={social.id} style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--glass-border)', position: 'relative' }}>
-                  {socials.length > 1 && (
-                    <button type="button" onClick={() => removeSocial(social.id)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
-                      <Trash2 size={18} />
-                    </button>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Instagram Profile</label>
+                <div style={{ position: 'relative' }}>
+                  <Camera size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input 
+                    type="url" 
+                    value={socials.instagram}
+                    onChange={(e) => setSocials({...socials, instagram: e.target.value})}
+                    placeholder="https://instagram.com/yourbrand"
+                    style={{
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
+                    }}
+                  />
+                  {socials.instagram && (
+                    <a 
+                      href={socials.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
                   )}
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Platform <span style={{ color: showErrors && !social.platform ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
-                      <select 
-                        value={social.platform}
-                        required
-                        onChange={(e) => updateSocial(social.id, 'platform', e.target.value)}
-                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none', appearance: 'none' }}
-                      >
-                        <option value="INSTAGRAM">Instagram</option>
-                        <option value="TIKTOK">TikTok</option>
-                        <option value="YOUTUBE">YouTube</option>
-                        <option value="X">X (Twitter)</option>
-                        <option value="LINKEDIN">LinkedIn</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Username / Handle <span style={{ color: showErrors && !social.username ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
-                      <div style={{ position: 'relative' }}>
-                        {social.platform === 'INSTAGRAM' && <Camera size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
-                        {social.platform === 'TIKTOK' && <Music size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
-                        {social.platform === 'YOUTUBE' && <PlayCircle size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
-                        {social.platform === 'X' && <AtSign size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
-                        {social.platform === 'LINKEDIN' && <Briefcase size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />}
-                        
-                        <input 
-                          type="text" 
-                          value={social.username}
-                          onChange={(e) => updateSocial(social.id, 'username', e.target.value)}
-                          placeholder="@username" 
-                          style={{ width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }} 
-                          required 
-                        />
-                        {social.username && (
-                          <a 
-                            href={
-                              social.platform === 'INSTAGRAM' ? `https://instagram.com/${social.username.replace('@', '')}` :
-                              social.platform === 'TIKTOK' ? `https://tiktok.com/@${social.username.replace('@', '')}` :
-                              social.platform === 'YOUTUBE' ? `https://youtube.com/@${social.username.replace('@', '')}` :
-                              social.platform === 'X' ? `https://x.com/${social.username.replace('@', '')}` : 
-                              social.platform === 'LINKEDIN' ? `https://linkedin.com/company/${social.username.replace('@', '')}` : '#'
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-                          >
-                            <ExternalLink size={16} />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Followers <span style={{ color: showErrors && !social.followers ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
-                      <input 
-                        type="number" 
-                        value={social.followers}
-                        onChange={(e) => updateSocial(social.id, 'followers', e.target.value)}
-                        placeholder="10000" 
-                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }} 
-                        required 
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Engagement Rate (%) <span style={{ color: showErrors && !social.engagementRate ? '#ef4444' : 'var(--text-secondary)', transition: 'all 0.3s' }}>*</span></label>
-                      <input 
-                        type="number" 
-                        step="0.01"
-                        value={social.engagementRate}
-                        required
-                        onChange={(e) => updateSocial(social.id, 'engagementRate', e.target.value)}
-                        placeholder="5.2" 
-                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: '#ffffff', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none' }} 
-                      />
-                    </div>
-                  </div>
                 </div>
-              ))}
-              <button type="button" onClick={addSocial} className="btn btn-outline" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                <Plus size={18} /> Add Another Account
-              </button>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>TikTok Profile</label>
+                <div style={{ position: 'relative' }}>
+                  <Music size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input 
+                    type="url" 
+                    value={socials.tiktok}
+                    onChange={(e) => setSocials({...socials, tiktok: e.target.value})}
+                    placeholder="https://tiktok.com/@yourbrand"
+                    style={{
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
+                    }}
+                  />
+                  {socials.tiktok && (
+                    <a 
+                      href={socials.tiktok}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>YouTube Channel</label>
+                <div style={{ position: 'relative' }}>
+                  <PlayCircle size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input 
+                    type="url" 
+                    value={socials.youtube}
+                    onChange={(e) => setSocials({...socials, youtube: e.target.value})}
+                    placeholder="https://youtube.com/@yourbrand"
+                    style={{
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
+                    }}
+                  />
+                  {socials.youtube && (
+                    <a 
+                      href={socials.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>X (Twitter) Profile</label>
+                <div style={{ position: 'relative' }}>
+                  <AtSign size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input 
+                    type="url" 
+                    value={socials.twitter}
+                    onChange={(e) => setSocials({...socials, twitter: e.target.value})}
+                    placeholder="https://twitter.com/yourbrand"
+                    style={{
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
+                    }}
+                  />
+                  {socials.twitter && (
+                    <a 
+                      href={socials.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>LinkedIn Company Page</label>
+                <div style={{ position: 'relative' }}>
+                  <Briefcase size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input 
+                    type="url" 
+                    value={socials.linkedin}
+                    onChange={(e) => setSocials({...socials, linkedin: e.target.value})}
+                    placeholder="https://linkedin.com/company/yourbrand"
+                    style={{
+                      width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem', borderRadius: '8px',
+                      background: '#ffffff', border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)', outline: 'none'
+                    }}
+                  />
+                  {socials.linkedin && (
+                    <a 
+                      href={socials.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', transition: 'color 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 

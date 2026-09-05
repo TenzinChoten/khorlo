@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, DollarSign, Euro, PoundSterling, IndianRupee, Banknote, Gift, Target, MapPin, Share2, X, MessageSquare } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, DollarSign, Target, MapPin, Share2, X, MessageSquare } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { fetchApi, getMediaUrl } from '../lib/api';
@@ -132,20 +130,6 @@ const CampaignDetail = () => {
   const formatBudget = (camp) => {
     if (!camp.budget) return camp.compensationType === 'FREE_PRODUCT' ? 'Free Product' : 'Unpaid';
     return `${camp.currency || 'USD'} ${camp.budget.toLocaleString()}`;
-  };
-
-  const getCurrencyIcon = (camp) => {
-    if (camp.compensationType === 'FREE_PRODUCT') return <Gift size={20} />;
-    if (!camp.budget) return <Banknote size={20} />;
-    
-    switch (camp.currency) {
-      case 'EUR': return <Euro size={20} />;
-      case 'GBP': return <PoundSterling size={20} />;
-      case 'INR': return <IndianRupee size={20} />;
-      case 'USD':
-      case 'CAD':
-      default: return <DollarSign size={20} />;
-    }
   };
 
   const isDeadlinePassed = campaign?.applicationDeadline && new Date() > new Date(campaign.applicationDeadline);
@@ -371,7 +355,7 @@ const CampaignDetail = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ color: 'var(--apple-accent)' }}>{getCurrencyIcon(campaign)}</div>
+                <div style={{ color: 'var(--apple-accent)' }}><DollarSign size={20} /></div>
                 <div>
                   <div style={{ fontSize: '0.875rem', color: 'var(--apple-text-secondary)' }}>Compensation</div>
                   <div style={{ fontWeight: 600 }}>{formatBudget(campaign)}</div>
