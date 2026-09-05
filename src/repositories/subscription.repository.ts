@@ -63,12 +63,13 @@ export const subscriptionRepository = {
   },
 
   async expireStaleByBusinessId(businessId: string): Promise<number> {
-    // [Reason] ACTIVE rows past expiresAt must become EXPIRED so Free cannot keep posting
+    // [Reason] Only paid cycles expire; Free has no end date and must stay ACTIVE
     const result = await prisma.subscription.updateMany({
       where: {
         businessId,
         status: SubscriptionStatus.ACTIVE,
         expiresAt: { lte: new Date() },
+        plan: { price: { gt: 0 } },
       },
       data: { status: SubscriptionStatus.EXPIRED },
     });
@@ -81,8 +82,11 @@ export const subscriptionRepository = {
       where: {
         businessId,
         OR: [
-          { status: SubscriptionStatus.PENDING },
-          { status: SubscriptionStatus.ACTIVE, expiresAt: { gt: now } },
+          { status: "PENDING" },
+          // [Reason] Null expiresAt (Free) and future paid ends both count as open
+          { status: "ACTIVE", expiresAt: null },
+          { status: "ACTIVE", expiresAt: { gt: now } },
+          { status: "ACTIVE", plan: { price: { lte: 0 } } },
         ],
       },
       include: subscriptionInclude,
@@ -114,7 +118,7 @@ export const subscriptionRepository = {
     planId: string;
     razorpaySubscriptionId?: string | null;
     startsAt: Date;
-    expiresAt: Date;
+    expiresAt: Date | null;
     status: SubscriptionStatus;
   }): Promise<SubscriptionDTO> {
     const subscription = await prisma.subscription.create({
@@ -130,7 +134,7 @@ export const subscriptionRepository = {
       planId?: string;
       razorpaySubscriptionId?: string | null;
       startsAt?: Date;
-      expiresAt?: Date;
+      expiresAt?: Date | null;
       status?: SubscriptionStatus;
     }
   ): Promise<SubscriptionDTO> {

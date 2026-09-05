@@ -24,7 +24,8 @@ export interface SubscriptionDTO {
   planId: string;
   razorpaySubscriptionId: string | null;
   startsAt: Date;
-  expiresAt: Date;
+  // [Reason] Free plans omit a renew/end date so the API can return null
+  expiresAt: Date | null;
   status: SubscriptionStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -35,8 +36,16 @@ export interface PlanListResponse {
   plans: PlanDTO[];
 }
 
+export interface PlanUsageDTO {
+  activeCampaigns: number;
+  campaignLimit: number;
+  messagesThisMonth: number;
+  messageLimit: number;
+}
+
 export interface SubscriptionResponse {
   subscription: SubscriptionDTO;
+  usage?: PlanUsageDTO;
 }
 
 export interface SubscriptionListResponse {

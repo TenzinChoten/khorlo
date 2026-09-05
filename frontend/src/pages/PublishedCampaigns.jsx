@@ -22,12 +22,17 @@ const PublishedCampaigns = () => {
   const [filter, setFilter] = useState('OPEN');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [usage, setUsage] = useState(null);
 
   useEffect(() => {
-    fetchApi('/dashboard/business')
-      .then((res) => {
-        setCampaigns(res.dashboard?.campaigns || []);
-        setStats(res.dashboard?.stats || {});
+    Promise.all([
+      fetchApi('/dashboard/business'),
+      fetchApi('/subscriptions/me').catch(() => ({ usage: null })),
+    ])
+      .then(([dashRes, subRes]) => {
+        setCampaigns(dashRes.dashboard?.campaigns || []);
+        setStats(dashRes.dashboard?.stats || {});
+        setUsage(subRes.usage || null);
       })
       .catch((err) => setError(err.message || 'Failed to load campaigns'))
       .finally(() => setLoading(false));
@@ -63,9 +68,26 @@ const PublishedCampaigns = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Published Campaigns</h1>
-          <p style={{ color: 'var(--apple-text-secondary)' }}>Manage your active and drafted campaigns</p>
+          <p style={{ color: 'var(--apple-text-secondary)' }}>
+            {usage
+              ? `${usage.activeCampaigns} / ${usage.campaignLimit} active campaigns on your plan`
+              : 'Manage your active and drafted campaigns'}
+          </p>
         </div>
-        <button onClick={() => navigate('/dashboard/business/campaigns/new')} className="btn btn-primary btn-accent">+ New Campaign</button>
+        <button
+          onClick={() => {
+            if (usage && usage.activeCampaigns >= usage.campaignLimit) {
+              navigate('/dashboard/billing');
+              return;
+            }
+            navigate('/dashboard/business/campaigns/new');
+          }}
+          className="btn btn-primary btn-accent"
+        >
+          {usage && usage.activeCampaigns >= usage.campaignLimit
+            ? 'Upgrade to add campaigns'
+            : '+ New Campaign'}
+        </button>
       </div>
 
       <div className="apple-panel" style={{ padding: '2rem' }}>
