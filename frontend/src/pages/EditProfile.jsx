@@ -301,8 +301,8 @@ const EditProfile = () => {
             </div>
             <div>
               <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Profile Picture</h3>
-              <label className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
-                <Camera size={16} /> Change Photo
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--apple-text-secondary)', background: 'rgba(0, 0, 0, 0.05)', borderRadius: '100px', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.08)'; e.currentTarget.style.color = 'var(--apple-text-primary)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)'; e.currentTarget.style.color = 'var(--apple-text-secondary)'; }}>
+                <Camera size={14} /> Change Photo
                 <input type="file" accept="image/*" onChange={handleImageSelect} style={{ display: 'none' }} />
               </label>
             </div>

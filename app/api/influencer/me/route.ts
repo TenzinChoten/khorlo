@@ -83,6 +83,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (socialAccounts && Array.isArray(socialAccounts)) {
+      // Clear existing and add new
       await prisma.socialAccount.deleteMany({ where: { userId: authUser.id } });
       await prisma.socialAccount.createMany({
         data: socialAccounts.map(s => ({

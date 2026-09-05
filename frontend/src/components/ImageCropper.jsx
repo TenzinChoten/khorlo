@@ -38,7 +38,7 @@ const ImageCropper = ({ imageSrc, onCropComplete, onCancel, cropShape = "round",
       backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
     }}>
-      <div className="glass-panel" style={{
+      <div className="glass-panel modal-panel" style={{
         width: '90%', maxWidth: '500px', height: '60vh', minHeight: '400px',
         position: 'relative', overflow: 'hidden', padding: '1rem',
         display: 'flex', flexDirection: 'column'
