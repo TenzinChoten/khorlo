@@ -287,15 +287,6 @@ export const messageRepository = {
     return toMessageDTO(message);
   },
 
-  async countSentByUserSince(userId: string, since: Date): Promise<number> {
-    return prisma.message.count({
-      where: {
-        senderId: userId,
-        createdAt: { gte: since },
-      },
-    });
-  },
-
   async markReceivedMessagesAsRead(conversationId: string, userId: string): Promise<void> {
     await prisma.message.updateMany({
       where: {

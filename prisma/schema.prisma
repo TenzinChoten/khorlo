@@ -305,8 +305,7 @@ model Subscription {
   // [Reason] Links the business subscription to Razorpay for webhook status sync
   razorpaySubscriptionId String?            @unique
   startsAt               DateTime
-  // [Reason] Free seats have no renewal or end date; paid cycles still store period end
-  expiresAt              DateTime?
+  expiresAt              DateTime
   status                 SubscriptionStatus @default(ACTIVE)
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt

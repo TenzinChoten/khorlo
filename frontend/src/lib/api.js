@@ -39,7 +39,7 @@ export async function fetchApi(path, options = {}) {
 export function getMediaUrl(url) {
   if (!url) return null;
 
-  // [Reason] Absolute URLs include new Supabase Storage links; relative /uploads stay on the API host
+  // [Reason] Absolute, data, and blob URLs are already usable in <img> / CSS
   if (/^(https?:|data:|blob:)/i.test(url)) {
     try {
       const parsed = new URL(url);

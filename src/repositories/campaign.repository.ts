@@ -417,16 +417,11 @@ export const campaignRepository = {
     await prisma.campaign.delete({ where: { id } });
   },
 
-  async countActiveByBusinessId(
-    businessId: string,
-    excludeId?: string
-  ): Promise<number> {
+  async countActiveByBusinessId(businessId: string): Promise<number> {
     return prisma.campaign.count({
       where: {
         businessId,
         status: { in: ["DRAFT", "OPEN"] },
-        // [Reason] Reopening a closed campaign should not count itself against the plan cap
-        ...(excludeId ? { id: { not: excludeId } } : {}),
       },
     });
   },

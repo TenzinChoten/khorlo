@@ -22,16 +22,11 @@ import type {
   SubscriptionResponse,
 } from "@/src/types/subscription";
 import {
+  ConflictError,
   NotFoundError,
   ValidationError,
 } from "@/src/types";
-import { expiresAtForPlan } from "@/src/lib/subscription-period";
-import {
-  assertCanChangePlan,
-  closeOpenSubscription,
-  isPaidPlan,
-} from "@/src/lib/plan-change";
-import { getPlanUsage } from "@/src/services/campaign-entitlement.service";
+import { addBillingCycle } from "@/src/lib/subscription-period";
 import type { BillingCycle } from "@/app/generated/prisma/enums";
 
 function parseValidation<T>(
@@ -71,6 +66,10 @@ async function requireBusinessProfile(userId: string) {
   return profile;
 }
 
+function isPaidPlan(plan: Pick<PlanDTO, "price">): boolean {
+  return plan.price > 0;
+}
+
 export async function ensureDefaultFreeSubscription(
   businessId: string
 ): Promise<SubscriptionDTO> {
@@ -80,11 +79,13 @@ export async function ensureDefaultFreeSubscription(
     return open;
   }
   if (open && !isPaidPlan(open.plan)) {
-    // [Reason] Older Free rows may still have a leftover end date — clear it
-    if (open.expiresAt) {
-      return subscriptionRepository.update(open.id, { expiresAt: null });
-    }
     return open;
+  }
+
+  const latest = await subscriptionRepository.findLatestByBusinessId(businessId);
+  // [Reason] An expired Free period must stay expired so campaign posting stays blocked
+  if (latest && !isPaidPlan(latest.plan) && latest.status === "EXPIRED") {
+    return latest;
   }
 
   const freePlan = await planRepository.findDefaultFree();
@@ -99,7 +100,7 @@ export async function ensureDefaultFreeSubscription(
       planId: freePlan.id,
       razorpaySubscriptionId: null,
       startsAt,
-      expiresAt: null,
+      expiresAt: addBillingCycle(startsAt, freePlan.billingCycle),
       status: "ACTIVE",
     });
   } catch (error) {
@@ -147,8 +148,7 @@ export const subscriptionService = {
     const user = await requireRole("BUSINESS");
     const profile = await requireBusinessProfile(user.id);
     const subscription = await ensureDefaultFreeSubscription(profile.id);
-    const usage = await getPlanUsage(profile.id, user.id);
-    return { subscription, usage };
+    return { subscription };
   },
 
   async create(body: unknown): Promise<CreateSubscriptionResponse> {
@@ -166,26 +166,21 @@ export const subscriptionService = {
     }
 
     const existing = await subscriptionRepository.findOpenByBusinessId(profile.id);
-    const change = assertCanChangePlan(existing, plan);
-    if (change === "reuse" && existing) {
-      return {
-        subscription: existing,
-        checkout:
-          existing.razorpaySubscriptionId && isPaidPlan(plan)
-            ? {
-                keyId: getRazorpayKeyId(),
-                razorpaySubscriptionId: existing.razorpaySubscriptionId,
-              }
-            : null,
-      };
+    if (existing && isPaidPlan(existing.plan)) {
+      throw new ConflictError(
+        "An active or pending paid subscription already exists. Cancel it before starting a new plan."
+      );
     }
-    // [Reason] Upgrades replace the current seat so the new plan becomes the only open row
-    if (existing && change === "upgrade") {
-      await closeOpenSubscription(existing);
+    if (existing && !isPaidPlan(existing.plan) && !isPaidPlan(plan)) {
+      return { subscription: existing, checkout: null };
+    }
+    // [Reason] Free is the default seat; end it before a paid plan takes the open-subscription slot
+    if (existing && !isPaidPlan(existing.plan) && isPaidPlan(plan)) {
+      await subscriptionRepository.update(existing.id, { status: "CANCELLED" });
     }
 
     const startsAt = new Date();
-    const expiresAt = expiresAtForPlan(plan, startsAt);
+    const expiresAt = addBillingCycle(startsAt, plan.billingCycle);
 
     // [Reason] Free plans never touch Razorpay so we do not create empty payment objects
     if (plan.price <= 0) {

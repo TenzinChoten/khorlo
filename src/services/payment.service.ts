@@ -1,28 +1,17 @@
 import { randomBytes } from "crypto";
 import { getCurrentUser } from "@/src/lib/auth";
-import { businessRepository } from "@/src/repositories/business.repository";
 import { planRepository } from "@/src/repositories/plan.repository";
-import { subscriptionRepository } from "@/src/repositories/subscription.repository";
-import { notificationService } from "@/src/services/notification.service";
 import {
   createRazorpayOrder,
-  fetchRazorpayOrder,
   getRazorpayCurrency,
   getRazorpayKeyId,
   verifyCheckoutPaymentSignature,
 } from "@/src/lib/razorpay";
-import { expiresAtForPlan } from "@/src/lib/subscription-period";
-import {
-  assertCanChangePlan,
-  closeOpenSubscription,
-  isMoreExpensivePlan,
-} from "@/src/lib/plan-change";
 import {
   createOrderSchema,
   verifyPaymentSchema,
 } from "@/src/validations/payment.validation";
 import { ValidationError } from "@/src/types";
-import type { SubscriptionDTO } from "@/src/types/subscription";
 
 function parseValidation<T>(
   schema: {
@@ -45,69 +34,6 @@ function parseValidation<T>(
   return result.data;
 }
 
-async function activatePlanFromCheckoutOrder(
-  orderId: string
-): Promise<SubscriptionDTO | null> {
-  const order = await fetchRazorpayOrder(orderId);
-  const planId = order.notes?.planId?.trim();
-  const userId = order.notes?.userId?.trim();
-  if (!planId || !userId) {
-    return null;
-  }
-
-  const plan = await planRepository.findById(planId);
-  if (!plan || !plan.isActive || plan.price <= 0) {
-    return null;
-  }
-
-  const profile = await businessRepository.findByUserId(userId);
-  if (!profile) {
-    return null;
-  }
-
-  const existing = await subscriptionRepository.findOpenByBusinessId(profile.id);
-  if (existing?.planId === plan.id && existing.status === "ACTIVE") {
-    return existing;
-  }
-
-  if (existing) {
-    if (existing.planId === plan.id) {
-      // [Reason] Same-plan PENDING checkout should activate the existing row, not insert a second seat
-      const startsAt = new Date();
-      return subscriptionRepository.update(existing.id, {
-        status: "ACTIVE",
-        startsAt,
-        expiresAt: expiresAtForPlan(plan, startsAt),
-      });
-    }
-    // [Reason] After a charge, never replace the current seat with a cheaper plan
-    if (!isMoreExpensivePlan(plan, existing.plan)) {
-      return existing;
-    }
-    // [Reason] Paid upgrade: close the cheaper seat so the new plan can take the open slot
-    await closeOpenSubscription(existing);
-  }
-
-  const startsAt = new Date();
-  const subscription = await subscriptionRepository.create({
-    businessId: profile.id,
-    planId: plan.id,
-    razorpaySubscriptionId: null,
-    startsAt,
-    expiresAt: expiresAtForPlan(plan, startsAt),
-    status: "ACTIVE",
-  });
-
-  await notificationService.createNotification(
-    userId,
-    "Subscription activated",
-    `Your ${plan.name} plan is now active.`,
-    "SUBSCRIPTION"
-  );
-
-  return subscription;
-}
-
 export const paymentService = {
   async createOrder(body: unknown) {
     // [Reason] Only signed-in users can create payable orders
@@ -123,20 +49,6 @@ export const paymentService = {
       if (!plan || !plan.isActive) {
         throw new ValidationError("Invalid plan", { planId: ["Plan not found"] });
       }
-      const profile = await businessRepository.findByUserId(user.id);
-      if (!profile) {
-        throw new ValidationError("Business profile is required", {
-          planId: ["Create a brand profile before buying a plan"],
-        });
-      }
-      const existing = await subscriptionRepository.findOpenByBusinessId(profile.id);
-      if (existing?.planId === plan.id && existing.status === "ACTIVE") {
-        throw new ValidationError("This plan is already active", {
-          planId: ["Choose a more expensive plan to upgrade"],
-        });
-      }
-      // [Reason] Reject cheaper checkouts before Razorpay collects payment
-      assertCanChangePlan(existing, plan);
       // [Reason] Charge the stored plan price so the client cannot underpay
       amountPaise = Math.round(plan.price * 100);
       notes.planId = plan.id;
@@ -191,16 +103,10 @@ export const paymentService = {
       });
     }
 
-    // [Reason] Plan checkout orders carry planId in Razorpay notes; activate after HMAC passes
-    const subscription = await activatePlanFromCheckoutOrder(input.razorpay_order_id);
-
     return {
       success: true,
       order_id: input.razorpay_order_id,
       payment_id: input.razorpay_payment_id,
-      subscription: subscription
-        ? { id: subscription.id, planId: subscription.planId, status: subscription.status }
-        : null,
     };
   },
 };

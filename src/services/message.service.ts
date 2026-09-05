@@ -1,8 +1,6 @@
 import { requireRole } from "@/src/lib/require-role";
-import { businessRepository } from "@/src/repositories/business.repository";
 import { messageRepository } from "@/src/repositories/message.repository";
 import { notificationService } from "@/src/services/notification.service";
-import { assertCanSendMessage } from "@/src/services/campaign-entitlement.service";
 import {
   sendMessageSchema,
   messageListQuerySchema,
@@ -91,14 +89,6 @@ export const messageService = {
     // [Reason] Messaging is only allowed after the application has been accepted
     if (access.applicationStatus !== "ACCEPTED") {
       throw new ConflictError("Messages can only be sent for accepted applications.");
-    }
-
-    // [Reason] Brand message volume is capped by the active plan; creators are not billed
-    if (user.role === "BUSINESS") {
-      const profile = await businessRepository.findByUserId(user.id);
-      if (profile) {
-        await assertCanSendMessage(profile.id, user.id);
-      }
     }
 
     const message = await messageRepository.createMessage(conversationId, user.id, data);

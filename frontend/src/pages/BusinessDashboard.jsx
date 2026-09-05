@@ -18,19 +18,12 @@ function campaignThumbnail(camp) {
 const BusinessDashboard = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
-  const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      fetchApi('/dashboard/business'),
-      fetchApi('/subscriptions/me').catch(() => ({ usage: null })),
-    ])
-      .then(([dashRes, subRes]) => {
-        setData(dashRes.dashboard);
-        setUsage(subRes.usage || null);
-      })
+    fetchApi('/dashboard/business')
+      .then(res => setData(res.dashboard))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -41,7 +34,6 @@ const BusinessDashboard = () => {
   const stats = data?.stats || {};
   const applications = data?.recentApplications || [];
   const campaigns = data?.recentCampaigns || [];
-  const atCampaignLimit = Boolean(usage && usage.activeCampaigns >= usage.campaignLimit);
 
   return (
     <div className="animate-fade-in">
@@ -50,20 +42,7 @@ const BusinessDashboard = () => {
           <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Dashboard</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Welcome back to Khorlo</p>
         </div>
-        <button
-          // [Reason] At-cap brands should upgrade instead of opening a create form that will fail
-          onClick={() => {
-            if (atCampaignLimit) {
-              navigate('/dashboard/billing');
-              return;
-            }
-            navigate('/dashboard/business/campaigns/new');
-          }}
-          className="btn btn-primary btn-accent"
-          title={atCampaignLimit ? 'Campaign limit reached. Upgrade to post more.' : undefined}
-        >
-          {atCampaignLimit ? 'Upgrade to add campaigns' : '+ New Campaign'}
-        </button>
+        <button onClick={() => navigate('/dashboard/business/campaigns/new')} className="btn btn-primary btn-accent">+ New Campaign</button>
       </div>
 
       {/* Stats Grid */}
@@ -78,9 +57,7 @@ const BusinessDashboard = () => {
           </div>
           <div>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Active Campaigns</p>
-            <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>
-              {usage ? `${usage.activeCampaigns} / ${usage.campaignLimit}` : (stats.activeCampaigns ?? 0)}
-            </p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>{stats.activeCampaigns ?? 0}</p>
           </div>
         </div>
         <div className="apple-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>

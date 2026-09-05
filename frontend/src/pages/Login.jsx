@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getSafeInternalPath, resolvePostAuthDestination } from '../lib/authRedirect';
@@ -6,20 +6,13 @@ import { getSafeInternalPath, resolvePostAuthDestination } from '../lib/authRedi
 const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, user, loading: authLoading } = useAuth();
+  const { login } = useAuth();
   const redirect = getSafeInternalPath(searchParams.get('redirect'));
   const registerHref = redirect ? `/register?redirect=${encodeURIComponent(redirect)}` : '/register';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    // [Reason] Apply Now can land here while a session already exists; send them back to the campaign
-    if (!authLoading && user) {
-      navigate(resolvePostAuthDestination(user, redirect), { replace: true });
-    }
-  }, [authLoading, user, redirect, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

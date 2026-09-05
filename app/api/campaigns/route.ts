@@ -4,7 +4,6 @@ import { campaignService } from "@/src/services/campaign.service";
 import { handleApiError } from "@/src/utils/api-error-handler";
 import { getCurrentUser } from "@/src/lib/auth";
 import { ForbiddenError } from "@/src/types";
-import { finalizeCreatedCampaignImages } from "@/src/lib/finalize-campaign-images";
 
 export async function GET(request: NextRequest) {
   try {
@@ -91,9 +90,6 @@ export async function POST(request: NextRequest) {
         }
       }
     });
-
-    // [Reason] Move pending Storage objects into campaigns/<id>/ only after the campaign row exists
-    await finalizeCreatedCampaignImages(campaign.id, business.id);
 
     return NextResponse.json({ campaign }, { status: 201 });
   } catch (error) {

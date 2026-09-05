@@ -28,12 +28,6 @@ export function familyForPlan(plan) {
   return PLAN_FAMILIES.find((family) => family.variants.some((variant) => variant.name === plan.name)) || null;
 }
 
-export function isMoreExpensivePlan(current, next) {
-  // [Reason] Billing CTAs only auto-start when the next plan costs more
-  if (!current || !next) return true;
-  return Number(next.price) > Number(current.price);
-}
-
 export function billingPath(familyKey, billingCycle) {
   const params = new URLSearchParams({
     plan: familyKey,

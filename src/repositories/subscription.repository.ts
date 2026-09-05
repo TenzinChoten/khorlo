@@ -1,6 +1,6 @@
 import { prisma } from "@/src/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
-import type { SubscriptionStatus } from "@/app/generated/prisma/enums";
+import { SubscriptionStatus } from "@/app/generated/prisma/client";
 import type { PlanDTO, SubscriptionDTO } from "@/src/types/subscription";
 
 const planSelect = {
@@ -41,7 +41,7 @@ function toDTO(subscription: SubscriptionWithPlan): SubscriptionDTO {
   };
 }
 
-const openStatuses: SubscriptionStatus[] = ["ACTIVE", "PENDING"];
+const openStatuses: SubscriptionStatus[] = [SubscriptionStatus.ACTIVE, SubscriptionStatus.PENDING];
 
 export const subscriptionRepository = {
   async findById(id: string): Promise<SubscriptionDTO | null> {
@@ -63,15 +63,14 @@ export const subscriptionRepository = {
   },
 
   async expireStaleByBusinessId(businessId: string): Promise<number> {
-    // [Reason] Only paid cycles expire; Free has no end date and must stay ACTIVE
+    // [Reason] ACTIVE rows past expiresAt must become EXPIRED so Free cannot keep posting
     const result = await prisma.subscription.updateMany({
       where: {
         businessId,
-        status: "ACTIVE",
+        status: SubscriptionStatus.ACTIVE,
         expiresAt: { lte: new Date() },
-        plan: { price: { gt: 0 } },
       },
-      data: { status: "EXPIRED" },
+      data: { status: SubscriptionStatus.EXPIRED },
     });
     return result.count;
   },
@@ -82,11 +81,8 @@ export const subscriptionRepository = {
       where: {
         businessId,
         OR: [
-          { status: "PENDING" },
-          // [Reason] Null expiresAt (Free) and future paid ends both count as open
-          { status: "ACTIVE", expiresAt: null },
-          { status: "ACTIVE", expiresAt: { gt: now } },
-          { status: "ACTIVE", plan: { price: { lte: 0 } } },
+          { status: SubscriptionStatus.PENDING },
+          { status: SubscriptionStatus.ACTIVE, expiresAt: { gt: now } },
         ],
       },
       include: subscriptionInclude,
@@ -118,7 +114,7 @@ export const subscriptionRepository = {
     planId: string;
     razorpaySubscriptionId?: string | null;
     startsAt: Date;
-    expiresAt: Date | null;
+    expiresAt: Date;
     status: SubscriptionStatus;
   }): Promise<SubscriptionDTO> {
     const subscription = await prisma.subscription.create({
@@ -134,7 +130,7 @@ export const subscriptionRepository = {
       planId?: string;
       razorpaySubscriptionId?: string | null;
       startsAt?: Date;
-      expiresAt?: Date | null;
+      expiresAt?: Date;
       status?: SubscriptionStatus;
     }
   ): Promise<SubscriptionDTO> {

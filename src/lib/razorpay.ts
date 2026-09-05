@@ -97,7 +97,6 @@ export interface RazorpayOrderEntity {
   currency: string;
   receipt?: string;
   status?: string;
-  notes?: Record<string, string>;
 }
 
 export class RazorpayApiError extends AppError {
@@ -130,17 +129,6 @@ export async function createRazorpayOrder(input: {
       receipt: input.receipt,
       notes: input.notes,
     });
-    return order as RazorpayOrderEntity;
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    mapRazorpaySdkError(error);
-  }
-}
-
-export async function fetchRazorpayOrder(orderId: string): Promise<RazorpayOrderEntity> {
-  try {
-    const client = getRazorpayClient();
-    const order = await client.orders.fetch(orderId);
     return order as RazorpayOrderEntity;
   } catch (error) {
     if (error instanceof AppError) throw error;

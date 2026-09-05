@@ -14,19 +14,3 @@ export function addBillingCycle(from: Date, billingCycle: BillingCycle): Date {
 export function periodEndFromPlan(plan: PlanDTO, from = new Date()): Date {
   return addBillingCycle(from, plan.billingCycle);
 }
-
-export function expiresAtForPlan(
-  plan: Pick<PlanDTO, "price" | "billingCycle">,
-  from = new Date()
-): Date | null {
-  // [Reason] Free has no billing period, so there is nothing to renew or end
-  if (plan.price <= 0) {
-    return null;
-  }
-  return addBillingCycle(from, plan.billingCycle);
-}
-
-export function startOfUtcMonth(from = new Date()): Date {
-  // [Reason] Plan message caps reset on the calendar month, not the subscription start
-  return new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), 1));
-}
